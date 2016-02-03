@@ -51,7 +51,6 @@ void loop() {
   }
   else {
     startNumberFound = false;
-//      Serial.println("Start number not found.");
   }
 
   if (xbee.available() > 0 && startNumberFound) {
@@ -63,14 +62,10 @@ void loop() {
     Serial.println(tagger_ID);
 
     // determine instructions
-    
+    shouldSuitChangeColour();
 
-    // send instructions
-    
-
-    // await response
+    // send instructions and then await response
     awaitConfirmation();
-    
   }
 }
 
