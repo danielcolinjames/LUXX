@@ -44,8 +44,10 @@ void loop() {
  
   unsigned char incoming = xbee.read();
   boolean startNumberFound = false;
-
-  if (incoming == 15) {
+  
+// Serial.println((unsigned char)incoming);
+  
+  if (incoming == 25) {
     startNumberFound = true;
     Serial.println("Start number found. Next two values are SUIT_ID and TAGGER_ID.");
   }
@@ -97,7 +99,7 @@ void sendInstructions(int recepient, int message) {
   // suit_ID is currently equal to the suit tagged so
   // we need to address it in our instructions message
   xbee.write((unsigned char)recepient);
-  Serial.print("Sending to: :");
+  Serial.print("Sending to: ");
   Serial.println(recepient);
   
   xbee.write((unsigned char)message);
