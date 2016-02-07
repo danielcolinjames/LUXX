@@ -2,34 +2,32 @@
 /*
  CHART OF VALUES
  
- 25 = start bit for SUIT TAGGED message to console
- 45 = error
+ 99 = start bit for "I've been tagged" message to console
+ 
+ 90 = blue
+ 91 = red
+
  50 = change colour
  55 = don't change colour
- suit_ID + 10 = confirmation that [suit_ID] has changed colour
  
- */
+ suit_ID + 10 (11 to 20) = confirmation that instruction was received
+ suit_ID + 20 (21 to 30) = admin messages addressed to this suit
+ 
+*/
+
 #include <SoftwareSerial.h>
 #include <RFIDuino.h>
-
-boolean debugging = false;
 
 // ---------------------------------------------------------//
 // -------------------   Global variables  -----------------//
 // ---------------------------------------------------------//
 
-//SoftwareSerial rfid(6, 8);
-//SoftwareSerial xbee(0, 1); // RX, TX
-
 RFIDuino rfiduino(1.1);
-
 
 #define NUMBER_OF_CARDS 4
 
-
 byte tagData[5]; // holds the ID numbers from the tag
 byte tagDataBuffer[5]; // a buffer for verifying the tag data
-
 
 int readCount = 0;
 boolean tagCheck = false;
@@ -37,19 +35,22 @@ boolean verifyKey = false;
 int i;
 
 byte keyTag[NUMBER_OF_CARDS][5] ={
-{62, 0, 183, 134, 238},   //Tag 1
-{69, 0, 247, 211, 210},   //Tag 2
-{71, 0, 48, 85, 67},      //Tag 3
-{69, 0, 124, 57, 143},    //Tag 4
+  {62, 0, 183, 134, 238},   //Tag 1
+  {69, 0, 247, 211, 210},   //Tag 2
+  {71, 0, 48, 85, 67},      //Tag 3
+  {69, 0, 124, 57, 143},    //Tag 4
 };
 
+int lightColour = 0;
 
-int colourChangeInstruction = 0;
+//unsigned char colourChangeInstruction = 0;
 
 int instructionsHaveBeenReceived = 0;
 
-int suit_ID = 1;
+int suit_ID = 5;
+
 int suitConfirmationID = suit_ID + 10;
+int suitAdminID = suit_ID + 20;
 
 int tagger_ID = 0;
 
@@ -66,27 +67,23 @@ void setup() {
 // -----------------------   Loop   ------------------------//
 // ---------------------------------------------------------//
 void loop() {
-//  isThereAMessageAddressedToThisSuit();
+  lookForAdminMessage();
   lookForTag();
 }
 
 
 // ---------------------------------------------------------//
-// ---  Look for general messages addressed to this suit  --//
+// ----  Look for admin messages addressed to this suit ----//
 // ---------------------------------------------------------//
-void isThereAMessageAddressedToThisSuit() {
-  if (Serial.read() == suit_ID) {
-    // there is a message for this suit
-    colourChangeInstruction = Serial.read();
+void lookForAdminMessage() {
+  if (Serial.read() == (unsigned char)suitAdminID) {
+    // there is an admin message for this suit
+    int colourSetInstruction = Serial.read();
     
-    if (debugging) Serial.print("General message received: ");
-    if (debugging) Serial.println(colourChangeInstruction);
-
-    if (colourChangeInstruction == 1) {
-      // confirm that the colour was changed
-      changeSuitColour(colourChangeInstruction);
-      Serial.write((unsigned char)suitConfirmationID);
-    }
+    initializeSuitColour(colourSetInstruction);
+    
+    // confirm that instruction was received
+    Serial.write((unsigned char)suitAdminID);
   }
 }
 
@@ -98,9 +95,7 @@ void lookForTag() {
   isThereATag();
 
   if (readCount > 1) {
-    // printCurrentTag();
     whoTaggedMe();
-    if (debugging) Serial.println("TAG FOUND");
   }
 }
 
@@ -110,7 +105,7 @@ void lookForTag() {
 // ---------------------------------------------------------//
 void sendToXBee() {
 
-  Serial.write(25);
+  Serial.write(99);
   Serial.write((unsigned char)suit_ID);
   Serial.write((unsigned char)tagger_ID);
 }
@@ -137,15 +132,15 @@ void isThereATag() {
 // ---------------------------------------------------------//
 void printCurrentTag() {
   
-  if (debugging) Serial.print("RFID Tag ID:");
+//  if (debugging) Serial.print("RFID Tag ID:");
   
   for (int n = 0; n < 5; n++) {
-    if (debugging) Serial.print(tagData[n], DEC);
+//    if (debugging) Serial.print(tagData[n], DEC);
     if (n < 4) {
-      if (debugging) Serial.print(", ");
+//      if (debugging) Serial.print(", ");
     }
   }
-  if (debugging) Serial.print("\n\r");
+//  if (debugging) Serial.print("\n\r");
 }
 
 
@@ -157,14 +152,12 @@ void whoTaggedMe() {
   verifyKey = false;
     
   i = 0;
-    
+  
   while (i < NUMBER_OF_CARDS && verifyKey == false) {
     
     verifyKey = rfiduino.compareTagData(tagData, keyTag[i]);
     
     if (verifyKey == true) {
-      if (debugging) Serial.print("Tagger = ");
-      if (debugging) Serial.println(i + 1);
       
       tagger_ID = i + 1;
       sendToXBee();
@@ -178,17 +171,39 @@ void whoTaggedMe() {
 
 
 // ---------------------------------------------------------//
+// ---------  Initialize suit colour at game start  --------//
+// ---------------------------------------------------------//
+void initializeSuitColour(int colour) {
+  
+  // 90 = blue
+  // 91 = red
+
+  digitalWrite(rfiduino.led1, LOW);
+  digitalWrite(rfiduino.led2, LOW);
+
+  if (colour == 90) {
+    digitalWrite(rfiduino.led2, HIGH);
+  }
+  else if (colour == 91) {
+    digitalWrite(rfiduino.led1, HIGH);
+  }
+}
+  
+  
+// ---------------------------------------------------------//
 // ------------  Change the colour of this suit  -----------//
 // ---------------------------------------------------------//
-void changeSuitColour(int instruction) {
+void changeSuitColour(unsigned instruction) {
+  rfiduino.errorSound();
+  debug(3, 2000);
 
-  // change LEDs to the other colour.
-  // if red, make them blue
-  // if blue, make them red.
-  if (debugging) Serial.print("Colour change: ");
-  if (debugging) Serial.println(instruction);
-
-  // TODO: add light change code here
+  if (instruction == 50) {
+    // TODO: change colour
+    rfiduino.successSound();
+  }
+  else if (instruction == 55) {
+    rfiduino.errorSound();
+  }
 }
 
 
@@ -200,30 +215,34 @@ void awaitInstruction() {
   instructionsHaveBeenReceived = 0;
   
   while (instructionsHaveBeenReceived == 0) {
-
-    if (debugging) Serial.print("Awaiting instructions... xbee.read() = ");
     
     unsigned char incoming = Serial.read();
-
-
-    if (debugging) Serial.println(incoming);
-  
+    
     if (incoming == ((unsigned char)suit_ID)) {
       
-      colourChangeInstruction = Serial.read();
+      unsigned char colourChangeInstruction = Serial.read();
+
+//      debug(colourChangeInstruction, 500);
+
+      // I counted 255 blinks, so Serial.read() is returning
+      // - 1 here for some reason.
       
-      if (debugging) Serial.print("Message received: ");
-      if (debugging) Serial.println(colourChangeInstruction);
-      
-      if (colourChangeInstruction == 50) {
+      if (colourChangeInstruction == (unsigned char)50) {
         changeSuitColour(colourChangeInstruction);
       }
       
-      // send confirmation to console that colour has changed
       Serial.write((unsigned char)suitConfirmationID);
-
+      
       instructionsHaveBeenReceived = 1;
-      if (debugging) Serial.println("Exiting while loop");
     }
+  }
+}
+
+void debug(int flickers, int gap) {
+  for (int i = 0; i < flickers; i++) {  
+    digitalWrite(rfiduino.led1,HIGH);
+    delay(gap);
+    digitalWrite(rfiduino.led1,LOW);
+    delay(gap);
   }
 }
