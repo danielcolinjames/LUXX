@@ -45,12 +45,15 @@ int lightColour = 0;
 
 //unsigned char colourChangeInstruction = 0;
 
-int instructionsHaveBeenReceived = 0;
+int waitingToBeAddressed = 0;
+int readyToReceive = 0;
+int receivingInstruction = 0;
 
 int suit_ID = 5;
 
 int suitConfirmationID = suit_ID + 10;
 int suitAdminID = suit_ID + 20;
+int suitReadyID = suit_ID + 30;
 
 int tagger_ID = 0;
 
@@ -212,28 +215,55 @@ void changeSuitColour(unsigned instruction) {
 // ---------------------------------------------------------//
 void awaitInstruction() {
   
-  instructionsHaveBeenReceived = 0;
+  waitingToBeAddressed = 0;
+  readyToReceive = 0;
+  receivingInstruction = 0
   
-  while (instructionsHaveBeenReceived == 0) {
+  // wait until this suit is addressed
+  while (waitingToBeAddressed == 0) {
     
-    unsigned char incoming = Serial.read();
+    // keep checking to see what's being received
+    unsigned char addressID = Serial.read();
     
-    if (incoming == ((unsigned char)suit_ID)) {
+    // this suit has been addressed
+    if (addressID == ((unsigned char)suit_ID)) {
       
-      unsigned char colourChangeInstruction = Serial.read();
-
-//      debug(colourChangeInstruction, 500);
-
-      // I counted 255 blinks, so Serial.read() is returning
-      // - 1 here for some reason.
-      
-      if (colourChangeInstruction == (unsigned char)50) {
-        changeSuitColour(colourChangeInstruction);
+      // wait until the console knows this suit is
+      // ready to receive a message
+      while (readyToReceive == 0) {
+        
+        // keep writing the suitReadyID until it receives
+        // confirmation that the next number is an instruction
+        Serial.write((unsigned char)suitReadyID);
+        
+        // keep checking to see what's being received
+        unsigned char readyID = Serial.read();
+        
+        // the console is saying the next number will be an instruction
+        if (readyID == (unsigned char)suitReadyID) {
+          
+          // wait until an instruction has been received
+          while (receivingInstruction == 0) {
+          
+            // keep checking to see what's being received
+            unsigned char colourChangeInstruction = Serial.read();
+            
+            // an instruction has been received
+            if (colourChangeInstruction == (unsigned char)50 || colourChangeInstruction == (unsigned char) 55) {
+              
+              // pass the instruction on to the suit's LEDs
+              changeSuitColour(colourChangeInstruction);
+              
+              // tell the console it can stop sending instruction
+              Serial.write((unsigned char)suitConfirmationID);
+              
+              // exit both while loops
+              readyToReceive = 1;
+              receivingInstruction = 1;
+            }
+          }
+        }
       }
-      
-      Serial.write((unsigned char)suitConfirmationID);
-      
-      instructionsHaveBeenReceived = 1;
     }
   }
 }
