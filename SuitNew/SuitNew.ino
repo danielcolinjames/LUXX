@@ -51,9 +51,11 @@ int receivingInstruction = 0;
 
 int suit_ID = 5;
 
-int suitConfirmationID = suit_ID + 10;
-int suitAdminID = suit_ID + 20;
-int suitReadyID = suit_ID + 30;
+int suitAdminID = suit_ID + 80;
+
+int suitReadyID = suit_ID + 10;
+
+int suitConfirmationID = suit_ID + 20;
 
 int tagger_ID = 0;
 
@@ -217,7 +219,7 @@ void awaitInstruction() {
   
   waitingToBeAddressed = 0;
   readyToReceive = 0;
-  receivingInstruction = 0
+  receivingInstruction = 0;
   
   // wait until this suit is addressed
   while (waitingToBeAddressed == 0) {
@@ -268,6 +270,10 @@ void awaitInstruction() {
   }
 }
 
+
+// ---------------------------------------------------------//
+// ---------  For debugging with the RFIDuino LEDs  --------//
+// ---------------------------------------------------------//
 void debug(int flickers, int gap) {
   for (int i = 0; i < flickers; i++) {  
     digitalWrite(rfiduino.led1,HIGH);

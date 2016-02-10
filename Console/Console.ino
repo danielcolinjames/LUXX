@@ -8,23 +8,52 @@ int stateArray[] = { 90, 90, 90, 90, 90, 90, 90, 90, 90, 90 };
 unsigned char suit_ID = 0;
 unsigned char tagger_ID = 0;
 
-int suitConfirmationID = suit_ID + 10;
-int taggerConfirmationID = tagger_ID + 10;
-
-int suitAdminID = suit_ID + 20;
-int taggerAdminID = tagger_ID + 20;
-
-boolean allConfirmationsReceived = false;
-
-boolean suitConfirmed = false;
-boolean taggerConfirmed = false;
-
-int confirmationReceived = 0;
-
-// 1 = viral tag
 int gameMode = 1;
 
 unsigned char colourChangeInstruction = 0;
+
+/*
+ The numbers being added to the suit IDs below are arbitrary. 
+
+ They correspond to different stages in the communication.
+ 
+ This is done to block off sets of 10 numbers that are different 
+ from the suit IDs themselves, but still unique to each suit. This
+ is ultimately done to avoid any repeated numbers being sent.
+*/
+
+// admin messages are sent at the start of a new game
+// and they tell each suit which colour it starts as
+// ---------------------------------------------------
+int suitAdminID = suit_ID + 80;
+int taggerAdminID = tagger_ID + 80;
+
+
+
+// the readyID tells the console this suit is ready to
+// receive a colour instruction.
+// ---------------------------------------------------
+int suitReadyID = suit_ID + 10;
+int taggerReadyID = tagger_ID + 10;
+
+
+
+// the confirmationID tells the console that this suit
+// has received the instruction and updated itself.
+// ---------------------------------------------------
+int suitConfirmationID = suit_ID + 20;
+int taggerConfirmationID = tagger_ID + 20;
+
+
+
+// These booleans are conditions for the receiving loop.
+// ---------------------------------------------------
+boolean suitConfirmed = false;
+boolean taggerConfirmed = false;
+
+boolean allConfirmationsReceived = false;
+
+
 
 
 // ---------------------------------------------------------//
@@ -57,7 +86,8 @@ void loop() {
   if (incoming == 99) {
     startNumberFound = true;
     Serial.println();
-    Serial.println("----------------------- MESSAGE RECEIVED ---------------------");
+    Serial.print("----------------------- MESSAGE ");
+    Serial.println("RECEIVED ---------------------");
   }
   else {
     startNumberFound = false;
@@ -107,13 +137,16 @@ void sendInstructions(int recepient, unsigned char message) {
 
   // suit_ID is currently equal to the suit tagged so
   // we need to address it in our instructions message
-  xbee.write((unsigned char)recepient);
-//  Serial.print("Sending to: ");
-//  Serial.println(recepient);
   
+  xbee.write((unsigned char)recepient);
+  //  Serial.print("Sending to: ");
+  //  Serial.println(recepient);
+    
   xbee.write((unsigned char)message);
-//  Serial.print("Message sent: ");
-//  Serial.println(message);
+  //  Serial.print("Message sent: ");
+  //  Serial.println(message);
+  
+ 
 }
 
 
@@ -131,6 +164,7 @@ void awaitConfirmation() {
 
   // confirmationIDs are another block of numbers so there are no 
   // repeated numbers being transmitted between XBees.
+  
   suitConfirmationID = suit_ID + 10;
   taggerConfirmationID = tagger_ID + 10;
   
@@ -191,7 +225,8 @@ void awaitConfirmation() {
           stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];
         }
         allConfirmationsReceived = true;
-        Serial.println("---------- CONFIRMATION RECEIVED, EXITING WHILE LOOP ---------");
+        Serial.print("---------- CONFIRMATION RECEIVED");
+        Serial.println(", EXITING WHILE LOOP ---------");
         Serial.println();
       }
     }
