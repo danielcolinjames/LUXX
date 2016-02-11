@@ -12,6 +12,12 @@ int gameMode = 1;
 
 unsigned char colourChangeInstruction = 0;
 
+boolean suitIsReadyToReceive = false;
+boolean suitHasReceivedInstruction = false;
+
+boolean taggerIsReadyToReceive = false;
+boolean taggerHasReceivedInstruction = false;
+
 /*
  The numbers being added to the suit IDs below are arbitrary. 
 
@@ -130,132 +136,166 @@ void shouldSuitChangeColour() {
 }
 
 
-// ---------------------------------------------------------//
-// ----- Tell the suit whether or not to change colour -----//
-// ---------------------------------------------------------//
-void sendInstructions(int recepient, unsigned char message) {
-
-  // suit_ID is currently equal to the suit tagged so
-  // we need to address it in our instructions message
-  
-  xbee.write((unsigned char)recepient);
-  //  Serial.print("Sending to: ");
-  //  Serial.println(recepient);
-    
-  xbee.write((unsigned char)message);
-  //  Serial.print("Message sent: ");
-  //  Serial.println(message);
-  
- 
-}
-
 
 // ---------------------------------------------------------//
-// ---  Wait for confirmation that suit received message ---//
+// ---  Sends instruction to suit and confirms reception ---//
 // ---------------------------------------------------------//
 void awaitConfirmation() {
-  
-  // we have determined whether or not the suits are the same colour
-  // and we have sent instructions to one or both suits telling them
-  // whether or not they have to change colour.
 
-  // now we have to wait for their confirmation codes so that we can
-  // update the state array, knowing that they have changed colours.
+  suitIsReadyToReceive = false;
+  suitHasReceivedInstruction = false;
 
-  // confirmationIDs are another block of numbers so there are no 
-  // repeated numbers being transmitted between XBees.
-  
-  suitConfirmationID = suit_ID + 10;
-  taggerConfirmationID = tagger_ID + 10;
-  
-  suitAdminID = suit_ID;
-  taggerAdminID = tagger_ID;
-  
-  allConfirmationsReceived = false;
-  
-  suitConfirmed = false;
-  taggerConfirmed = false;
-  
-  while (allConfirmationsReceived == false) {
+  taggerIsReadyToReceive = false;
+  taggerHasReceivedInstruction = false;
 
-    // Step 1: send instructions until the loop is exited
-    
-    // VIRAL TAG
-    // only the tagged suit needs to send a confirmation
-    if (gameMode == 1) {
-      sendInstructions(suit_ID, (unsigned char) colourChangeInstruction);
+  if (gameMode == 1) {
+    while (suitIsReadyToReceive == false) {
+      xbee.write(suit_ID);
+      
       Serial.print("Sending: ");
-      Serial.print(colourChangeInstruction);
-      Serial.print(" to suit: ");
-      Serial.println(suit_ID);
-    }
-
-    // NORMAL TAG
-    // the person who was "it" is no longer "it," so they
-    // have to change colour as well.
-    else if (gameMode == 2) {
-      sendInstructions(suit_ID, colourChangeInstruction);
-      sendInstructions(tagger_ID, colourChangeInstruction);
-      Serial.print("Sending: ");
-      Serial.print(colourChangeInstruction);
-      Serial.print(" to (suit_ID) suit: ");
-      Serial.print(suit_ID);
-      Serial.print(", and (tagger_ID) suit: ");
-      Serial.println(tagger_ID);
-    }
-    
-
-    // read from the XBee (into variable)
-    unsigned char incoming = xbee.read();
-    
-    Serial.print("Incoming message: ");
-    Serial.println(incoming);
-
-    // if it's viral tag, we only need confirmation
-    // from the suit that was tagged.
-    
-    if (gameMode == 1) {
-      if (incoming == (unsigned char)suitConfirmationID || incoming == (unsigned char)suitAdminID) {
-        if (colourChangeInstruction == 50) {
-          // this statement is skipped when awaitConfirmation()
-          // is called from initializeColours()
+      Serial.print(suitAdminID);
+      Serial.print(", looking for: ");
+      Serial.print(suitReadyID);
+  
+      unsigned char temp = xbee.read();
+      Serial.print(", receiving: ");
+      Serial.println(temp);
+      
+      if (temp == suitReadyID) {
+        suitIsReadyToReceive = true;
+        
+        while (suitHasReceivedInstruction == false) {
+          xbee.write(colourChangeInstruction);
           
-          // update the state array to record the colour change.
-          // - 1 because the suit_IDs go from 1-10 instead of 0-9
-          stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];
+          Serial.print("Sending: ");
+          Serial.print(suitAdminID);
+          Serial.print(", looking for: ");
+          Serial.print(suitReadyID);
+      
+          unsigned char temp = xbee.read();
+          Serial.print(", receiving: ");
+          Serial.println(temp);
+      
+          if (temp == suitConfirmationID) {
+            
+            Serial.println("------------------ SUIT HAS RECEIVED MESSAGE -----------------");
+
+            suitHasReceivedInstruction = true;
+            if (colourChangeInstruction == 50) {
+              stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];
+            }
+          }
         }
+      }
+    }
+  }
+  
+  else if (gameMode == 2) {
+    unsigned char incoming = xbee.read();
+
+    int suitCurrentColour = 0;
+    
+    allConfirmationsReceived = false;
+    
+    while (allConfirmationsReceived == false) {
+      
+      while (suitIsReadyToReceive == false) {
+        xbee.write(suit_ID);
+        
+        if (xbee.read() == suitReadyID) {
+          suitIsReadyToReceive = true;
+          
+          while (suitHasReceivedInstruction == false) {
+            xbee.write(colourChangeInstruction);
+
+            if (xbee.read() == suitConfirmationID) {
+              
+              suitHasReceivedInstruction = true;
+
+              if (colourChangeInstruction == 50) {
+                suitCurrentColour = stateArray[suit_ID - 1];
+            
+                stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];
+              }
+            }
+          }
+        }
+      }
+      
+      while (taggerIsReadyToReceive == false) {
+        xbee.write(tagger_ID);
+        
+        if (xbee.read() == taggerReadyID) {
+          taggerIsReadyToReceive = true;
+          
+          while (taggerHasReceivedInstruction == false) {
+            xbee.write(colourChangeInstruction);
+
+            if (xbee.read() == taggerConfirmationID) {
+              taggerHasReceivedInstruction = true;
+
+              if (colourChangeInstruction == 50) {
+                stateArray[tagger_ID - 1] = suitCurrentColour;
+              }
+            }
+          }
+        }
+      }
+      
+      if (suitHasReceivedInstruction && taggerHasReceivedInstruction) {
         allConfirmationsReceived = true;
+        
         Serial.print("---------- CONFIRMATION RECEIVED");
         Serial.println(", EXITING WHILE LOOP ---------");
         Serial.println();
       }
     }
+  }
+}
 
-    // but in "normal" tag, the person who was "it" needs
-    // to send a confirmation as well.
+
+// ---------------------------------------------------------//
+// --------------- Send out an admin message  --------------//
+// ---------------------------------------------------------//
+void sendAdminMessage() {
+  
+  suitIsReadyToReceive = false;
+  suitHasReceivedInstruction = false;
+
+  xbee.listen();
+  
+  while (suitIsReadyToReceive == false) {
+    xbee.write(suitAdminID);
     
-    if (gameMode == 2) {
-      if (suitConfirmed == false && incoming == suitConfirmationID) {
-        if (colourChangeInstruction == 50) {
-        // update the state array to record the colour change.
-        // - 1 because the suit_IDs go from 1-10 instead of 0-9
-        stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];
-        }
-      }
+    Serial.print("STEP 1 - Sending: ");
+    Serial.print(suitAdminID);
+    Serial.print(", looking for: ");
+    Serial.print(suitReadyID);
+    Serial.print(", receiving: ");
+    Serial.println("(put xbee.read() here)");
+    
+    if (xbee.read() == suitReadyID) {
+      suitIsReadyToReceive = true;
       
-      if (taggerConfirmed == false && incoming == taggerConfirmationID) {
-        if (colourChangeInstruction == 50) {
+      while (suitHasReceivedInstruction == false) {
+        xbee.write(colourChangeInstruction);
 
-          // store the suit's state in a temporary variable before we change it
-          int suitCurrentColour = stateArray[suit_ID - 1];
+        Serial.print("STEP 2 - Sending: ");
+        Serial.print(colourChangeInstruction);
+        Serial.print(", looking for: ");
+        Serial.print(suitConfirmationID);
+        Serial.print(", receiving: ");
+        Serial.println("(put xbee.read() here)");
         
-          stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];
-          stateArray[tagger_ID - 1] = suitCurrentColour;
+        if (xbee.read() == suitConfirmationID) {
+          xbee.write((unsigned char)77);
+          
+          Serial.println("------------------ ADMIN COMMAND COMPLETE -----------------");
+          suitHasReceivedInstruction = true;
+          if (colourChangeInstruction == 50) {
+            stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];
+          }
         }
-      }
-      
-      if (suitConfirmed == true && taggerConfirmed == true) {
-        allConfirmationsReceived == true;
       }
     }
   }
@@ -320,12 +360,16 @@ void initializeColours() {
    Serial.print("----------------------- INITIALIZING SUIT  >  ");
    Serial.print(i + 1);
    Serial.println("  < ---------------------");
-
+   
+    suit_ID = i + 1;
+    suitAdminID = suit_ID + 80;
+    suitReadyID = suit_ID + 10;
+    suitConfirmationID = suit_ID + 20;
+    
     if (i == 4) {
-      suit_ID = i + 1 + 20;
-      tagger_ID = i + 1 + 20;
-      colourChangeInstruction = stateArray[i];
-      awaitConfirmation();
+      
+      colourChangeInstruction = (unsigned char)stateArray[i];
+      sendAdminMessage();
     }
   }
 }
@@ -334,7 +378,7 @@ void initializeColours() {
 // ---------------------------------------------------------//
 // ----------   Prints out the state of each suit  ---------//
 // ---------------------------------------------------------//
-void printOutStates() {
+void printOutStates() {;
 
   // sizeof is weird and needs to be converted to int first
   Serial.println();

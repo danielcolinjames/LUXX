@@ -45,9 +45,9 @@ int lightColour = 0;
 
 //unsigned char colourChangeInstruction = 0;
 
-int waitingToBeAddressed = 0;
-int readyToReceive = 0;
-int receivingInstruction = 0;
+boolean waitingToBeAddressed = true;
+boolean readyToReceive = true;
+boolean receivingInstruction = true;
 
 int suit_ID = 5;
 
@@ -81,16 +81,39 @@ void loop() {
 // ----  Look for admin messages addressed to this suit ----//
 // ---------------------------------------------------------//
 void lookForAdminMessage() {
+  
+  boolean confirmationReceived = false;
+  
+  waitingToBeAddressed = true;
+  receivingInstruction = true;
+  
   if (Serial.read() == (unsigned char)suitAdminID) {
-    // there is an admin message for this suit
-    int colourSetInstruction = Serial.read();
     
-    initializeSuitColour(colourSetInstruction);
-    
-    // confirm that instruction was received
-    Serial.write((unsigned char)suitAdminID);
+    while (receivingInstruction == true) {
+      Serial.write((unsigned char)suitReadyID);
+      
+      unsigned char instruction = Serial.read();
+      
+      if (instruction == (unsigned char)90 || instruction == (unsigned char)91) {
+        receivingInstruction = false;
+
+        while (confirmationReceived == false) {
+          Serial.write((unsigned char)suitConfirmationID);
+
+          if (Serial.read() == (unsigned char)77) {
+            confirmationReceived = true;
+          }
+        }
+        
+        rfiduino.successSound();
+        
+        // instruction received.        
+        initializeSuitColour(instruction);
+      }
+    }
   }
 }
+
 
 
 // ---------------------------------------------------------//
@@ -198,16 +221,15 @@ void initializeSuitColour(int colour) {
 // ---------------------------------------------------------//
 // ------------  Change the colour of this suit  -----------//
 // ---------------------------------------------------------//
-void changeSuitColour(unsigned instruction) {
+void changeSuitColour(unsigned char instruction) {
   rfiduino.errorSound();
-  debug(3, 2000);
-
+  
   if (instruction == 50) {
     // TODO: change colour
-    rfiduino.successSound();
+//    rfiduino.successSound();
   }
   else if (instruction == 55) {
-    rfiduino.errorSound();
+//    rfiduino.errorSound();
   }
 }
 
@@ -217,58 +239,31 @@ void changeSuitColour(unsigned instruction) {
 // ---------------------------------------------------------//
 void awaitInstruction() {
   
-  waitingToBeAddressed = 0;
-  readyToReceive = 0;
-  receivingInstruction = 0;
+  waitingToBeAddressed = true;
+  receivingInstruction = true;
   
-  // wait until this suit is addressed
-  while (waitingToBeAddressed == 0) {
+  while (waitingToBeAddressed == true) {
     
-    // keep checking to see what's being received
-    unsigned char addressID = Serial.read();
-    
-    // this suit has been addressed
-    if (addressID == ((unsigned char)suit_ID)) {
-      
-      // wait until the console knows this suit is
-      // ready to receive a message
-      while (readyToReceive == 0) {
-        
-        // keep writing the suitReadyID until it receives
-        // confirmation that the next number is an instruction
-        Serial.write((unsigned char)suitReadyID);
-        
-        // keep checking to see what's being received
-        unsigned char readyID = Serial.read();
-        
-        // the console is saying the next number will be an instruction
-        if (readyID == (unsigned char)suitReadyID) {
-          
-          // wait until an instruction has been received
-          while (receivingInstruction == 0) {
-          
-            // keep checking to see what's being received
-            unsigned char colourChangeInstruction = Serial.read();
-            
-            // an instruction has been received
-            if (colourChangeInstruction == (unsigned char)50 || colourChangeInstruction == (unsigned char) 55) {
-              
-              // pass the instruction on to the suit's LEDs
-              changeSuitColour(colourChangeInstruction);
-              
-              // tell the console it can stop sending instruction
-              Serial.write((unsigned char)suitConfirmationID);
-              
-              // exit both while loops
-              readyToReceive = 1;
-              receivingInstruction = 1;
-            }
-          }
+    if (Serial.read() == suit_ID) {
+      waitingToBeAddressed = false;
+
+      while (receivingInstruction == true) {
+        Serial.write(suitReadyID);
+
+        unsigned char instruction = Serial.read();
+        if (instruction == 50 || instruction == 55) {
+          receivingInstruction = false;
+
+          // instruction received.
+          Serial.write(suitConfirmationID);
+
+          changeSuitColour(instruction);
         }
       }
     }
   }
 }
+
 
 
 // ---------------------------------------------------------//
