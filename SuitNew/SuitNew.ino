@@ -14,17 +14,22 @@
  suit_ID + 20 (21 to 30) = admin messages addressed to this suit
  
 */
-
+#include <Adafruit_NeoPixel.h>
 #include <SoftwareSerial.h>
 #include <RFIDuino.h>
+
+#define PIN 9
+#define NUMPIXELS 16
 
 // ---------------------------------------------------------//
 // -------------------   Global variables  -----------------//
 // ---------------------------------------------------------//
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 RFIDuino rfiduino(1.1);
 
 #define NUMBER_OF_CARDS 4
+
 
 byte tagData[5]; // holds the ID numbers from the tag
 byte tagDataBuffer[5]; // a buffer for verifying the tag data
@@ -41,7 +46,7 @@ byte keyTag[NUMBER_OF_CARDS][5] ={
   {69, 0, 124, 57, 143},    //Tag 4
 };
 
-int lightColour = 0;
+int currentColour = 0;
 
 //unsigned char colourChangeInstruction = 0;
 
@@ -65,6 +70,8 @@ int tagger_ID = 0;
 // ---------------------------------------------------------//
 void setup() {
   Serial.begin(9600);
+  pixels.begin();
+  setSuitColour(255, 255, 255);
 }
 
 
@@ -74,6 +81,22 @@ void setup() {
 void loop() {
   lookForAdminMessage();
   lookForTag();
+//  oneByOne(255, 255, 255);
+}
+
+
+void oneByOne(int r, int g, int b) {
+   for (int i = 0; i < NUMPIXELS; i++) {
+
+    pixels.setPixelColor(i, pixels.Color(r, g, b)); // Moderately bright green color.
+    
+    if (i > 1) {
+      pixels.setPixelColor(i - 1, pixels.Color(0, 0, 0));
+    }
+    delay(25);
+    
+    pixels.show();
+  }
 }
 
 
@@ -86,6 +109,7 @@ void lookForAdminMessage() {
   
   waitingToBeAddressed = true;
   receivingInstruction = true;
+
   
   if (Serial.read() == (unsigned char)suitAdminID) {
     
@@ -96,16 +120,15 @@ void lookForAdminMessage() {
       
       if (instruction == (unsigned char)90 || instruction == (unsigned char)91) {
         receivingInstruction = false;
-
+        
         while (confirmationReceived == false) {
           Serial.write((unsigned char)suitConfirmationID);
 
           if (Serial.read() == (unsigned char)77) {
             confirmationReceived = true;
+
           }
         }
-        
-        rfiduino.successSound();
         
         // instruction received.        
         initializeSuitColour(instruction);
@@ -140,6 +163,30 @@ void sendToXBee() {
 
 
 // ---------------------------------------------------------//
+// -----------  Light up the LEDs on the suit  -------------//
+// ---------------------------------------------------------//
+void setSuitColour(int r, int g, int b) {
+
+  for (int i = 0; i < NUMPIXELS; i++) {
+
+    pixels.setPixelColor(i, pixels.Color(r, g, b)); // Moderately bright green color.
+    
+//    if (i > 1) {
+//      pixels.setPixelColor(i - 1, pixels.Color(0, 0, 0));
+//    }
+    
+    delay(100);
+
+    pixels.show();
+  }
+
+  debug(25, 75);
+//  rfiduino.successSound();
+
+}
+
+
+// ---------------------------------------------------------//
 // -----  Figure out if there is a tag on the reader  ------//
 // ---------------------------------------------------------//
 void isThereATag() {
@@ -153,6 +200,7 @@ void isThereATag() {
     readCount = 0;
   }
 }
+
 
 
 // ---------------------------------------------------------//
@@ -206,14 +254,13 @@ void initializeSuitColour(int colour) {
   // 90 = blue
   // 91 = red
 
-  digitalWrite(rfiduino.led1, LOW);
-  digitalWrite(rfiduino.led2, LOW);
-
   if (colour == 90) {
-    digitalWrite(rfiduino.led2, HIGH);
+    currentColour = 90;
+    setSuitColour(0, 0, 255);
   }
   else if (colour == 91) {
-    digitalWrite(rfiduino.led1, HIGH);
+    currentColour = 91;
+    setSuitColour(255, 0, 0);
   }
 }
   
@@ -221,15 +268,15 @@ void initializeSuitColour(int colour) {
 // ---------------------------------------------------------//
 // ------------  Change the colour of this suit  -----------//
 // ---------------------------------------------------------//
-void changeSuitColour(unsigned char instruction) {
-  rfiduino.errorSound();
+void changeSuitColour() {
   
-  if (instruction == 50) {
-    // TODO: change colour
-//    rfiduino.successSound();
+  if (currentColour == 90) {
+    setSuitColour(255, 0, 0);
+    currentColour = 91;
   }
-  else if (instruction == 55) {
-//    rfiduino.errorSound();
+  else if (currentColour == 91) {
+    setSuitColour(0, 0, 255);
+    currentColour = 90;
   }
 }
 
@@ -256,8 +303,9 @@ void awaitInstruction() {
 
           // instruction received.
           Serial.write(suitConfirmationID);
-
-          changeSuitColour(instruction);
+          if (instruction == 50) {
+            changeSuitColour();
+          }
         }
       }
     }

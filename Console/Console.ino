@@ -68,7 +68,7 @@ boolean allConfirmationsReceived = false;
 void setup() {
 
   Serial.begin(9600);
-  Serial.println("START");
+  Serial.println("START GAME");
 
   xbee.begin(9600);
   delay(10);
@@ -110,6 +110,12 @@ void loop() {
     Serial.print("  <     WAS TAGGED BY SUIT:     >  ");
     Serial.print(tagger_ID);
     Serial.println("  <");
+
+    suitReadyID = suit_ID + 10;
+    suitConfirmationID = suit_ID + 20;
+    
+    taggerReadyID = tagger_ID + 10;
+    taggerConfirmationID = tagger_ID + 20;
     
     // determine instructions
     shouldSuitChangeColour();
@@ -153,35 +159,48 @@ void awaitConfirmation() {
       xbee.write(suit_ID);
       
       Serial.print("Sending: ");
-      Serial.print(suitAdminID);
+      Serial.print(suit_ID);
       Serial.print(", looking for: ");
       Serial.print(suitReadyID);
-  
-      unsigned char temp = xbee.read();
-      Serial.print(", receiving: ");
-      Serial.println(temp);
       
-      if (temp == suitReadyID) {
+      unsigned char incomingReadyID = 0;
+
+      while (xbee.available() > 0) {
+        incomingReadyID = xbee.read();
+      }
+      
+      Serial.print(", receiving: ");
+      Serial.println(incomingReadyID);
+      
+      if (incomingReadyID == suitReadyID) {
         suitIsReadyToReceive = true;
         
         while (suitHasReceivedInstruction == false) {
           xbee.write(colourChangeInstruction);
           
           Serial.print("Sending: ");
-          Serial.print(suitAdminID);
+          Serial.print(colourChangeInstruction);
           Serial.print(", looking for: ");
-          Serial.print(suitReadyID);
+          Serial.print(suitConfirmationID);
       
-          unsigned char temp = xbee.read();
+          unsigned char incomingConfirmationID = 0;
+
+          while (xbee.available() > 0) {
+            incomingConfirmationID = xbee.read();
+          }
+          
           Serial.print(", receiving: ");
-          Serial.println(temp);
+          Serial.println(incomingConfirmationID);
       
-          if (temp == suitConfirmationID) {
+          if (incomingConfirmationID == suitConfirmationID) {
             
             Serial.println("------------------ SUIT HAS RECEIVED MESSAGE -----------------");
 
             suitHasReceivedInstruction = true;
             if (colourChangeInstruction == 50) {
+              
+              changeSuitColour();
+              
               stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];
             }
           }
@@ -261,8 +280,6 @@ void sendAdminMessage() {
   
   suitIsReadyToReceive = false;
   suitHasReceivedInstruction = false;
-
-  xbee.listen();
   
   while (suitIsReadyToReceive == false) {
     xbee.write(suitAdminID);
@@ -271,10 +288,21 @@ void sendAdminMessage() {
     Serial.print(suitAdminID);
     Serial.print(", looking for: ");
     Serial.print(suitReadyID);
-    Serial.print(", receiving: ");
-    Serial.println("(put xbee.read() here)");
+
+    xbee.listen();
     
-    if (xbee.read() == suitReadyID) {
+    Serial.print(", receiving: ");
+    unsigned char incomingReadyID = 0;
+    
+    while (xbee.available() > 0) {
+      incomingReadyID = xbee.read();
+    }
+    
+    Serial.println(incomingReadyID);
+    
+    xbee.listen();
+    
+    if (incomingReadyID == suitReadyID) {
       suitIsReadyToReceive = true;
       
       while (suitHasReceivedInstruction == false) {
@@ -284,17 +312,31 @@ void sendAdminMessage() {
         Serial.print(colourChangeInstruction);
         Serial.print(", looking for: ");
         Serial.print(suitConfirmationID);
-        Serial.print(", receiving: ");
-        Serial.println("(put xbee.read() here)");
+
+        xbee.listen();
+
+        unsigned char incomingConfirmation = 0;
         
-        if (xbee.read() == suitConfirmationID) {
+        while (xbee.available() > 0) {
+            incomingConfirmation = xbee.read();
+        }
+        
+        Serial.print(", receiving: ");
+        Serial.println(incomingConfirmation);
+
+        xbee.listen();
+        
+        if (incomingConfirmation == suitConfirmationID) {
+          
           xbee.write((unsigned char)77);
           
-          Serial.println("------------------ ADMIN COMMAND COMPLETE -----------------");
+
+          Serial.println("------------------- ADMIN COMMAND COMPLETE --------------------");
           suitHasReceivedInstruction = true;
           if (colourChangeInstruction == 50) {
             stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];
           }
+          
         }
       }
     }
@@ -363,6 +405,7 @@ void initializeColours() {
    
     suit_ID = i + 1;
     suitAdminID = suit_ID + 80;
+    
     suitReadyID = suit_ID + 10;
     suitConfirmationID = suit_ID + 20;
     
@@ -372,7 +415,9 @@ void initializeColours() {
       sendAdminMessage();
     }
   }
+  printOutStates();
 }
+
 
 
 // ---------------------------------------------------------//
