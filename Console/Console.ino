@@ -83,7 +83,6 @@ void setup() {
 // -------------------------  Loop  ------------------------//
 // ---------------------------------------------------------//
 void loop() {
- 
   unsigned char incoming = xbee.read();
   boolean startNumberFound = false;
   
@@ -198,9 +197,7 @@ void awaitConfirmation() {
 
             suitHasReceivedInstruction = true;
             if (colourChangeInstruction == 50) {
-              
-              changeSuitColour();
-              
+                            
               stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];
             }
           }
@@ -336,7 +333,6 @@ void sendAdminMessage() {
           if (colourChangeInstruction == 50) {
             stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];
           }
-          
         }
       }
     }

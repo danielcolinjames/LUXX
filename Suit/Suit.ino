@@ -2,47 +2,86 @@
 /*
  CHART OF VALUES
  
- 25 = start bit for SUIT TAGGED message to console
- 45 = error
+ 99 = start bit for "I've been tagged" message to console
+ 
+ 90 = blue
+ 91 = red
+
  50 = change colour
  55 = don't change colour
- suit_ID + 10 = confirmation that [suit_ID] has changed colour
  
- */
+ suit_ID + 10 (11 to 20) = confirmation that instruction was received
+ suit_ID + 20 (21 to 30) = admin messages addressed to this suit
+ 
+*/
+#include <Adafruit_NeoPixel.h>
 #include <SoftwareSerial.h>
+#include <RFIDuino.h>
 
+#define PIN 9
+#define NUMPIXELS 16
 
 // ---------------------------------------------------------//
 // -------------------   Global variables  -----------------//
 // ---------------------------------------------------------//
-SoftwareSerial rfid(7, 8);
-SoftwareSerial xbee(10, 9);
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
-int currentTag[11];
+RFIDuino rfiduino(1.1);
 
-int tagFoundFlag = 0;
+#define NUMBER_OF_CARDS 4
 
-int colourChangeInstruction = 0;
 
-int instructionsHaveBeenReceived = 0;
+byte tagData[5]; // holds the ID numbers from the tag
+byte tagDataBuffer[5]; // a buffer for verifying the tag data
 
-int suit_ID = 1;
-int suitConfirmationID = suit_ID + 10;
+int loopCounter = 0;
+
+int readCount = 0;
+boolean tagCheck = false;
+boolean verifyKey = false;
+int i;
+
+byte keyTag[NUMBER_OF_CARDS][5] ={
+  {62, 0, 183, 134, 238},   //Tag 1
+  {69, 0, 247, 211, 210},   //Tag 2
+  {71, 0, 48, 85, 67},      //Tag 3
+  {69, 0, 124, 57, 143},    //Tag 4
+};
+
+int currentColour = 0;
+
+int rVal = 0;
+int gVal = 0;
+int bVal = 0;
+
+//unsigned char colourChangeInstruction = 0;
+
+boolean waitingToBeAddressed = true;
+boolean readyToReceive = true;
+boolean receivingInstruction = true;
+
+int suit_ID = 5;
+
+int suitAdminID = suit_ID + 80;
+
+int suitReadyID = suit_ID + 10;
+
+int suitConfirmationID = suit_ID + 20;
 
 int tagger_ID = 0;
+
+unsigned long prevMillis = millis();
 
 
 // ---------------------------------------------------------//
 // ----------------------   Setup   ------------------------//
 // ---------------------------------------------------------//
 void setup() {
-
   Serial.begin(9600);
-
-  xbee.begin(9600);
-  rfid.begin(19200);
-
-  halt();
+  pixels.begin();
+  rVal = 255;
+  gVal = 255;
+  bVal = 255;
 }
 
 
@@ -50,232 +89,22 @@ void setup() {
 // -----------------------   Loop   ------------------------//
 // ---------------------------------------------------------//
 void loop() {
-//  isThereAMessageAddressedToThisSuit();
+  lookForAdminMessage();
   lookForTag();
-}
+  
+  if (millis() - prevMillis > 100) {
+    prevMillis = millis();
 
-
-// ---------------------------------------------------------//
-// ---  Look for general messages addressed to this suit  --//
-// ---------------------------------------------------------//
-void isThereAMessageAddressedToThisSuit() {
-  if (xbee.read() == suit_ID) {
-    // there is a message for this suit
-    colourChangeInstruction = xbee.read();
-    
-    Serial.print("General message received: ");
-    Serial.println(colourChangeInstruction);
-
-    if (colourChangeInstruction == 1) {
-      // confirm that the colour was changed
-      changeSuitColour(colourChangeInstruction);
-      xbee.write(suitConfirmationID);
+    if (loopCounter > 0) {
+      turnOffPreviousLight(loopCounter - 1);
     }
-  }
-}
-
-
-// ---------------------------------------------------------//
-// ------  Looks for a tag, calls appropriate methods ------//
-// ---------------------------------------------------------//
-void lookForTag() {
-  
-  // tell the RFID reader to look for RFID tags
-  rfid.listen();
-  seek();
-  
-  delay(10);
-  
-  // write the RFID value into the currentTag[] array
-  parse();
     
-  // set tagFoundFlag
-  isThereATag();
-    
-  if (tagFoundFlag == 1) {
-
-    // print out RFID tag values
-    printTagNumber();
-  
-    // figure out which suit the current tag belongs to
-    whoTaggedMe();
-  
-    delay(10);
-  }
-}
-
-
-// ---------------------------------------------------------//
-// -------- Tells the RFID reader to look for a tag --------//
-// ---------------------------------------------------------//
-void seek() {
-
-  rfid.write((uint8_t)255);
-  rfid.write((uint8_t)0);
-  rfid.write((uint8_t)1);
-  rfid.write((uint8_t)130);
-  rfid.write((uint8_t)131);
-}
-
-
-// ---------------------------------------------------------//
-// ----- Tells the RFID reader NOT to look for a tag -------//
-// ---------------------------------------------------------//
-void halt() {
-
-  rfid.write((uint8_t)255);
-  rfid.write((uint8_t)0);
-  rfid.write((uint8_t)1);
-  rfid.write((uint8_t)147);
-  rfid.write((uint8_t)148);
-}
-
-
-// ---------------------------------------------------------//
-// ----  Put the RFID tag number's digits into an array ----//
-// ---------------------------------------------------------//
-void parse() {
-
-  while (rfid.available()) {
-    if (rfid.read() == 255) {
-      for (int i = 1; i < 11; i++) {
-        currentTag[i] = rfid.read();
-      }
+    if (loopCounter > 15) {
+      loopCounter = 0;
+      turnOffPreviousLight(15);
     }
-  }
-}
-
-
-// ---------------------------------------------------------//
-// ---  Says whether or not there is a tag on the reader ---//
-// ---------------------------------------------------------//
-void isThereATag() {
-
-  // tagFoundFlag increments when true instead of using a boolean value so that when a tag
-  // is held down on the RFID reader, it is only read once, until the tag is removed.
-
-  if (currentTag[2] == 6) {
-    tagFoundFlag++;
-  }
-  else {
-    tagFoundFlag = 0;
-  }
-}
-
-
-// ---------------------------------------------------------//
-// -------  Prints out the tag number (for debugging) ------//
-// ---------------------------------------------------------//
-void printTagNumber() {
-
-  if (tagFoundFlag == 1) {
-    /*
-    Serial.println((unsigned char)currentTag[5]);
-    Serial.println((unsigned char)currentTag[7]);
-    Serial.println((unsigned char)currentTag[8]);
-    Serial.println((unsigned char)currentTag[9]);
-    */
-  }
-}
-
-
-// ---------------------------------------------------------//
-// ------  Send suit_ID and tagger_ID to the console  ------//
-// ---------------------------------------------------------//
-void sendToXBee() {
-
-  xbee.write(25);
-  Serial.print("Start: ");
-  Serial.println(25);
-
-  xbee.write((unsigned char) suit_ID);
-  Serial.print("sID = ");
-  Serial.println(suit_ID);
-
-  xbee.write((unsigned char) tagger_ID);
-  Serial.print("tID = ");
-  Serial.println(tagger_ID);
-}
-
-
-// ---------------------------------------------------------//
-// --------  Figure out which suit tagged this one  --------//
-// ---------------------------------------------------------//
-void whoTaggedMe() {
-
-  if (((unsigned char)currentTag[5] == 18) &&
-    ((unsigned char)currentTag[7] == 175) &&
-    ((unsigned char)currentTag[8] == 202) &&
-    ((unsigned char)currentTag[9] == 239)) {
-
-    tagger_ID = 2;
-    sendToXBee();
-    awaitInstruction();
-  }
-
-  else if (((unsigned char)currentTag[5] == 65) &&
-    ((unsigned char)currentTag[7] == 13) &&
-    ((unsigned char)currentTag[8] == 11) &&
-    ((unsigned char)currentTag[9] == 189)) {
-
-    tagger_ID = 3;
-    sendToXBee();
-    awaitInstruction();
-  }
-  
-  // TODO: else if for suits 4 - 9
-
-}
-
-
-// ---------------------------------------------------------//
-// ------------  Change the colour of this suit  -----------//
-// ---------------------------------------------------------//
-void changeSuitColour(int instruction) {
-
-  // change LEDs to the other colour.
-  // if red, make them blue
-  // if blue, make them red.
-  Serial.print("Colour change: ");
-  Serial.println(instruction);
-
-  // TODO: add light change code here
-}
-
-
-// ---------------------------------------------------------//
-// ---------  Wait for a colour change instruction  --------//
-// ---------------------------------------------------------//
-void awaitInstruction() {
-  
-  instructionsHaveBeenReceived = 0;
-
-  xbee.listen();
-  
-  while (instructionsHaveBeenReceived == 0) {
     
-    Serial.print("Awaiting instructions... xbee.read() = ");
-    
-    unsigned char incoming = xbee.read();
-    
-    Serial.println(incoming);
-  
-    if (incoming == ((unsigned char)suit_ID)) {
-      
-      colourChangeInstruction = xbee.read();
-      
-      Serial.print("Message received: ");
-      Serial.println(colourChangeInstruction);
-      
-      if (colourChangeInstruction == 1) {
-        changeSuitColour(colourChangeInstruction);
-      }
-      
-      // send confirmation to console that colour has changed
-      xbee.write(suitConfirmationID);
-
-      instructionsHaveBeenReceived = 1;
-      Serial.println("Exiting while loop");
-    }
+    turnOnSingleLight(loopCounter);
+    loopCounter++;
   }
 }
