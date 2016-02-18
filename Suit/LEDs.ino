@@ -1,4 +1,41 @@
 // ---------------------------------------------------------//
+// --------  Turn off last light, turn on next one  --------//
+// ---------------------------------------------------------//
+void stepThroughLights() {
+
+  // compare current millis() reading to the last reading.
+  // if the difference is larger than 100 milliseconds, we
+  // need to move ahead one light.
+  
+  if ((millis() - prevMillis) > 100) {
+    
+    // assign the current value to a variable so that we
+    // can compare it the next time we enter this method
+    prevMillis = millis();
+
+    // as long as it's not light 0, turn off the one before it
+    if (loopCounter > 0) {
+      turnOffPreviousLight(loopCounter - 1);
+    }
+
+    // if we reach the last light, start back at 0 and turn
+    // off the last light.
+    if (loopCounter > 15) {
+      loopCounter = 0;
+      turnOffPreviousLight(15);
+    }
+
+    // turn on the next light in the sequence
+    turnOnNextLight(loopCounter);
+
+    // increment loopCounter to go to the next light
+    // the next time (millis() - prevMillis) > 100
+    loopCounter++;
+  }
+}
+
+
+// ---------------------------------------------------------//
 // -----------   Turn off the previous light   -------------//
 // ---------------------------------------------------------//
 void turnOffPreviousLight(int prevLight) {
@@ -10,7 +47,7 @@ void turnOffPreviousLight(int prevLight) {
 // ---------------------------------------------------------//
 // --------- Turn on the next light in the sequence --------//
 // ---------------------------------------------------------//
-void turnOnSingleLight(int currLight) {
+void turnOnNextLight(int currLight) {
   pixels.setPixelColor(currLight, pixels.Color(rVal, gVal, bVal));
   pixels.show();
 }

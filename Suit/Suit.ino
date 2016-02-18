@@ -72,6 +72,7 @@ int tagger_ID = 0;
 
 unsigned long prevMillis = millis();
 
+unsigned long timeoutMillis = millis();
 
 // ---------------------------------------------------------//
 // ----------------------   Setup   ------------------------//
@@ -91,20 +92,21 @@ void setup() {
 void loop() {
   lookForAdminMessage();
   lookForTag();
-  
-  if (millis() - prevMillis > 100) {
-    prevMillis = millis();
-
-    if (loopCounter > 0) {
-      turnOffPreviousLight(loopCounter - 1);
-    }
-    
-    if (loopCounter > 15) {
-      loopCounter = 0;
-      turnOffPreviousLight(15);
-    }
-    
-    turnOnSingleLight(loopCounter);
-    loopCounter++;
-  }
+  stepThroughLights();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

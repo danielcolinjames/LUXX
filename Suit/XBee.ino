@@ -19,10 +19,11 @@ void lookForAdminMessage() {
   waitingToBeAddressed = true;
   receivingInstruction = true;
 
-  
   if (Serial.read() == (unsigned char)suitAdminID) {
     
     while (receivingInstruction == true) {
+      if (checkForTimeout()) break;
+      
       Serial.write((unsigned char)suitReadyID);
       
       unsigned char instruction = Serial.read();
@@ -31,6 +32,8 @@ void lookForAdminMessage() {
         receivingInstruction = false;
         
         while (confirmationReceived == false) {
+          if (checkForTimeohut()) break;
+          
           Serial.write((unsigned char)suitConfirmationID);
 
           if (Serial.read() == (unsigned char)77) {
@@ -55,13 +58,16 @@ void awaitInstruction() {
   receivingInstruction = true;
   
   while (waitingToBeAddressed == true) {
+    if (checkForTimeout()) break;
     
     if (Serial.read() == suit_ID) {
       waitingToBeAddressed = false;
 
       while (receivingInstruction == true) {
+        if (checkForTimeout()) break;
+        
         Serial.write(suitReadyID);
-
+        
         unsigned char instruction = Serial.read();
         if (instruction == 50 || instruction == 55) {
           receivingInstruction = false;
@@ -82,3 +88,18 @@ void awaitInstruction() {
   }
   delay(250);
 }
+
+
+// ---------------------------------------------------------//
+// ------------------  Check for a timeout  ----------------//
+// ---------------------------------------------------------//
+boolean checkForTimeout() {
+  if ((millis() - timeoutMillis) > 2500) {
+    timeoutMillis = 0;
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+  

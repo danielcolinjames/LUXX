@@ -18,6 +18,9 @@ boolean suitHasReceivedInstruction = false;
 boolean taggerIsReadyToReceive = false;
 boolean taggerHasReceivedInstruction = false;
 
+unsigned long timeoutMillis = millis();
+
+
 /*
  The numbers being added to the suit IDs below are arbitrary. 
 
@@ -27,6 +30,7 @@ boolean taggerHasReceivedInstruction = false;
  from the suit IDs themselves, but still unique to each suit. This
  is ultimately done to avoid any repeated numbers being sent.
 */
+
 
 // admin messages are sent at the start of a new game
 // and they tell each suit which colour it starts as
@@ -279,6 +283,8 @@ void sendAdminMessage() {
   suitHasReceivedInstruction = false;
   
   while (suitIsReadyToReceive == false) {
+    if (checkForTimeout()) break;
+    
     xbee.write(suitAdminID);
     
     Serial.print("STEP 1 - Sending: ");
@@ -292,6 +298,8 @@ void sendAdminMessage() {
     unsigned char incomingReadyID = 0;
     
     while (xbee.available() > 0) {
+      if (checkForTimeout()) break;
+      
       incomingReadyID = xbee.read();
     }
     
@@ -303,6 +311,8 @@ void sendAdminMessage() {
       suitIsReadyToReceive = true;
       
       while (suitHasReceivedInstruction == false) {
+        if (checkForTimeout()) break;
+        
         xbee.write(colourChangeInstruction);
 
         Serial.print("STEP 2 - Sending: ");
@@ -327,8 +337,8 @@ void sendAdminMessage() {
           
           xbee.write((unsigned char)77);
           
-
-          Serial.println("------------------- ADMIN COMMAND COMPLETE --------------------");
+          Serial.print("------------------------- ");
+          Serial.println("ADMIN COMMAND COMPLETE -----------------------");
           suitHasReceivedInstruction = true;
           if (colourChangeInstruction == 50) {
             stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];
@@ -434,3 +444,22 @@ void printOutStates() {;
   
   Serial.println();
 }
+
+
+
+// ---------------------------------------------------------//
+// ------------------  Check for a timeout  ----------------//
+// ---------------------------------------------------------//
+boolean checkForTimeout() {
+  if ((millis() - timeoutMillis) > 2000) {
+    timeoutMillis = 0;
+    Serial.print("------------------!!!!!!!! XBEE HAS ");
+    Serial.println("TIMED OUT !!!!!!!!!-----------------");
+    Serial.println();
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
