@@ -7,7 +7,7 @@ void stepThroughLights() {
   // if the difference is larger than 100 milliseconds, we
   // need to move ahead one light.
   
-  if ((millis() - prevMillis) > 100) {
+  if ((millis() - prevMillis) > 50) {
     
     // assign the current value to a variable so that we
     // can compare it the next time we enter this method

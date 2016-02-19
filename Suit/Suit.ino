@@ -30,7 +30,6 @@ RFIDuino rfiduino(1.1);
 
 #define NUMBER_OF_CARDS 4
 
-
 byte tagData[5]; // holds the ID numbers from the tag
 byte tagDataBuffer[5]; // a buffer for verifying the tag data
 
@@ -93,6 +92,9 @@ void loop() {
   lookForAdminMessage();
   lookForTag();
   stepThroughLights();
+//  if (Serial.available() > 0) {
+//    debug(10, 500);
+//  }
 }
 
 

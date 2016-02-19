@@ -283,7 +283,7 @@ void sendAdminMessage() {
   suitHasReceivedInstruction = false;
   
   while (suitIsReadyToReceive == false) {
-    if (checkForTimeout()) break;
+//    if (checkForTimeout()) break;
     
     xbee.write(suitAdminID);
     
@@ -298,7 +298,7 @@ void sendAdminMessage() {
     unsigned char incomingReadyID = 0;
     
     while (xbee.available() > 0) {
-      if (checkForTimeout()) break;
+//      if (checkForTimeout()) break;
       
       incomingReadyID = xbee.read();
     }
@@ -311,7 +311,7 @@ void sendAdminMessage() {
       suitIsReadyToReceive = true;
       
       while (suitHasReceivedInstruction == false) {
-        if (checkForTimeout()) break;
+//        if (checkForTimeout()) break;
         
         xbee.write(colourChangeInstruction);
 
@@ -339,6 +339,7 @@ void sendAdminMessage() {
           
           Serial.print("------------------------- ");
           Serial.println("ADMIN COMMAND COMPLETE -----------------------");
+          Serial.println();
           suitHasReceivedInstruction = true;
           if (colourChangeInstruction == 50) {
             stateArray[suit_ID - 1] = stateArray[tagger_ID - 1];

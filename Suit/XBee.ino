@@ -20,9 +20,10 @@ void lookForAdminMessage() {
   receivingInstruction = true;
 
   if (Serial.read() == (unsigned char)suitAdminID) {
+    //debug(10, 250);
     
     while (receivingInstruction == true) {
-      if (checkForTimeout()) break;
+      //if (checkForTimeout()) break;
       
       Serial.write((unsigned char)suitReadyID);
       
@@ -32,7 +33,7 @@ void lookForAdminMessage() {
         receivingInstruction = false;
         
         while (confirmationReceived == false) {
-          if (checkForTimeohut()) break;
+          //if (checkForTimeout()) break;
           
           Serial.write((unsigned char)suitConfirmationID);
 
@@ -58,13 +59,13 @@ void awaitInstruction() {
   receivingInstruction = true;
   
   while (waitingToBeAddressed == true) {
-    if (checkForTimeout()) break;
+//    if (checkForTimeout()) break;
     
     if (Serial.read() == suit_ID) {
       waitingToBeAddressed = false;
 
       while (receivingInstruction == true) {
-        if (checkForTimeout()) break;
+//        if (checkForTimeout()) break;
         
         Serial.write(suitReadyID);
         
