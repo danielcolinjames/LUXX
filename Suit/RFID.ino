@@ -6,6 +6,7 @@ void lookForTag() {
 
   if (readCount == 1) {
     whoTaggedMe();
+    debugSerial.print("Tag detected");
   }
 }
 
@@ -60,8 +61,18 @@ void whoTaggedMe() {
     if (verifyKey == true) {
       
       tagger_ID = i + 1;
-      sendToXBee();
-      awaitInstruction();
+      
+      uint8_t message[] = {
+        (uint8_t)99, 
+        (uint8_t)suit_ID, 
+        (uint8_t)tagger_ID
+        };
+        
+      sendToXBee(message);
+      
+      if(confirmDelivery() == true) {
+        lookForInstruction();
+      }
 
       verifyKey = true;
     }

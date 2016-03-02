@@ -1,49 +1,49 @@
 // ---------------------------------------------------------//
 // ------  Send suit_ID and tagger_ID to the console  ------//
 // ---------------------------------------------------------//
-void sendToXBee() {
-
-  Serial.write(99);
-  Serial.write((unsigned char)suit_ID);
-  Serial.write((unsigned char)tagger_ID);
+void sendToXBee(uint8_t message[]) {
+  // 1 is the receiving XBee's MY16 address
+  // message is the payload array of bytes to send
+  
+  Tx16Request tx = Tx16Request(1, message, sizeof(message));
+  xbee.send(tx);
+  debugSerial.print("\"");
+  printOutArray(message);
+  debugSerial.println("\" was transmitted via XBee");
 }
 
+// ---------------------------------------------------------//
+// ----  Print out the values in the outgoing payload  -----//
+// ---------------------------------------------------------//
+void printOutArray(uint8_t message[]) {
+  for(int i = 0; i < sizeof(message); i++) {
+    debugSerial.print(message[i]);
+    if(i != sizeof(message) - 1) debugSerial.print(", ");
+  }
+}
 
 // ---------------------------------------------------------//
 // ----  Look for admin messages addressed to this suit ----//
 // ---------------------------------------------------------//
 void lookForAdminMessage() {
   
-  boolean confirmationReceived = false;
+  xbee.readPacket();
   
-  waitingToBeAddressed = true;
-  receivingInstruction = true;
-
-  if (Serial.read() == (unsigned char)suitAdminID) {
-    //debug(10, 250);
+  if (xbee.getResponse().isAvailable()) {
+    // got something
     
-    while (receivingInstruction == true) {
-      //if (checkForTimeout()) break;
+    if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
+    // got a rx16 packet
+    
+      xbee.getResponse().getRx16Response(rx16);
       
-      Serial.write((unsigned char)suitReadyID);
-      
-      unsigned char instruction = Serial.read();
-      
-      if (instruction == (unsigned char)90 || instruction == (unsigned char)91) {
-        receivingInstruction = false;
-        
-        while (confirmationReceived == false) {
-          //if (checkForTimeout()) break;
-          
-          Serial.write((unsigned char)suitConfirmationID);
+      firstByte = rx16.getData(0);
 
-          if (Serial.read() == (unsigned char)77) {
-            confirmationReceived = true;
-          }
-        }
+      if (firstByte == suitAdminID) {
+        // this is an admin message
         
-        // instruction received.        
-        initializeSuitColour(instruction);
+        // TODO:
+        // colour instructions (R, G, B) = getData(1, 2, 3)
       }
     }
   }
@@ -51,43 +51,63 @@ void lookForAdminMessage() {
 
 
 // ---------------------------------------------------------//
-// ---------  Wait for a colour change instruction  --------//
+// ---------  Look for a colour change instruction  --------//
 // ---------------------------------------------------------//
-void awaitInstruction() {
-  
-  waitingToBeAddressed = true;
-  receivingInstruction = true;
-  
-  while (waitingToBeAddressed == true) {
-//    if (checkForTimeout()) break;
+void lookForInstruction() {
+  if (xbee.readPacket(1000)) {
     
-    if (Serial.read() == suit_ID) {
-      waitingToBeAddressed = false;
-
-      while (receivingInstruction == true) {
-//        if (checkForTimeout()) break;
-        
-        Serial.write(suitReadyID);
-        
-        unsigned char instruction = Serial.read();
-        if (instruction == 50 || instruction == 55) {
-          receivingInstruction = false;
-
-          // instruction received.
-          Serial.write(suitConfirmationID);
-          if (instruction == 50) {
-            changeSuitColour();
-            rfiduino.successSound();
-          }
-          
-          else {
-            delay(250);
-          }
-        }
-      }
+    if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
+      xbee.getResponse().getRx16Response(rx16);
+  
+      uint8_t colourChangeInstruction = rx16.getData(0);
+      // TODO:
+      // colourR = getData(0)
+      // colourG = getData(1)
+      // colourB = getData(2)
     }
   }
-  delay(250);
+}
+
+
+// ---------------------------------------------------------//
+// ---------  Confirm message's successful delivery --------//
+// ---------------------------------------------------------//
+boolean confirmDelivery() {
+  boolean confirmation = false;
+  
+  if (xbee.readPacket(1000)) {
+    debugSerial.println("Packet received from a remote XBee");
+    
+    // should be a znet tx status
+    if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
+      
+      xbee.getResponse().getTxStatusResponse(txStatus);
+      
+      // get the delivery status, the fifth byte
+      
+      if (txStatus.getStatus() == SUCCESS) {
+        // message was sent successfully
+        
+        debugSerial.println("Transmission was successful");
+        confirmation = true;
+      } else {
+        // the remote XBee did not receive our packet
+        debugSerial.println("XBee didn't receive packet");
+      }
+    }
+  } else if (xbee.getResponse().isError()) {
+    
+    debugSerial.print("Error reading packet.  Error code: ");
+    debugSerial.println(xbee.getResponse().getErrorCode());
+  } else {
+    
+    // local XBee did not provide a timely TX Status Response. 
+    // Radio is not configured properly or connected.
+    
+    debugSerial.print("Local XBee did not provide a timely TX status response");
+    // myRFIDuino.errorSound();
+  }
+  return confirmation;
 }
 
 

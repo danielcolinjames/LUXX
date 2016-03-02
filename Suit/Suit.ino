@@ -14,46 +14,44 @@
  suit_ID + 20 (21 to 30) = admin messages addressed to this suit
  
 */
+
 #include <Adafruit_NeoPixel.h>
-#include <SoftwareSerial.h>
 #include <RFIDuino.h>
+#include <SoftwareSerial.h>
+#include <XBee.h>
 
 #define PIN 9
 #define NUMPIXELS 16
+#define NUMBER_OF_CARDS 4
 
 // ---------------------------------------------------------//
-// -------------------   Global variables  -----------------//
+// ---------------   Instantiate libraries  ----------------//
 // ---------------------------------------------------------//
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 RFIDuino rfiduino(1.1);
 
-#define NUMBER_OF_CARDS 4
+SoftwareSerial debugSerial(10, 11); // (Rx, Tx)
 
-byte tagData[5]; // holds the ID numbers from the tag
-byte tagDataBuffer[5]; // a buffer for verifying the tag data
+XBee xbee = XBee();
 
-int loopCounter = 0;
 
-int readCount = 0;
-boolean tagCheck = false;
-boolean verifyKey = false;
-int i;
+// ---------------------------------------------------------//
+// -------------------   XBee variables  -------------------//
+// ---------------------------------------------------------//
+uint8_t payload[] =  {0};
 
-byte keyTag[NUMBER_OF_CARDS][5] ={
-  {62, 0, 183, 134, 238},   //Tag 1
-  {69, 0, 247, 211, 210},   //Tag 2
-  {71, 0, 48, 85, 67},      //Tag 3
-  {69, 0, 124, 57, 143},    //Tag 4
-};
+Tx16Request txPacket = Tx16Request(1, payload, sizeof(payload));
+TxStatusResponse txStatus = TxStatusResponse();
 
-int currentColour = 0;
+Rx16Response rx16 = Rx16Response();
 
-int rVal = 0;
-int gVal = 0;
-int bVal = 0;
+uint8_t firstByte;
+uint8_t startBit = 99;
 
-//unsigned char colourChangeInstruction = 0;
+
+
+
 
 boolean waitingToBeAddressed = true;
 boolean readyToReceive = true;
@@ -73,11 +71,50 @@ unsigned long prevMillis = millis();
 
 unsigned long timeoutMillis = millis();
 
+
+// ---------------------------------------------------------//
+// ------------------    RFID variables   ------------------//
+// ---------------------------------------------------------//
+byte tagData[5]; // holds the ID numbers from the tag
+byte tagDataBuffer[5]; // a buffer for verifying the tag data
+
+int loopCounter = 0;
+
+int readCount = 0;
+boolean tagCheck = false;
+boolean verifyKey = false;
+int i;
+
+byte keyTag[NUMBER_OF_CARDS][5] ={
+  {62, 0, 183, 134, 238},   //Tag 1
+  {69, 0, 247, 211, 210},   //Tag 2
+  {71, 0, 48, 85, 67},      //Tag 3
+  {69, 0, 124, 57, 143},    //Tag 4
+};
+
+
+// ---------------------------------------------------------//
+// --------------------   LED variables  -------------------//
+// ---------------------------------------------------------//
+int currentColour = 0;
+
+int rVal = 0;
+int gVal = 0;
+int bVal = 0;
+
+//unsigned char colourChangeInstruction = 0;
+
+
 // ---------------------------------------------------------//
 // ----------------------   Setup   ------------------------//
 // ---------------------------------------------------------//
 void setup() {
   Serial.begin(9600);
+  xbee.setSerial(Serial);
+
+  debugSerial.begin(9600);
+  debugSerial.print("Starting debugger...");  
+
   pixels.begin();
   rVal = 255;
   gVal = 255;
@@ -93,16 +130,6 @@ void loop() {
   lookForTag();
   stepThroughLights();
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

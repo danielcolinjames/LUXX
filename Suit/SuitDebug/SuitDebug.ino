@@ -11,7 +11,7 @@ byte tagData[5]; //Holds the ID numbers from the tag
 unsigned long start = millis();
 
 // allocate one bytes for to hold an 8-bit number
-uint8_t payload[] =  {0};
+uint8_t payload[] =  {0, 1, 2};
 
 // 16-bit addressing: Enter address of remote XBee, typically the coordinator
 Tx16Request tx = Tx16Request(1, payload, sizeof(payload));
@@ -35,7 +35,7 @@ void loop() {
     
     debugSerial.print("Tag detected");
     
-    payload[0] = tagData[0];
+//    payload[0] = tagData[0];
     xbee.send(tx);
     
     debugSerial.println("Data sent over XBee");

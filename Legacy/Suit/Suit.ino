@@ -1,4 +1,6 @@
-// This code is to run from each suit.
+// For XBees in AT mode.
+
+
 /*
  CHART OF VALUES
  
