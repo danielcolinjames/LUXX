@@ -24,14 +24,11 @@
 // ---------------------------------------------------------//
 // -------------------   Global variables  -----------------//
 // ---------------------------------------------------------//
-
-int suit_ID = 5;
-
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 RFIDuino rfiduino(1.1);
 
-#define NUMBER_OF_CARDS 6
+#define NUMBER_OF_CARDS 4
 
 byte tagData[5]; // holds the ID numbers from the tag
 byte tagDataBuffer[5]; // a buffer for verifying the tag data
@@ -43,9 +40,7 @@ boolean tagCheck = false;
 boolean verifyKey = false;
 int i;
 
-byte keyTag[NUMBER_OF_CARDS][5] = {
-  {111, 222, 333, 444, 555}, 
-  {111, 222, 333, 444, 555}, 
+byte keyTag[NUMBER_OF_CARDS][5] ={
   {62, 0, 183, 134, 238},   //Tag 1
   {69, 0, 247, 211, 210},   //Tag 2
   {71, 0, 48, 85, 67},      //Tag 3
@@ -63,6 +58,8 @@ int bVal = 0;
 boolean waitingToBeAddressed = true;
 boolean readyToReceive = true;
 boolean receivingInstruction = true;
+
+int suit_ID = 5;
 
 int suitAdminID = suit_ID + 80;
 

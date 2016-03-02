@@ -1,11 +1,11 @@
 #include <Printers.h>
 #include <XBee.h>
+
 #include <SoftwareSerial.h>
 
 //SoftwareSerial xbee(2, 3); // (RX, TX)
 
 // 90 for blue, 91 for red, 92 for purple/white
-
 int stateArray[] = { 90, 90, 90, 90, 90, 90, 90, 90, 90, 90 };
 
 unsigned char suit_ID = 0;
@@ -69,9 +69,6 @@ boolean allConfirmationsReceived = false;
 
 int tempSuitState = 0;
 
-XBee xbee1 = XBee();
-
-
 // ---------------------------------------------------------//
 // ------------------------  Setup  ------------------------//
 // ---------------------------------------------------------//
@@ -80,6 +77,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println("START GAME");
 
+  xbee.begin(9600);
   delay(10);
 
   gameMode = 1;

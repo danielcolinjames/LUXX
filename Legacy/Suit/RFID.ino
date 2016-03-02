@@ -57,7 +57,7 @@ void whoTaggedMe() {
     
     verifyKey = rfiduino.compareTagData(tagData, keyTag[i]);
     
-    if (verifyKey == true && ((i + 1) != suit_ID)) {
+    if (verifyKey == true) {
       
       tagger_ID = i + 1;
       sendToXBee();

@@ -59,7 +59,7 @@ boolean waitingToBeAddressed = true;
 boolean readyToReceive = true;
 boolean receivingInstruction = true;
 
-int suit_ID = 6;
+int suit_ID = 5;
 
 int suitAdminID = suit_ID + 80;
 
