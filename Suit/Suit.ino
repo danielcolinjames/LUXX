@@ -9,10 +9,7 @@
 
  50 = change colour
  55 = don't change colour
- 
- suit_ID + 10 (11 to 20) = confirmation that instruction was received
- suit_ID + 20 (21 to 30) = admin messages addressed to this suit
- 
+
 */
 
 #include <Adafruit_NeoPixel.h>
@@ -50,26 +47,13 @@ uint8_t firstByte;
 uint8_t startBit = 99;
 
 
-
-
-
-boolean waitingToBeAddressed = true;
-boolean readyToReceive = true;
-boolean receivingInstruction = true;
-
 int suit_ID = 5;
 
 int suitAdminID = suit_ID + 80;
 
-int suitReadyID = suit_ID + 10;
-
-int suitConfirmationID = suit_ID + 20;
-
 int tagger_ID = 0;
 
 unsigned long prevMillis = millis();
-
-unsigned long timeoutMillis = millis();
 
 
 // ---------------------------------------------------------//
@@ -104,7 +88,6 @@ int bVal = 0;
 
 //unsigned char colourChangeInstruction = 0;
 
-
 // ---------------------------------------------------------//
 // ----------------------   Setup   ------------------------//
 // ---------------------------------------------------------//
@@ -130,9 +113,6 @@ void loop() {
   lookForTag();
   stepThroughLights();
 }
-
-
-
 
 
 

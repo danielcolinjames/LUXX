@@ -63,7 +63,7 @@ void whoTaggedMe() {
       tagger_ID = i + 1;
       
       uint8_t message[] = {
-        (uint8_t)99, 
+        (uint8_t)startBit, 
         (uint8_t)suit_ID, 
         (uint8_t)tagger_ID
         };
@@ -73,9 +73,10 @@ void whoTaggedMe() {
       if(confirmDelivery() == true) {
         lookForInstruction();
       }
-
-      verifyKey = true;
     }
     i++;
   }
 }
+
+
+

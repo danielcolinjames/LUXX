@@ -113,7 +113,7 @@ void changeSuitColour() {
 
 
 // ---------------------------------------------------------//
-// ---------  For debugging with the RFIDuino LEDs  --------//
+// ---  For debugging with the RFIDuino's built-in LEDs  ---//
 // ---------------------------------------------------------//
 void debug(int flickers, int gap) {
   for (int i = 0; i < flickers; i++) {  
@@ -123,3 +123,6 @@ void debug(int flickers, int gap) {
     delay(gap);
   }
 }
+
+
+
