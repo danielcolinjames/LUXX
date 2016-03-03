@@ -54,22 +54,22 @@ void initializeColours() {
     // if (i == 4){} is for testing only, the suit I'm testing 
     // with is suit 5 (i + 1)
    
-   Serial.print("----------------------- INITIALIZING SUIT  >  ");
-   Serial.print(i + 1);
-   Serial.println("  < ---------------------");
-   
-    suit_ID = i + 1;
-    suitAdminID = suit_ID + 80;
+    Serial.print("----------------------- INITIALIZING SUIT  >  ");
+    Serial.print(i + 1);
+    Serial.println("  < ---------------------");
     
-    if (i == 4 || i == 5) {
+    suitID = i + 1;
+    suitAdminID = suitID + 80;
+    
+    if (i == 4) {
       
       colourChangeInstruction = (unsigned char)stateArray[i];
       sendAdminMessage();
     }
     else {
-      Serial.print("Skipping suit ");
-      Serial.print(i + 1);
-      Serial.println(" during testing phase.");
+     Serial.print("Skipping suit ");
+     Serial.print(i + 1);
+     Serial.println(" during testing phase.");
     }
   }
   printOutStates();

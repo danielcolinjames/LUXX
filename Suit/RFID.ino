@@ -6,7 +6,7 @@ void lookForTag() {
 
   if (readCount == 1) {
     whoTaggedMe();
-    debugSerial.print("Tag detected");
+    
   }
 }
 
@@ -50,6 +50,8 @@ void printCurrentTag() {
 // ---------------------------------------------------------//
 void whoTaggedMe() {
   
+  debugSerial.println("Tag detected. Looking for match...");
+  
   verifyKey = false;
   
   i = 0;
@@ -60,19 +62,22 @@ void whoTaggedMe() {
     
     if (verifyKey == true) {
       
-      tagger_ID = i + 1;
+      taggerID = i + 1;
+
+      debugSerial.print("Tag recognized. Suit: ");
+      debugSerial.println(taggerID);
       
-      uint8_t message[] = {
-        (uint8_t)startBit, 
-        (uint8_t)suit_ID, 
-        (uint8_t)tagger_ID
-        };
-        
+      uint8_t message[3];
+      message[0] = (uint8_t)startBit;
+      message[1] = (uint8_t)suitID;
+      message[2] = (uint8_t)taggerID;
+      
       sendToXBee(message);
       
       if(confirmDelivery() == true) {
         lookForInstruction();
       }
+      debugSerial.println("Completed. Returning to loop.");
     }
     i++;
   }

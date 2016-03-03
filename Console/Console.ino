@@ -1,4 +1,3 @@
-#include <Printers.h>
 #include <XBee.h>
 #include <SoftwareSerial.h>
 
@@ -11,8 +10,8 @@
 
 int stateArray[] = { 90, 90, 90, 90, 90, 90, 90, 90, 90, 90 };
 
-uint8_t suit_ID;
-uint8_t tagger_ID;
+uint8_t suitID;
+uint8_t taggerID;
 
 // admin messages are sent at the start of a new game
 // and they tell each suit which colour it starts as
@@ -26,6 +25,8 @@ int gameMode = 0;
 // ---------------------------------------------------------//
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
+
+SoftwareSerial xbeeSerial (2, 3); // (RX, TX)
 
 XBee xbee = XBee();
 
@@ -42,17 +43,22 @@ unsigned char colourChangeInstruction = 0;
 
 int tempSuitState = 0;
 
+boolean confirmation = false;
 
 // ---------------------------------------------------------//
 // ------------------------  Setup  ------------------------//
 // ---------------------------------------------------------//
 void setup() {
-
+  
   Serial.begin(9600);
   Serial.println("START GAME");
 
+  xbeeSerial.begin(9600);
+  
+  xbee.setSerial(xbeeSerial);
+  
   delay(10);
-
+  
   gameMode = 1;
   
   startGame();

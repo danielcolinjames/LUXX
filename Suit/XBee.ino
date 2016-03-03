@@ -1,15 +1,14 @@
 // ---------------------------------------------------------//
-// ------  Send suit_ID and tagger_ID to the console  ------//
+// ------  Send suitID and taggerID to the console  ------//
 // ---------------------------------------------------------//
 void sendToXBee(uint8_t message[]) {
   // 1 is the receiving XBee's MY16 address
   // message is the payload array of bytes to send
   
-  Tx16Request tx = Tx16Request(1, message, sizeof(message));
+  
+  Tx16Request tx = Tx16Request(0x1, message, 3);
   xbee.send(tx);
-  debugSerial.print("{");
   printOutArray(message);
-  debugSerial.println("} was transmitted via XBee");
 }
 
 
@@ -17,10 +16,12 @@ void sendToXBee(uint8_t message[]) {
 // ----  Print out the values in the outgoing payload  -----//
 // ---------------------------------------------------------//
 void printOutArray(uint8_t message[]) {
-  for(int i = 0; i < sizeof(message); i++) {
+  debugSerial.print("{");
+  for(int i = 0; i < sizeof(message) + 1; i++) {
     debugSerial.print(message[i]);
-    if(i != sizeof(message) - 1) debugSerial.print(", ");
+    if(i != sizeof(message)) debugSerial.print(", ");
   }
+  debugSerial.println("} was transmitted via XBee.");
 }
 
 
@@ -28,11 +29,14 @@ void printOutArray(uint8_t message[]) {
 // ----  Look for admin messages addressed to this suit ----//
 // ---------------------------------------------------------//
 void lookForAdminMessage() {
+
+//  debugSerial.println("Looking for admin message...");
   
   xbee.readPacket();
   
   if (xbee.getResponse().isAvailable()) {
     // got something
+    debugSerial.println("Packet found by lookForAdminMessage()");
     
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
     // got a rx16 packet
@@ -42,11 +46,17 @@ void lookForAdminMessage() {
       firstByte = rx16.getData(0);
 
       if (firstByte == suitAdminID) {
+        
+        debugSerial.print("Admin message found: ");
         // this is an admin message
         // the next value will be 90 or 91,
         // so colour this suit 90 or 91
-        
-        initializeSuitColour(rx16.getData(1));
+
+        uint8_t colour = rx16.getData(1);
+
+        debugSerial.print(colour);
+        debugSerial.println(", initializing suit.");
+        initializeSuitColour(colour);
         
         // TODO:
         // colour instructions (R, G, B) = getData(1, 2, 3)
@@ -60,15 +70,23 @@ void lookForAdminMessage() {
 // ---------  Look for a colour change instruction  --------//
 // ---------------------------------------------------------//
 void lookForInstruction() {
+  
+  debugSerial.println("Looking for instruction...");
+  
   if (xbee.readPacket(1000)) {
+    
+    debugSerial.print("Instruction found: ");
     
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
       xbee.getResponse().getRx16Response(rx16);
       
       uint8_t incoming = rx16.getData(0);
 
-      if (incoming == suit_ID) {
+      if (incoming == suitID) {
+        
         uint8_t colourChangeInstruction = rx16.getData(1);
+        
+        debugSerial.println(colourChangeInstruction);
         
         // TODO:
         // colourR = getData(1)
@@ -87,7 +105,7 @@ boolean confirmDelivery() {
   boolean confirmation = false;
   
   if (xbee.readPacket(1000)) {
-    debugSerial.println("Packet received from a remote XBee");
+    debugSerial.println("Packet received from a remote XBee.");
     
     // should be a znet tx status
     if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
@@ -99,11 +117,12 @@ boolean confirmDelivery() {
       if (txStatus.getStatus() == SUCCESS) {
         // message was sent successfully
         
-        debugSerial.println("Transmission was successful");
+        debugSerial.println("Transmission was successful.");
+        debugSerial.println();
         confirmation = true;
       } else {
         // the remote XBee did not receive our packet
-        debugSerial.println("XBee didn't receive packet");
+        debugSerial.println("XBee didn't receive packet.");
       }
     }
   }
@@ -119,7 +138,7 @@ boolean confirmDelivery() {
     // local XBee did not provide a timely TX Status Response. 
     // Radio is not configured properly or connected.
     
-    debugSerial.print("Local XBee did not provide a timely TX status response");
+    debugSerial.println("Timeout: no TX status response received.");
   }
   return confirmation;
 }

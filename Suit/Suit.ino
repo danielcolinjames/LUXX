@@ -36,9 +36,10 @@ XBee xbee = XBee();
 // ---------------------------------------------------------//
 // -------------------   XBee variables  -------------------//
 // ---------------------------------------------------------//
-uint8_t payload[] =  {0};
+//uint8_t payload[] =  {0};
+//
+//Tx16Request txPacket = Tx16Request(0x1, payload, sizeof(payload));
 
-Tx16Request txPacket = Tx16Request(1, payload, sizeof(payload));
 TxStatusResponse txStatus = TxStatusResponse();
 
 Rx16Response rx16 = Rx16Response();
@@ -47,11 +48,11 @@ uint8_t firstByte;
 uint8_t startBit = 99;
 
 
-int suit_ID = 5;
+int suitID = 5;
 
-int suitAdminID = suit_ID + 80;
+int suitAdminID = suitID + 80;
 
-int tagger_ID = 0;
+int taggerID = 0;
 
 unsigned long prevMillis = millis();
 
@@ -69,11 +70,11 @@ boolean tagCheck = false;
 boolean verifyKey = false;
 int i;
 
-byte keyTag[NUMBER_OF_CARDS][5] ={
+byte keyTag[NUMBER_OF_CARDS][5] = {
   {62, 0, 183, 134, 238},   //Tag 1
   {69, 0, 247, 211, 210},   //Tag 2
   {71, 0, 48, 85, 67},      //Tag 3
-  {69, 0, 124, 57, 143},    //Tag 4
+  {69, 0, 124, 57, 143}     //Tag 4
 };
 
 
