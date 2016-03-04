@@ -26,7 +26,9 @@ int gameMode = 0;
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
 
-SoftwareSerial xbeeSerial (2, 3); // (RX, TX)
+SoftwareSerial xbeeSerial (2, 5); // (RX, TX)
+
+SoftwareSerial debugSerial (9, 8);
 
 XBee xbee = XBee();
 
@@ -51,11 +53,10 @@ boolean confirmation = false;
 void setup() {
   
   Serial.begin(9600);
-  Serial.println("START GAME");
-
-  xbeeSerial.begin(9600);
+  xbee.setSerial(Serial);
   
-  xbee.setSerial(xbeeSerial);
+  debugSerial.begin(9600);
+  debugSerial.println("Starting debugger from console...");
   
   delay(10);
   

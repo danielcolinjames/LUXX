@@ -30,8 +30,6 @@ void printOutArray(uint8_t message[]) {
 // ---------------------------------------------------------//
 void lookForAdminMessage() {
 
-//  debugSerial.println("Looking for admin message...");
-  
   xbee.readPacket();
   
   if (xbee.getResponse().isAvailable()) {

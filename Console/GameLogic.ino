@@ -53,10 +53,12 @@ void initializeColours() {
   for (int i = 0; i < (sizeof(stateArray)/sizeof(int)); i++) {
     // if (i == 4){} is for testing only, the suit I'm testing 
     // with is suit 5 (i + 1)
-   
-    Serial.print("----------------------- INITIALIZING SUIT  >  ");
-    Serial.print(i + 1);
-    Serial.println("  < ---------------------");
+
+    delay(500);
+    
+    debugSerial.print("----------------------- INITIALIZING SUIT  >  ");
+    debugSerial.print(i + 1);
+    debugSerial.println("  < ---------------------");
     
     suitID = i + 1;
     suitAdminID = suitID + 80;
@@ -67,9 +69,9 @@ void initializeColours() {
       sendAdminMessage();
     }
     else {
-     Serial.print("Skipping suit ");
-     Serial.print(i + 1);
-     Serial.println(" during testing phase.");
+     debugSerial.print("Skipping suit ");
+     debugSerial.print(i + 1);
+     debugSerial.println(" during testing phase.");
     }
   }
   printOutStates();
@@ -82,16 +84,16 @@ void initializeColours() {
 void printOutStates() {;
 
   // sizeof is weird and needs to be converted to int first
-  Serial.println();
-  Serial.println("GAME STATE: ");
+  debugSerial.println();
+  debugSerial.println("GAME STATE: ");
 
   for (int i = 0; i < (sizeof(stateArray)/sizeof(int)); i++) {
-    Serial.print("Suit ");
-    Serial.print(i + 1);
-    Serial.print(" = ");
-    Serial.println(stateArray[i]);
+    debugSerial.print("Suit ");
+    debugSerial.print(i + 1);
+    debugSerial.print(" = ");
+    debugSerial.println(stateArray[i]);
   }
   
-  Serial.println();
+  debugSerial.println();
 }
 

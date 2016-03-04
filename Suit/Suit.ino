@@ -28,7 +28,9 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ80
 
 RFIDuino rfiduino(1.1);
 
-SoftwareSerial debugSerial(10, 11); // (Rx, Tx)
+SoftwareSerial debugSerial(12, 11); // (Rx, Tx)
+
+
 
 XBee xbee = XBee();
 
@@ -95,10 +97,10 @@ int bVal = 0;
 void setup() {
   Serial.begin(9600);
   xbee.setSerial(Serial);
-
+  
   debugSerial.begin(9600);
-  debugSerial.print("Starting debugger...");  
-
+  debugSerial.println("Starting debugger from suit...");  
+  
   pixels.begin();
   rVal = 255;
   gVal = 255;
