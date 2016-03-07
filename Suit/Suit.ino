@@ -30,10 +30,7 @@ RFIDuino rfiduino(1.1);
 
 SoftwareSerial debugSerial(12, 11); // (Rx, Tx)
 
-
-
 XBee xbee = XBee();
-
 
 // ---------------------------------------------------------//
 // -------------------   XBee variables  -------------------//

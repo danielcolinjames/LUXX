@@ -41,7 +41,7 @@ void lookForAdminMessage() {
     
       xbee.getResponse().getRx16Response(rx16);
       
-      firstByte = rx16.getData(0);
+      firstByte = rx16.getData(6);
 
       if (firstByte == suitAdminID) {
         
@@ -50,7 +50,7 @@ void lookForAdminMessage() {
         // the next value will be 90 or 91,
         // so colour this suit 90 or 91
 
-        uint8_t colour = rx16.getData(1);
+        uint8_t colour = rx16.getData(7);
 
         debugSerial.print(colour);
         debugSerial.println(", initializing suit.");
@@ -73,16 +73,23 @@ void lookForInstruction() {
   
   if (xbee.readPacket(1000)) {
     
-    debugSerial.print("Instruction found: ");
+    debugSerial.println("Packet found");
     
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
       xbee.getResponse().getRx16Response(rx16);
       
-      uint8_t incoming = rx16.getData(0);
+      debugSerial.print("Instruction found: ");
 
+      for (int i = 0; i < rx16.getDataLength(); i++) {
+        Serial.print(rx16.getData(i));
+        Serial.print(" ");
+      }
+      
+      uint8_t incoming = rx16.getData(6);
+      
       if (incoming == suitID) {
         
-        uint8_t colourChangeInstruction = rx16.getData(1);
+        uint8_t colourChangeInstruction = rx16.getData(7);
         
         debugSerial.println(colourChangeInstruction);
         
@@ -104,6 +111,9 @@ boolean confirmDelivery() {
   
   if (xbee.readPacket(1000)) {
     debugSerial.println("Packet received from a remote XBee.");
+    
+    debugSerial.print("millis() = ");
+    debugSerial.println(millis());
     
     // should be a znet tx status
     if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {

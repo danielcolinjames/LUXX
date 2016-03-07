@@ -74,6 +74,9 @@ void whoTaggedMe() {
       
       sendToXBee(message);
       
+      debugSerial.print("millis() = ");
+      debugSerial.println(millis());
+      
       if(confirmDelivery() == true) {
         lookForInstruction();
       }
