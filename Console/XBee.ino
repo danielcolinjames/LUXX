@@ -8,7 +8,7 @@ void lookForMessages() {
   if (xbee.getResponse().isAvailable()) {
     // got something
     
-    debugSerial.println("Packet received...");
+    Serial.println("Packet received...");
     
 //    if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
 //      // got a rx16 packet
@@ -16,40 +16,39 @@ void lookForMessages() {
       xbee.getResponse().getRx16Response(rx16);
       
       for (int i = 0; i < rx16.getDataLength(); i++) {
-        debugSerial.print(rx16.getData(i));
-        debugSerial.print(" ");
+        Serial.print(rx16.getData(i));
+        Serial.print(" ");
       }
       
-      debugSerial.println();
+      Serial.println();
       
-      uint8_t firstByte = rx16.getData(6);
+      uint8_t firstByte = rx16.getData(0);
       
 
-      debugSerial.print("First byte of incoming message: ");
-      debugSerial.println(firstByte);
+      Serial.print("First byte of incoming message: ");
+      Serial.println(firstByte);
       
       if (firstByte == startBit) {
         // a suit has been tagged
         
-        debugSerial.println();
-        debugSerial.print("----------------------- SUIT ");
-        debugSerial.println("TAGGED ---------------------");
+        Serial.println();
+        Serial.print("----------------------- SUIT ");
+        Serial.println("TAGGED ---------------------");
         
-        suitID = rx16.getData(7);
-        debugSerial.print("SUIT:     >  ");
-        debugSerial.print(suitID);
+        suitID = rx16.getData(1);
+        Serial.print("SUIT:     >  ");
+        Serial.print(suitID);
         
-        taggerID = rx16.getData(8);
-        debugSerial.print("  <     WAS TAGGED BY SUIT:     >  ");
-        debugSerial.print(taggerID);
-        debugSerial.println("  <");
+        taggerID = rx16.getData(2);
+        Serial.print("  <     WAS TAGGED BY SUIT:     >  ");
+        Serial.print(taggerID);
+        Serial.println("  <");
         
         suitAdminID = suitID + 80;
         taggerAdminID = taggerID + 80;
         
         sendInstruction();
       }
-//    }
   }
 }
 
@@ -75,10 +74,12 @@ void sendInstruction() {
     
     tx = Tx16Request(0xFFFF, payload, 2);
     xbee.send(tx);
+    
+    Serial.println("Instruction transmitted.");
     confirmDelivery();
     
     if (confirmation == true) {
-      debugSerial.println("Instruction transmitted successfully.");
+      Serial.println("Instruction transmitted successfully.");
       
       if (colourChangeInstruction == 50){
         // update the array if suitID's colour changed
@@ -99,13 +100,13 @@ void sendInstruction() {
     payload[1] = (uint8_t)colourChangeInstruction;
     
     tx = Tx16Request(0xFFFF, payload, 2);
+    // printOutArray(payload);
     xbee.send(tx);
-    printOutArray(payload);
-
+    
     confirmDelivery();
     
     if (confirmation == true) {
-      debugSerial.println("Instruction transmitted successfully.");
+      Serial.println("Instruction transmitted successfully.");
       
       if (colourChangeInstruction == 50) {
         
@@ -115,13 +116,10 @@ void sendInstruction() {
         stateArray[suitID - 1] = stateArray[taggerID - 1];
       }
       
-    
-    
       // the below code is inside the if statement above because
       // if suitID didn't get the instruction, we don't want to
       // send it to taggerID either.
-      
-      
+            
       // taggerID second
       // ----------------
       
@@ -129,13 +127,13 @@ void sendInstruction() {
       payload[1] = (uint8_t)colourChangeInstruction;
       
       tx = Tx16Request(0xFFFF, payload, 2);
+      // printOutArray(payload);
       xbee.send(tx);
-      printOutArray(payload);
-
+      
       confirmDelivery();
       
       if (confirmation == true) {
-        debugSerial.println("Instruction transmitted successfully.");
+        Serial.println("Instruction transmitted successfully.");
         
         if (colourChangeInstruction == 50) {
           
@@ -155,16 +153,16 @@ void confirmDelivery() {
   confirmation = false;
   
   // if (xbee.getResponse().isAvailable()) {
-
-  if (xbee.readPacket(5000)) {
-    debugSerial.print("RECEIVING MESSAGE... millis() = ");
-    debugSerial.println(millis());
   
-    debugSerial.println("Packet received from a remote XBee.");
+  if (xbee.readPacket(1000)) {
+    Serial.print("RECEIVING MESSAGE... millis() = ");
+    Serial.println(millis());
+    
+    Serial.println("Packet received from a remote XBee.");
     
     // should be a znet tx status
     if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
-      debugSerial.println("Packet is a TX status response.");
+      Serial.println("Packet is a TX status response.");
       
       xbee.getResponse().getTxStatusResponse(txStatus);
       
@@ -172,24 +170,24 @@ void confirmDelivery() {
       if (txStatus.getStatus() == SUCCESS) {
         // message was sent successfully
         
-        debugSerial.println("SUCCESS");
+        Serial.println("SUCCESS");
         confirmation = true;
         
         txStatus = TxStatusResponse();
-
-        debugSerial.println("After txStatus = TxStatusResponse();");
+        
+        Serial.println("After txStatus = TxStatusResponse();");
         
       } else {
         // the remote XBee did not receive our packet
-        debugSerial.println("XBee didn't receive packet.");
+        Serial.println("XBee didn't receive packet.");
       }
     }
   }
   
   else if (xbee.getResponse().isError()) {
     
-    debugSerial.print("Error reading packet.  Error code: ");
-    debugSerial.println(xbee.getResponse().getErrorCode());
+    Serial.print("Error reading packet.  Error code: ");
+    Serial.println(xbee.getResponse().getErrorCode());
   }
   
   else {
@@ -197,7 +195,7 @@ void confirmDelivery() {
     // local XBee did not provide a timely TX Status Response. 
     // Radio is not configured properly or connected.
     
-    debugSerial.println("No TX status response received.");
+    Serial.println("No TX status response received.");
   }
 }
 
@@ -211,21 +209,20 @@ void sendAdminMessage() {
   payload[0] = (uint8_t)suitAdminID;
   payload[1] = (uint8_t)colourChangeInstruction;
   
-  debugSerial.println("Sending...");
-  tx = Tx16Request(0xFFFF, payload, 2);
-
-  
+  Serial.println("Sending...");
+  tx = Tx16Request(0x2, payload, 2);
   
   xbee.send(tx);
 
-  debugSerial.print("SENDING ADMIN MESSAGE... millis() = ");
-  debugSerial.println(millis());
+  Serial.print("SENDING ADMIN MESSAGE... millis() = ");
+  Serial.println(millis());
   
-  printOutArray(payload);
+  // printOutArray(payload);
   
   confirmDelivery();
+  
   if (confirmation == true) {
-    debugSerial.println("Admin message delivered.");
+    Serial.println("Admin message delivered.");
   }
 }
 
@@ -235,10 +232,10 @@ void sendAdminMessage() {
 // ---------------------------------------------------------//
 void printOutArray(uint8_t message[]) {
  
-  debugSerial.print("{");
+  Serial.print("{");
   for(int i = 0; i < sizeof(message); i++) {
-    debugSerial.print(message[i]);
-    if(i != sizeof(message) - 1) debugSerial.print(", ");
+    Serial.print(message[i]);
+    if(i != sizeof(message) - 1) Serial.print(", ");
   }
-  debugSerial.println("} was transmitted via XBee.");
+  Serial.println("} was transmitted via XBee.");
 }

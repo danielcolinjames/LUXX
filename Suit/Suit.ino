@@ -24,20 +24,21 @@
 // ---------------------------------------------------------//
 // ---------------   Instantiate libraries  ----------------//
 // ---------------------------------------------------------//
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, 
+  PIN, NEO_GRB + NEO_KHZ800);
 
 RFIDuino rfiduino(1.1);
 
-SoftwareSerial debugSerial(12, 11); // (Rx, Tx)
+//SoftwareSerial // debugSerial(12, 11); // (Rx, Tx)
 
 XBee xbee = XBee();
 
 // ---------------------------------------------------------//
 // -------------------   XBee variables  -------------------//
 // ---------------------------------------------------------//
-//uint8_t payload[] =  {0};
+uint8_t payload[] =  {0};
 //
-//Tx16Request txPacket = Tx16Request(0x1, payload, sizeof(payload));
+Tx16Request tx = Tx16Request(0x1, payload, sizeof(payload));
 
 TxStatusResponse txStatus = TxStatusResponse();
 
@@ -52,6 +53,8 @@ int suitID = 5;
 int suitAdminID = suitID + 80;
 
 int taggerID = 0;
+
+boolean confirmation = false;
 
 unsigned long prevMillis = millis();
 
@@ -95,8 +98,8 @@ void setup() {
   Serial.begin(9600);
   xbee.setSerial(Serial);
   
-  debugSerial.begin(9600);
-  debugSerial.println("Starting debugger from suit...");  
+  // debugSerial.begin(9600);
+  // debugSerial.println("Starting debugger from suit...");  
   
   pixels.begin();
   rVal = 255;
