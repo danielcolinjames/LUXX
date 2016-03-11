@@ -29,16 +29,21 @@ void printOutArray(uint8_t message[]) {
 // ----  Look for admin messages addressed to this suit ----//
 // ---------------------------------------------------------//
 void lookForAdminMessage() {
-
+  
+  digitalWrite(rfiduino.led1, HIGH);
+  
+  
   xbee.readPacket();
   
   if (xbee.getResponse().isAvailable()) {
     // got something
     // debugSerial.println("Packet found by lookForAdminMessage()");
+
+    digitalWrite(rfiduino.led1, LOW);
     
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
     // got a rx16 packet
-    
+      
       xbee.getResponse().getRx16Response(rx16);
       
       firstByte = rx16.getData(6);
@@ -71,9 +76,11 @@ void lookForInstruction() {
   
   // debugSerial.println("Looking for instruction...");
   
-  if (xbee.readPacket(1000)) {
+  if (xbee.readPacket(100)) {
     
     // debugSerial.println("Packet found");
+    digitalWrite(rfiduino.led1, LOW);
+    digitalWrite(rfiduino.led2, HIGH);
     
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
       xbee.getResponse().getRx16Response(rx16);
@@ -111,7 +118,7 @@ void confirmDelivery() {
   
   // if (xbee.getResponse().isAvailable()) {
   
-  if (xbee.readPacket(1000)) {
+  if (xbee.readPacket(100)) {
 //    debugSerial.print("RECEIVING MESSAGE... millis() = ");
 //    debugSerial.println(millis());
 //    

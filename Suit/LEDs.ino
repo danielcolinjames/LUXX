@@ -115,14 +115,17 @@ void changeSuitColour() {
 // ---------------------------------------------------------//
 // ---  For debugging with the RFIDuino's built-in LEDs  ---//
 // ---------------------------------------------------------//
-void debug(int flickers, int gap) {
-  for (int i = 0; i < flickers; i++) {  
-    digitalWrite(rfiduino.led1,HIGH);
-    delay(gap);
-    digitalWrite(rfiduino.led1,LOW);
-    delay(gap);
-  }
-}
 
+void debug(int flickers, int gap) {
+//  for (int i = 0; i < flickers; i++) {
+//    if (millis() - lightMillis > gap) {
+//      prevMillis = 0;
+//      digitalWrite(rfiduino.led1,HIGH);
+//    }
+//    else {
+//      digitalWrite(rfiduino.led1,LOW);
+//    }
+//  }
+}
 
 

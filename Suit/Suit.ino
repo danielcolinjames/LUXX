@@ -47,7 +47,6 @@ Rx16Response rx16 = Rx16Response();
 uint8_t firstByte;
 uint8_t startBit = 99;
 
-
 int suitID = 5;
 
 int suitAdminID = suitID + 80;
@@ -89,7 +88,10 @@ int rVal = 0;
 int gVal = 0;
 int bVal = 0;
 
+long lightMillis = 0;
+
 //unsigned char colourChangeInstruction = 0;
+
 
 // ---------------------------------------------------------//
 // ----------------------   Setup   ------------------------//

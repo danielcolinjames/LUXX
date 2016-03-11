@@ -78,7 +78,7 @@ void initializeColours() {
   printOutStates();
 }
 
-// CINDY IS AWESOME
+
 // ---------------------------------------------------------//
 // ----------   Prints out the state of each suit  ---------//
 // ---------------------------------------------------------//
