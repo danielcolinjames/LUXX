@@ -26,15 +26,15 @@ int gameMode = 0;
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
 
-SoftwareSerial xbeeSerial (2, 5);
+SoftwareSerial xbeeSerial (2, 3);
 
 //SoftwareSerial debugSerial (9, 8); //rx, tx
 
 XBee xbee = XBee();
 
-uint8_t payload[] =  {0};
+uint8_t payload[] =  {0, 0, 0};
 
-Tx16Request tx = Tx16Request(0xFFFF, payload, sizeof(payload));
+Tx16Request tx = Tx16Request(0x2, payload, sizeof(payload));
 TxStatusResponse txStatus = TxStatusResponse();
 
 Rx16Response rx16 = Rx16Response();

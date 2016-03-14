@@ -1,14 +1,32 @@
 // ---------------------------------------------------------//
 // ------  Send suitID and taggerID to the console  ------//
 // ---------------------------------------------------------//
-void sendToXBee(uint8_t message[]) {
+void sendToXBee() {
   // 1 is the receiving XBee's MY16 address
   // message is the payload array of bytes to send
   
-  
-  tx = Tx16Request(0x1, message, 3);
+  tx = Tx16Request(0x1, payload, 3);
   xbee.send(tx);
-  printOutArray(message);
+  
+  if (xbee.readPacket(100)) {
+    
+    if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
+      xbee.getResponse().getTxStatusResponse(txStatus);
+      
+      if (txStatus.getStatus() == SUCCESS) {
+        lookForInstruction();
+        
+        digitalWrite(rfiduino.led1, HIGH);
+        
+      } else {
+        
+      }
+    }
+  } else if (xbee.getResponse().isError()) {
+    
+  } else {
+    
+  }
 }
 
 
@@ -30,23 +48,24 @@ void printOutArray(uint8_t message[]) {
 // ---------------------------------------------------------//
 void lookForAdminMessage() {
   
-  digitalWrite(rfiduino.led1, HIGH);
-  
-  
   xbee.readPacket();
+
+  digitalWrite(rfiduino.led1, HIGH);
   
   if (xbee.getResponse().isAvailable()) {
     // got something
     // debugSerial.println("Packet found by lookForAdminMessage()");
-
-    digitalWrite(rfiduino.led1, LOW);
     
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
     // got a rx16 packet
+    
+      digitalWrite(rfiduino.led1, LOW);
+
+      rfiduino.successSound();
       
       xbee.getResponse().getRx16Response(rx16);
       
-      firstByte = rx16.getData(6);
+      firstByte = rx16.getData(0);
 
       if (firstByte == suitAdminID) {
         
@@ -55,7 +74,7 @@ void lookForAdminMessage() {
         // the next value will be 90 or 91,
         // so colour this suit 90 or 91
 
-        uint8_t colour = rx16.getData(7);
+        uint8_t colour = rx16.getData(1);
 
         // debugSerial.print(colour);
         // debugSerial.println(", initializing suit.");
@@ -79,24 +98,24 @@ void lookForInstruction() {
   if (xbee.readPacket(100)) {
     
     // debugSerial.println("Packet found");
-    digitalWrite(rfiduino.led1, LOW);
-    digitalWrite(rfiduino.led2, HIGH);
     
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
       xbee.getResponse().getRx16Response(rx16);
       
       // debugSerial.print("Instruction found: ");
 
-      for (int i = 0; i < rx16.getDataLength(); i++) {
-        Serial.print(rx16.getData(i));
-        Serial.print(" ");
-      }
+//      for (int i = 0; i < rx16.getDataLength(); i++) {
+//        Serial.print(rx16.getData(i));
+//        Serial.print(" ");
+//      }
       
-      uint8_t incoming = rx16.getData(6);
+      uint8_t incoming = rx16.getData(0);
       
       if (incoming == suitID) {
+
+        rfiduino.successSound();
         
-        uint8_t colourChangeInstruction = rx16.getData(7);
+        uint8_t colourChangeInstruction = rx16.getData(1);
         
         // debugSerial.println(colourChangeInstruction);
         

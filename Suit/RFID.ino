@@ -63,24 +63,16 @@ void whoTaggedMe() {
     if (verifyKey == true) {
       
       taggerID = i + 1;
-
+      
       // debugSerial.print("Tag recognized. Suit: ");
       // debugSerial.println(taggerID);
       
-      uint8_t message[3];
-      message[0] = (uint8_t)startBit;
-      message[1] = (uint8_t)suitID;
-      message[2] = (uint8_t)taggerID;
+      payload[0] = (uint8_t)startBit;
+      payload[1] = (uint8_t)suitID;
+      payload[2] = (uint8_t)taggerID;
       
-      sendToXBee(message);
-      
-      // debugSerial.print("millis() = ");
-      // debugSerial.println(millis());
-      confirmDelivery();
-            
-      if(confirmation == true) {
-        lookForInstruction();
-      }
+      sendToXBee();
+
       // debugSerial.println("Completed. Returning to loop.");
     }
     i++;

@@ -36,7 +36,7 @@ XBee xbee = XBee();
 // ---------------------------------------------------------//
 // -------------------   XBee variables  -------------------//
 // ---------------------------------------------------------//
-uint8_t payload[] =  {0};
+uint8_t payload[] =  {0, 0, 0};
 //
 Tx16Request tx = Tx16Request(0x1, payload, sizeof(payload));
 
@@ -115,8 +115,8 @@ void setup() {
 // ---------------------------------------------------------//
 void loop() {
   lookForAdminMessage();
-  lookForTag();
-  stepThroughLights();
+  //lookForTag();
+  //stepThroughLights();
 }
 
 
