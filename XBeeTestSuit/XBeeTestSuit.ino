@@ -31,22 +31,23 @@ XBee xbee = XBee();
 XBeeResponse response = XBeeResponse();
 RFIDuino rfiduino(1.1);
 
-
 // create reusable response objects for responses we expect to handle 
 Rx16Response rx16 = Rx16Response();
-Rx64Response rx64 = Rx64Response();
 
-int statusLed = 11;
-int errorLed = 12;
-int dataLed = 10;
+SoftwareSerial debugSerial (10, 9); // rx, tx
 
 uint8_t option = 0;
 uint8_t data = 0;
+uint8_t data1 = 0;
 
 void setup() {
   
   // start serial
   Serial.begin(9600);
+  
+  debugSerial.begin(9600);
+  debugSerial.println("Starting debugger from suit...");
+  
   xbee.setSerial(Serial);
 }
 
@@ -62,13 +63,23 @@ void loop() {
       xbee.getResponse().getRx16Response(rx16);
     	option = rx16.getOption();
     	data = rx16.getData(0);
-      
+      data1 = rx16.getData(1);
+
       digitalWrite(rfiduino.led2,HIGH);
+      
+      debugSerial.print("data(0) = ");
+      debugSerial.println(data);
+      debugSerial.print("data(1) = ");
+      debugSerial.println(data1);
       
       rfiduino.successSound();
     }
-  } else if (xbee.getResponse().isError()) {
+  }
+  else if (xbee.getResponse().isError()) {
       digitalWrite(rfiduino.led1,HIGH);
       rfiduino.errorSound();
+  }
+  else {
+    digitalWrite(rfiduino.led2, LOW);
   }
 }
