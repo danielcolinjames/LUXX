@@ -29,7 +29,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS,
 
 RFIDuino rfiduino(1.1);
 
-//SoftwareSerial // debugSerial(12, 11); // (Rx, Tx)
+SoftwareSerial debugSerial(12, 11); // (Rx, Tx)
 
 XBee xbee = XBee();
 

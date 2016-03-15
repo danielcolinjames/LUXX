@@ -71,7 +71,7 @@ void whoTaggedMe() {
       payload[1] = (uint8_t)suitID;
       payload[2] = (uint8_t)taggerID;
       
-      sendToXBee();
+      sendToXBee(payload, 3);
 
       // debugSerial.println("Completed. Returning to loop.");
     }

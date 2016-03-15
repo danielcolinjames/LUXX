@@ -1,46 +1,41 @@
 // ---------------------------------------------------------//
 // ------  Send suitID and taggerID to the console  ------//
 // ---------------------------------------------------------//
-void sendToXBee() {
-  // 1 is the receiving XBee's MY16 address
-  // message is the payload array of bytes to send
+void sendToXBee(uint8_t toSend[], int bytes) {
+
+  debugSerial.println("Sending...");
   
-  tx = Tx16Request(0x1, payload, 3);
+  tx = Tx16Request(0x1, toSend, bytes);
+  
   xbee.send(tx);
   
-  if (xbee.readPacket(100)) {
+  debugSerial.println("SENDING TAGGED MESSAGE...");
     
+  if (xbee.readPacket(250)) {
+
     if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
+      
       xbee.getResponse().getTxStatusResponse(txStatus);
       
       if (txStatus.getStatus() == SUCCESS) {
-        lookForInstruction();
         
+        lookForInstruction();
         digitalWrite(rfiduino.led1, HIGH);
+        debugSerial.println("SUCCESSFUL TAGGED MESSAGE");
         
       } else {
-        
+          debugSerial.println("FAILURE");
       }
     }
   } else if (xbee.getResponse().isError()) {
-    
+    debugSerial.println("ERROR");
   } else {
-    
+    digitalWrite(rfiduino.led1, LOW);
+    debugSerial.println("TIMEOUT");
   }
 }
 
 
-// ---------------------------------------------------------//
-// ----  Print out the values in the outgoing payload  -----//
-// ---------------------------------------------------------//
-void printOutArray(uint8_t message[]) {
-  // debugSerial.print("{");
-  for(int i = 0; i < sizeof(message) + 1; i++) {
-    // debugSerial.print(message[i]);
-    // if(i != sizeof(message)) // debugSerial.print(", ");
-  }
-  // debugSerial.println("} was transmitted via XBee.");
-}
 
 
 // ---------------------------------------------------------//
@@ -50,34 +45,35 @@ void lookForAdminMessage() {
   
   xbee.readPacket();
 
-  digitalWrite(rfiduino.led1, HIGH);
+  digitalWrite(rfiduino.led1, LOW);
   
   if (xbee.getResponse().isAvailable()) {
     // got something
-    // debugSerial.println("Packet found by lookForAdminMessage()");
+    debugSerial.println("Packet found by lookForAdminMessage()");
     
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
     // got a rx16 packet
-    
-      digitalWrite(rfiduino.led1, LOW);
-
-      rfiduino.successSound();
       
       xbee.getResponse().getRx16Response(rx16);
+      digitalWrite(rfiduino.led1, HIGH);
       
       firstByte = rx16.getData(0);
+      
+      debugSerial.print("firstByte = ");
+      debugSerial.println(firstByte);
 
       if (firstByte == suitAdminID) {
         
-        // debugSerial.print("Admin message found: ");
+        debugSerial.print("Admin message found: ");
         // this is an admin message
         // the next value will be 90 or 91,
         // so colour this suit 90 or 91
 
         uint8_t colour = rx16.getData(1);
 
-        // debugSerial.print(colour);
-        // debugSerial.println(", initializing suit.");
+        debugSerial.print(colour);
+        debugSerial.println(", initializing suit.");
+        
         initializeSuitColour(colour);
         
         // TODO:
@@ -97,13 +93,13 @@ void lookForInstruction() {
   
   if (xbee.readPacket(100)) {
     
-    // debugSerial.println("Packet found");
+    debugSerial.println("Packet found");
     
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
       xbee.getResponse().getRx16Response(rx16);
       
-      // debugSerial.print("Instruction found: ");
-
+      debugSerial.print("Instruction found: ");
+      
 //      for (int i = 0; i < rx16.getDataLength(); i++) {
 //        Serial.print(rx16.getData(i));
 //        Serial.print(" ");
@@ -113,11 +109,10 @@ void lookForInstruction() {
       
       if (incoming == suitID) {
 
-        rfiduino.successSound();
-        
         uint8_t colourChangeInstruction = rx16.getData(1);
-        
-        // debugSerial.println(colourChangeInstruction);
+        debugSerial.println(colourChangeInstruction);
+
+        rfiduino.successSound();
         
         // TODO:
         // colourR = getData(1)
@@ -183,4 +178,15 @@ void confirmDelivery() {
 }
 
 
+// ---------------------------------------------------------//
+// ----  Print out the values in the outgoing payload  -----//
+// ---------------------------------------------------------//
+void printOutArray(uint8_t message[]) {
+  // debugSerial.print("{");
+  for(int i = 0; i < sizeof(message) + 1; i++) {
+    // debugSerial.print(message[i]);
+    // if(i != sizeof(message)) // debugSerial.print(", ");
+  }
+  // debugSerial.println("} was transmitted via XBee.");
+}
 
