@@ -55,15 +55,15 @@ void initializeColours() {
     // with is suit 5 (i + 1)
     
     delay(100);
-    
-    debugSerial.print("----------------------- INITIALIZING SUIT  >  ");
-    debugSerial.print(i + 1);
-    debugSerial.println("  < ---------------------");
-    
+        
     suitID = i + 1;
     suitAdminID = suitID + 80;
     
-    if (i == 4) {
+    debugSerial.print("----------------------- INITIALIZING SUIT  >  ");
+    debugSerial.print(suitID);
+    debugSerial.println("  < ---------------------");
+
+    if (suitID == 1 || suitID == 2) {
       
       colourChangeInstruction = (unsigned char)stateArray[i];
       sendAdminMessage();
@@ -71,7 +71,7 @@ void initializeColours() {
     
     else {
      debugSerial.print("Skipping suit ");
-     debugSerial.print(i + 1);
+     debugSerial.print(suitID);
      debugSerial.println(" during testing phase.");
     }
   }

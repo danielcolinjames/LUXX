@@ -2,20 +2,7 @@
 // ------  Looks for a tag, calls appropriate methods ------//
 // ---------------------------------------------------------//
 void lookForTag() {
-  isThereATag();
-
-  if (readCount == 1) {
-    whoTaggedMe();
-    
-  }
-}
-
-
-// ---------------------------------------------------------//
-// -----  Figure out if there is a tag on the reader  ------//
-// ---------------------------------------------------------//
-void isThereATag() {
-
+  
   tagCheck = rfiduino.decodeTag(tagData);
 
   if (tagCheck) {
@@ -23,6 +10,10 @@ void isThereATag() {
   }
   else {
     readCount = 0;
+  }
+
+  if (readCount == 1) {
+    whoTaggedMe();
   }
 }
 
@@ -64,16 +55,14 @@ void whoTaggedMe() {
       
       taggerID = i + 1;
       
-      // debugSerial.print("Tag recognized. Suit: ");
-      // debugSerial.println(taggerID);
+      debugSerial.print("Tag recognized. Suit: ");
+      debugSerial.println(taggerID);
       
       payload[0] = (uint8_t)startBit;
       payload[1] = (uint8_t)suitID;
       payload[2] = (uint8_t)taggerID;
       
       sendToXBee(payload, 3);
-
-      // debugSerial.println("Completed. Returning to loop.");
     }
     i++;
   }

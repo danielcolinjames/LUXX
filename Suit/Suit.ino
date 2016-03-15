@@ -19,7 +19,9 @@
 
 #define PIN 9
 #define NUMPIXELS 16
-#define NUMBER_OF_CARDS 4
+#define NUMBER_OF_CARDS 10
+
+int suitID = 1;
 
 // ---------------------------------------------------------//
 // ---------------   Instantiate libraries  ----------------//
@@ -47,7 +49,6 @@ Rx16Response rx16 = Rx16Response();
 uint8_t firstByte;
 uint8_t startBit = 99;
 
-int suitID = 5;
 
 int suitAdminID = suitID + 80;
 
@@ -72,11 +73,31 @@ boolean verifyKey = false;
 int i;
 
 byte keyTag[NUMBER_OF_CARDS][5] = {
-  {62, 0, 183, 134, 238},   //Tag 1
-  {69, 0, 247, 211, 210},   //Tag 2
-  {71, 0, 48, 85, 67},      //Tag 3
-  {69, 0, 124, 57, 143}     //Tag 4
+  {0, 0, 0, 0, 0},          //Tag 1 - THIS SUIT
+  {114, 0, 95, 73, 207},    //Tag 2
+  {114, 0, 95, 43, 231},    //Tag 3
+  {114, 0, 95, 38, 99},     //Tag 4
+  {114, 0, 95, 44, 0},      //Tag 5
+  {114, 0, 95, 126, 166},   //Tag 6
+  {114, 0, 95, 109, 22},    //Tag 7
+  {114, 0, 95, 98, 170},    //Tag 8
+  {114, 0, 95, 44, 7},      //Tag 9
+  {114, 0, 95, 67, 234}     //Tag 10
 };
+
+/*
+ * 
+ * Suit 1: 114, 0, 95, 44, 9
+ * Suit 2: 114, 0, 95, 73, 207
+ * Suit 3: 114, 0, 95, 43, 231
+ * Suit 4: 114, 0, 95, 38, 99
+ * Suit 5: 114, 0, 95, 44, 0
+ * Suit 6: 114, 0, 95, 126, 166
+ * Suit 7: 114, 0, 95, 109, 22
+ * Suit 8: 114, 0, 95, 98, 170
+ * Suit 9: 114, 0, 95, 44, 7
+ * Suit 10: 114, 0, 95, 67, 234
+ */
 
 
 // ---------------------------------------------------------//
@@ -100,8 +121,8 @@ void setup() {
   Serial.begin(9600);
   xbee.setSerial(Serial);
   
-  // debugSerial.begin(9600);
-  // debugSerial.println("Starting debugger from suit...");  
+  debugSerial.begin(9600);
+  debugSerial.println("Starting debugger from suit...");  
   
   pixels.begin();
   rVal = 255;
@@ -115,8 +136,8 @@ void setup() {
 // ---------------------------------------------------------//
 void loop() {
   lookForAdminMessage();
-  //lookForTag();
-  //stepThroughLights();
+  lookForTag();
+  stepThroughLights();
 }
 
 

@@ -93,21 +93,26 @@ void setSuitColour(int r, int g, int b) {
 // ---------------------------------------------------------//
 // ------------  Change the colour of this suit  -----------//
 // ---------------------------------------------------------//
-void changeSuitColour() {
-  
-  if (currentColour == 90) {
-    rVal = 255;
-    gVal = 0;
-    bVal = 0;
-    setSuitColour(rVal, gVal, bVal);
-    currentColour = 91;
-  }
-  else if (currentColour == 91) {
-    rVal = 0;
-    gVal = 0;
-    bVal = 255;
-    setSuitColour(rVal, gVal, bVal);
-    currentColour = 90;
+void changeSuitColour(uint8_t colourChangeInstruction) {
+  if (colourChangeInstruction == 50) {
+    if (currentColour == 90) {
+      rVal = 255;
+      gVal = 0;
+      bVal = 0;
+      setSuitColour(rVal, gVal, bVal);
+      currentColour = 91;
+      debugSerial.println("Colour changed.");
+    }
+    else if (currentColour == 91) {
+      rVal = 0;
+      gVal = 0;
+      bVal = 255;
+      setSuitColour(rVal, gVal, bVal);
+      currentColour = 90;
+      debugSerial.println("Colour changed.");
+    }
+  } else {
+    debugSerial.println("Suits are the same colour.");
   }
 }
 

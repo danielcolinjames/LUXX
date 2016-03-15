@@ -11,7 +11,7 @@ void sendToXBee(uint8_t toSend[], int bytes) {
   
   debugSerial.println("SENDING TAGGED MESSAGE...");
     
-  if (xbee.readPacket(250)) {
+  if (xbee.readPacket(100)) {
 
     if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
       
@@ -79,6 +79,13 @@ void lookForAdminMessage() {
         // TODO:
         // colour instructions (R, G, B) = getData(1, 2, 3)
       }
+      else if (firstByte == suitID) {
+        uint8_t colourChangeInstruction = rx16.getData(1);
+        debugSerial.print("Colour change instruction intercepted");
+        debugSerial.print(" by lookForAdminMessage(): ");
+        debugSerial.println(colourChangeInstruction);
+        changeSuitColour(colourChangeInstruction);
+      }
     }
   }
 }
@@ -111,9 +118,8 @@ void lookForInstruction() {
 
         uint8_t colourChangeInstruction = rx16.getData(1);
         debugSerial.println(colourChangeInstruction);
+        changeSuitColour(colourChangeInstruction);
 
-        rfiduino.successSound();
-        
         // TODO:
         // colourR = getData(1)
         // colourG = getData(2)

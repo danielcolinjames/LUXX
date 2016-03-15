@@ -24,7 +24,7 @@ void lookForMessages() {
       
       uint8_t firstByte = rx16.getData(0);
       
-  
+      
       debugSerial.print("First byte of incoming message: ");
       debugSerial.println(firstByte);
       
