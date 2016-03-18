@@ -3,44 +3,27 @@
 // ---------------------------------------------------------//
 void sendIWasTagged() {
   
-  payload[0] = (uint8_t)taggedByte;
-  payload[1] = (uint8_t)suitID;
-  payload[2] = (uint8_t)taggerID;
+  payload[0] = taggedByte;
+  payload[1] = suitID;
+  payload[2] = taggerID;
   
   xbee.send(tx);
-  debugSerial.println("Sending...");
-
-  xbee.send(tx);
-  confirmDelivery(
-    "Message 99 to console successful.",
-    "Message 99 to console failed.",
-    "Message 99 to console timed out."
-    );
+  confirmDelivery(taggedByte, 1);
   
   if (messageReceived == false) {
     xbee.send(tx);
-    confirmDelivery(
-      "Message 99 to console successful on second attempt.",
-      "Message 99 to console failed on second attempt.",
-      "Message 99 to console timed out on second attempt."
-      );
+    confirmDelivery(taggedByte, 2);
   }
   
   if (messageReceived == false) {
     xbee.send(tx);
-    confirmDelivery(
-      "Message 99 to console successful on third attempt.",
-      "Message 99 to console failed on third attempt.",
-      "Message 99 to console timed out on third attempt."
-      );
+    confirmDelivery(taggedByte, 3);
   }
 
   if (messageReceived == true) {
     waitingForInstruction = true;
   }
 }
-
-
 
 
 // ---------------------------------------------------------//
@@ -124,31 +107,40 @@ void lookForMessages() {
 // ---------------------------------------------------------//
 // -------  Confirms reception of transmitted packet  ------//
 // ---------------------------------------------------------//
-void confirmDelivery(String success, String failure, String timeout) {
+void confirmDelivery(uint8_t packetType, uint8_t attempt) {
   messageReceived = false;
   if (xbee.readPacket(250)) {
 
     if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
       TxStatusResponse txStatus = TxStatusResponse();
-       xbee.getResponse().getTxStatusResponse(txStatus);
+      xbee.getResponse().getTxStatusResponse(txStatus);
       
-       if (txStatus.getStatus() == SUCCESS) {
-          debugSerial.println(success);
-          messageReceived = true;
-          return;
-       }
-       
-     } else {
-        debugSerial.println(failure);
+      if (txStatus.getStatus() == SUCCESS) {
+        debugSerial.print(packetType);
+        debugSerial.print(" sent successfully to console on attempt ");
+        debugSerial.print(attempt);
+        debugSerial.println(".");
+        
+        messageReceived = true;
         return;
-     }
+      }
+    } else {
+        debugSerial.print(packetType);
+        debugSerial.print(" sent unsuccessfully to console on attempt ");
+        debugSerial.print(attempt);
+        debugSerial.println(".");
+        return;
+    }
   } else if (xbee.getResponse().isError()) {
     debugSerial.println("Error reading packet: ");
     debugSerial.println(xbee.getResponse().getErrorCode());
     return;
   } else {
-    debugSerial.println(timeout);
-    return;
+      debugSerial.print(packetType);
+      debugSerial.print(" message to console on attempt ");
+      debugSerial.print(attempt);
+      debugSerial.println(".");
+      return;
   }
 }
 
