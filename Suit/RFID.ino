@@ -1,7 +1,7 @@
 // ---------------------------------------------------------//
 // ------  Looks for a tag, calls appropriate methods ------//
 // ---------------------------------------------------------//
-void lookForTag() {
+void lookForTags() {
   
   tagCheck = rfiduino.decodeTag(tagData);
 
@@ -57,12 +57,8 @@ void whoTaggedMe() {
       
       debugSerial.print("Tag recognized. Suit: ");
       debugSerial.println(taggerID);
-      
-      payload[0] = (uint8_t)startBit;
-      payload[1] = (uint8_t)suitID;
-      payload[2] = (uint8_t)taggerID;
-      
-      sendToXBee(payload, 3);
+
+      sendIWasTagged();
     }
     i++;
   }

@@ -1,62 +1,69 @@
 // This code is to run from each suit.
-/*
- CHART OF VALUES
- 
- 99 = start bit for "I've been tagged" message to console
- 
- 90 = blue
- 91 = red
-
- 50 = change colour
- 55 = don't change colour
-
-*/
 
 #include <Adafruit_NeoPixel.h>
 #include <RFIDuino.h>
 #include <SoftwareSerial.h>
 #include <XBee.h>
 
-#define PIN 9
+#define PINONE 9
+#define PINTWO 10
 #define NUMPIXELS 16
 #define NUMBER_OF_CARDS 10
 
-int suitID = 1;
+uint8_t suitID = 1;
 
 // ---------------------------------------------------------//
 // ---------------   Instantiate libraries  ----------------//
 // ---------------------------------------------------------//
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, 
-  PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixelsOne = Adafruit_NeoPixel(NUMPIXELS, 
+  PINONE, NEO_GRB + NEO_KHZ800);
 
+Adafruit_NeoPixel pixelsTwo = Adafruit_NeoPixel(NUMPIXELS, 
+  PINTWO, NEO_GRB + NEO_KHZ800);
+  
 RFIDuino rfiduino(1.1);
 
 SoftwareSerial debugSerial(12, 11); // (Rx, Tx)
 
 XBee xbee = XBee();
 
+
+// ---------------------------------------------------------//
+// -------------------- Global variables -------------------//
+// ---------------------------------------------------------//
+uint8_t taggerID = 0;
+
+long prevMillis = millis();
+
+boolean messageReceived = false;
+boolean waitingForInstruction = false;
+
+uint8_t instruction;
+
+int notes[] = { 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
+  1100, 1200, 1300, 1400, 1500, 1600 };
+
+// ---------------------------------------------------------//
+// --------------------- Packet types  ---------------------//
+// ---------------------------------------------------------//
+uint8_t taggedByte = 99;
+uint8_t gameStartByte = 98;
+uint8_t positiveResponseByte = 97;
+uint8_t negativeResponseByte = 96;
+uint8_t gameOverByte = 95;
+
+
 // ---------------------------------------------------------//
 // -------------------   XBee variables  -------------------//
 // ---------------------------------------------------------//
-uint8_t payload[] =  {0, 0, 0};
-//
-Tx16Request tx = Tx16Request(0x1, payload, sizeof(payload));
+uint16_t address = 0x20;
+uint8_t payload[] = { 0, 0, 0 };
+uint8_t packetSize = 3;
+
+Tx16Request tx = Tx16Request(address, payload, packetSize);
 
 TxStatusResponse txStatus = TxStatusResponse();
-
 Rx16Response rx16 = Rx16Response();
-
-uint8_t firstByte;
-uint8_t startBit = 99;
-
-
-int suitAdminID = suitID + 80;
-
-int taggerID = 0;
-
-boolean confirmation = false;
-
-unsigned long prevMillis = millis();
 
 
 // ---------------------------------------------------------//
@@ -73,7 +80,7 @@ boolean verifyKey = false;
 int i;
 
 byte keyTag[NUMBER_OF_CARDS][5] = {
-  {0, 0, 0, 0, 0},          //Tag 1 - THIS SUIT
+  {255, 255, 255, 255, 255},          //Tag 1 - THIS SUIT
   {114, 0, 95, 73, 207},    //Tag 2
   {114, 0, 95, 43, 231},    //Tag 3
   {114, 0, 95, 38, 99},     //Tag 4
@@ -103,15 +110,13 @@ byte keyTag[NUMBER_OF_CARDS][5] = {
 // ---------------------------------------------------------//
 // --------------------   LED variables  -------------------//
 // ---------------------------------------------------------//
-int currentColour = 0;
+uint8_t currentColour = 0;
 
-int rVal = 0;
-int gVal = 0;
-int bVal = 0;
+uint8_t rVal = 0;
+uint8_t gVal = 0;
+uint8_t bVal = 0;
 
 long lightMillis = 0;
-
-//unsigned char colourChangeInstruction = 0;
 
 
 // ---------------------------------------------------------//
@@ -124,7 +129,9 @@ void setup() {
   debugSerial.begin(9600);
   debugSerial.println("Starting debugger from suit...");  
   
-  pixels.begin();
+  pixelsOne.begin();
+  pixelsTwo.begin();
+  
   rVal = 255;
   gVal = 255;
   bVal = 255;
@@ -135,10 +142,40 @@ void setup() {
 // -----------------------   Loop   ------------------------//
 // ---------------------------------------------------------//
 void loop() {
-  lookForAdminMessage();
-  lookForTag();
+  lookForTags();
+  lookForMessages();
   stepThroughLights();
 }
+
+
+// ---------------------------------------------------------//
+// ----------------------- Game over -----------------------//
+// ---------------------------------------------------------//
+void gameOver() {
+  boolean gameRestartDetected = false;
+  
+  while (gameRestartDetected == false) {
+    gameOverLights();
+
+    xbee.readPacket();
+  
+    if (xbee.getResponse().isAvailable()) {
+      debugSerial.print("Packet found.");
+      if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
+        xbee.getResponse().getRx16Response(rx16);
+        
+        uint8_t packetType = rx16.getData(0);
+
+        if (packetType == 98) {
+          gameRestartDetected = true;
+          uint8_t colour = rx16.getData(1);
+          initializeSuitColour(colour);
+        }
+      }
+    }
+  }
+}
+
 
 
 

@@ -22,9 +22,9 @@
 #include <SoftwareSerial.h>
 
 /*
-This example is for Series 1 XBee (802.15.4)
-Receives either a RX16 or RX64 packet and sets a PWM value based on packet data.
-Error led is flashed if an unexpected packet is received
+  This example is for Series 1 XBee (802.15.4)
+  Receives either a RX16 or RX64 packet and sets a PWM value based on packet data.
+  Error led is flashed if an unexpected packet is received
 */
 
 XBee xbee = XBee();
@@ -64,7 +64,7 @@ void loop() {
     	option = rx16.getOption();
     	data = rx16.getData(0);
       data1 = rx16.getData(1);
-
+      
       digitalWrite(rfiduino.led2,HIGH);
       
       debugSerial.print("data(0) = ");

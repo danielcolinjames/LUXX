@@ -39,8 +39,10 @@ void stepThroughLights() {
 // -----------   Turn off the previous light   -------------//
 // ---------------------------------------------------------//
 void turnOffPreviousLight(int prevLight) {
-  pixels.setPixelColor(prevLight, pixels.Color(0, 0, 0));
-  pixels.show();
+  pixelsOne.setPixelColor(prevLight, pixelsOne.Color(0, 0, 0));
+  pixelsOne.show();
+  pixelsTwo.setPixelColor(prevLight, pixelsTwo.Color(0, 0, 0));
+  pixelsTwo.show();
 }
 
 
@@ -48,8 +50,10 @@ void turnOffPreviousLight(int prevLight) {
 // --------- Turn on the next light in the sequence --------//
 // ---------------------------------------------------------//
 void turnOnNextLight(int currLight) {
-  pixels.setPixelColor(currLight, pixels.Color(rVal, gVal, bVal));
-  pixels.show();
+  pixelsOne.setPixelColor(currLight, pixelsOne.Color(rVal, gVal, bVal));
+  pixelsOne.show();
+  pixelsTwo.setPixelColor(currLight, pixelsTwo.Color(rVal, gVal, bVal));
+  pixelsTwo.show();
 }
 
 
@@ -57,23 +61,84 @@ void turnOnNextLight(int currLight) {
 // ---------  Initialize suit colour at game start  --------//
 // ---------------------------------------------------------//
 void initializeSuitColour(int colour) {
-  
-  // 90 = blue
-  // 91 = red
-
-  if (colour == 90) {
-    currentColour = 90;
-    rVal = 0;
-    gVal = 0;
-    bVal = 255;
-    setSuitColour(rVal, gVal, bVal);
-  }
-  else if (colour == 91) {
-    currentColour = 91;
+  if (colour == 89) {
     rVal = 255;
     gVal = 0;
     bVal = 0;
-    setSuitColour(rVal, gVal, bVal);
+    activateSuit(rVal, gVal, bVal);
+    currentColour = 89;
+    digitalWrite(rfiduino.led2, LOW); // green off
+    digitalWrite(rfiduino.led1, HIGH); // red on
+    debugSerial.println("Starting suit as red.");
+  }
+  else if (colour == 88) {
+    rVal = 0;
+    gVal = 0;
+    bVal = 255;
+    activateSuit(rVal, gVal, bVal);
+    currentColour = 88;
+    digitalWrite(rfiduino.led1, LOW); // red off
+    digitalWrite(rfiduino.led2, HIGH); // green on
+    debugSerial.println("Starting suit as blue.");
+  }
+}
+
+
+// ---------------------------------------------------------//
+// -----  Activate the suit for the start of the game  -----//
+// ---------------------------------------------------------//
+void activateSuit(int r, int g, int b) {
+
+  for (int i = 0; i < NUMPIXELS; i++) {
+    pixelsOne.setPixelColor(i, pixelsOne.Color(r, g, b));
+    pixelsOne.show();
+    pixelsTwo.setPixelColor(i, pixelsTwo.Color(r, g, b));
+    pixelsTwo.show();
+    tone(rfiduino.buzzer, notes[i], 50);
+    delay(50);
+    noTone(rfiduino.buzzer);
+    delay(50);
+  }
+  tone(rfiduino.buzzer, notes[15], 100);
+  delay(300);
+  noTone(rfiduino.buzzer);
+  delay(300);
+
+  tone(rfiduino.buzzer, notes[15], 100);
+  delay(300);
+  noTone(rfiduino.buzzer);
+  delay(300);
+
+  tone(rfiduino.buzzer, notes[15], 100);
+  delay(300);
+  noTone(rfiduino.buzzer);
+  delay(300);
+}
+
+
+// ---------------------------------------------------------//
+// ------------  Change the colour of this suit  -----------//
+// ---------------------------------------------------------//
+void setColour(uint8_t colour) {
+  if (colour == 89) {
+    rVal = 255;
+    gVal = 0;
+    bVal = 0;
+    changeColour(rVal, gVal, bVal);
+    currentColour = 89;
+    digitalWrite(rfiduino.led2, LOW); // green off
+    digitalWrite(rfiduino.led1, HIGH); // red on
+    debugSerial.println("Colour changed to red.");
+  }
+  else if (colour == 88) {
+    rVal = 0;
+    gVal = 0;
+    bVal = 255;
+    changeColour(rVal, gVal, bVal);
+    currentColour = 88;
+    digitalWrite(rfiduino.led1, LOW); // red off
+    digitalWrite(rfiduino.led2, HIGH); // green on
+    debugSerial.println("Colour changed to blue.");
   }
 }
 
@@ -81,56 +146,39 @@ void initializeSuitColour(int colour) {
 // ---------------------------------------------------------//
 // -----------  Light up the LEDs on the suit  -------------//
 // ---------------------------------------------------------//
-void setSuitColour(int r, int g, int b) {
+void changeColour(int r, int g, int b) {
 
   for (int i = 0; i < NUMPIXELS; i++) {
-    pixels.setPixelColor(i, pixels.Color(r, g, b));
-    pixels.show();
+    pixelsOne.setPixelColor(i, pixelsOne.Color(r, g, b));
+    pixelsOne.show();
+    pixelsTwo.setPixelColor(i, pixelsTwo.Color(r, g, b));
+    pixelsTwo.show();
+  }
+  rfiduino.successSound();
+}
+
+
+// ---------------------------------------------------------//
+// ------------------ Game over lights ---------------------//
+// ---------------------------------------------------------//
+void gameOverLights() {
+  for (int i = 0; i < NUMPIXELS; i++) {
+    pixelsOne.setPixelColor(i, pixelsOne.Color(rVal, gVal, bVal));
+    pixelsOne.show();
+    pixelsTwo.setPixelColor(i, pixelsTwo.Color(rVal, gVal, bVal));
+    pixelsTwo.show();
+  }
+  
+  tone(rfiduino.buzzer, notes[0], 250);
+  delay(250);
+  noTone(rfiduino.buzzer);
+  delay(250);
+  
+  for (int i = 0; i < NUMPIXELS; i++) {
+    pixelsOne.setPixelColor(i, pixelsOne.Color(0, 0, 0));
+    pixelsOne.show();
+    pixelsTwo.setPixelColor(i, pixelsTwo.Color(0, 0, 0));
+    pixelsTwo.show();
   }
 }
-
-
-// ---------------------------------------------------------//
-// ------------  Change the colour of this suit  -----------//
-// ---------------------------------------------------------//
-void changeSuitColour(uint8_t colourChangeInstruction) {
-  if (colourChangeInstruction == 50) {
-    if (currentColour == 90) {
-      rVal = 255;
-      gVal = 0;
-      bVal = 0;
-      setSuitColour(rVal, gVal, bVal);
-      currentColour = 91;
-      debugSerial.println("Colour changed.");
-    }
-    else if (currentColour == 91) {
-      rVal = 0;
-      gVal = 0;
-      bVal = 255;
-      setSuitColour(rVal, gVal, bVal);
-      currentColour = 90;
-      debugSerial.println("Colour changed.");
-    }
-  } else {
-    debugSerial.println("Suits are the same colour.");
-  }
-}
-
-
-// ---------------------------------------------------------//
-// ---  For debugging with the RFIDuino's built-in LEDs  ---//
-// ---------------------------------------------------------//
-
-void debug(int flickers, int gap) {
-//  for (int i = 0; i < flickers; i++) {
-//    if (millis() - lightMillis > gap) {
-//      prevMillis = 0;
-//      digitalWrite(rfiduino.led1,HIGH);
-//    }
-//    else {
-//      digitalWrite(rfiduino.led1,LOW);
-//    }
-//  }
-}
-
 

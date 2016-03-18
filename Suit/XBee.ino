@@ -1,37 +1,42 @@
 // ---------------------------------------------------------//
 // ------  Send suitID and taggerID to the console  ------//
 // ---------------------------------------------------------//
-void sendToXBee(uint8_t toSend[], int bytes) {
-
-  debugSerial.println("Sending...");
+void sendIWasTagged() {
   
-  tx = Tx16Request(0x1, toSend, bytes);
+  payload[0] = (uint8_t)taggedByte;
+  payload[1] = (uint8_t)suitID;
+  payload[2] = (uint8_t)taggerID;
   
   xbee.send(tx);
-  
-  debugSerial.println("SENDING TAGGED MESSAGE...");
-    
-  if (xbee.readPacket(100)) {
+  debugSerial.println("Sending...");
 
-    if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
-      
-      xbee.getResponse().getTxStatusResponse(txStatus);
-      
-      if (txStatus.getStatus() == SUCCESS) {
-        
-        lookForInstruction();
-        digitalWrite(rfiduino.led1, HIGH);
-        debugSerial.println("SUCCESSFUL TAGGED MESSAGE");
-        
-      } else {
-          debugSerial.println("FAILURE");
-      }
-    }
-  } else if (xbee.getResponse().isError()) {
-    debugSerial.println("ERROR");
-  } else {
-    digitalWrite(rfiduino.led1, LOW);
-    debugSerial.println("TIMEOUT");
+  xbee.send(tx);
+  confirmDelivery(
+    "Message 99 to console successful.",
+    "Message 99 to console failed.",
+    "Message 99 to console timed out."
+    );
+  
+  if (messageReceived == false) {
+    xbee.send(tx);
+    confirmDelivery(
+      "Message 99 to console successful on second attempt.",
+      "Message 99 to console failed on second attempt.",
+      "Message 99 to console timed out on second attempt."
+      );
+  }
+  
+  if (messageReceived == false) {
+    xbee.send(tx);
+    confirmDelivery(
+      "Message 99 to console successful on third attempt.",
+      "Message 99 to console failed on third attempt.",
+      "Message 99 to console timed out on third attempt."
+      );
+  }
+
+  if (messageReceived == true) {
+    waitingForInstruction = true;
   }
 }
 
@@ -39,52 +44,77 @@ void sendToXBee(uint8_t toSend[], int bytes) {
 
 
 // ---------------------------------------------------------//
-// ----  Look for admin messages addressed to this suit ----//
+// --------  Look for messages addressed to this suit ------//
 // ---------------------------------------------------------//
-void lookForAdminMessage() {
+void lookForMessages() {
+
+  // if this suit recently sent a message to the console,
+  // look for a response with instructions
+  
+  if (waitingForInstruction == true) {
+    if (xbee.readPacket(250)) {
+      if (xbee.getResponse().isAvailable()) {
+        debugSerial.print("Packet found.");
+        if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
+          xbee.getResponse().getRx16Response(rx16);
+          
+          uint8_t packetType = rx16.getData(0);
+          debugSerial.print(" Packet type = ");
+          debugSerial.print(packetType);
+          debugSerial.println(".");
+
+          // if it's a 96, don't do anything (but still look
+          // for game start or end messages
+          if (packetType != 96) {
+            // if it's a 97, change to the instruction's colour
+            if (packetType == 97) {
+              instruction = rx16.getData(1);
+              setColour(instruction);
+              debugSerial.print("Setting colour to ");
+              debugSerial.println(instruction);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // look for game start or end commands
   
   xbee.readPacket();
-
-  digitalWrite(rfiduino.led1, LOW);
   
   if (xbee.getResponse().isAvailable()) {
-    // got something
-    debugSerial.println("Packet found by lookForAdminMessage()");
-    
+    debugSerial.print("Packet found.");
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
-    // got a rx16 packet
-      
       xbee.getResponse().getRx16Response(rx16);
-      digitalWrite(rfiduino.led1, HIGH);
       
-      firstByte = rx16.getData(0);
+      uint8_t packetType = rx16.getData(0);
       
-      debugSerial.print("firstByte = ");
-      debugSerial.println(firstByte);
+      debugSerial.print(" Packet type = ");
+      debugSerial.print(packetType);
+      debugSerial.println(".");
 
-      if (firstByte == suitAdminID) {
-        
-        debugSerial.print("Admin message found: ");
-        // this is an admin message
-        // the next value will be 90 or 91,
-        // so colour this suit 90 or 91
+      // game over command
+      if (packetType == 95) {
+        rVal = 255;
+        gVal = 255;
+        bVal = 255;
 
+        digitalWrite(rfiduino.led1, LOW); // red off
+        digitalWrite(rfiduino.led2, LOW); // green off
+
+        gameOver();
+      }
+
+      // game start command, next byte in payload is
+      // going to be the starting colour
+      else if (packetType == 98) {
         uint8_t colour = rx16.getData(1);
-
+        debugSerial.print("Starting colour received: ");
         debugSerial.print(colour);
-        debugSerial.println(", initializing suit.");
+        debugSerial.println(".");
         
         initializeSuitColour(colour);
-        
-        // TODO:
-        // colour instructions (R, G, B) = getData(1, 2, 3)
-      }
-      else if (firstByte == suitID) {
-        uint8_t colourChangeInstruction = rx16.getData(1);
-        debugSerial.print("Colour change instruction intercepted");
-        debugSerial.print(" by lookForAdminMessage(): ");
-        debugSerial.println(colourChangeInstruction);
-        changeSuitColour(colourChangeInstruction);
       }
     }
   }
@@ -92,107 +122,34 @@ void lookForAdminMessage() {
 
 
 // ---------------------------------------------------------//
-// ---------  Look for a colour change instruction  --------//
+// -------  Confirms reception of transmitted packet  ------//
 // ---------------------------------------------------------//
-void lookForInstruction() {
-  
-  // debugSerial.println("Looking for instruction...");
-  
-  if (xbee.readPacket(100)) {
-    
-    debugSerial.println("Packet found");
-    
-    if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
-      xbee.getResponse().getRx16Response(rx16);
-      
-      debugSerial.print("Instruction found: ");
-      
-//      for (int i = 0; i < rx16.getDataLength(); i++) {
-//        Serial.print(rx16.getData(i));
-//        Serial.print(" ");
-//      }
-      
-      uint8_t incoming = rx16.getData(0);
-      
-      if (incoming == suitID) {
+void confirmDelivery(String success, String failure, String timeout) {
+  messageReceived = false;
+  if (xbee.readPacket(250)) {
 
-        uint8_t colourChangeInstruction = rx16.getData(1);
-        debugSerial.println(colourChangeInstruction);
-        changeSuitColour(colourChangeInstruction);
-
-        // TODO:
-        // colourR = getData(1)
-        // colourG = getData(2)
-        // colourB = getData(3)
-      }
-    }
-  }
-}
-
-
-// ---------------------------------------------------------//
-// ---------  Confirm message's successful delivery --------//
-// ---------------------------------------------------------//
-void confirmDelivery() {
-  confirmation = false;
-  
-  // if (xbee.getResponse().isAvailable()) {
-  
-  if (xbee.readPacket(100)) {
-//    debugSerial.print("RECEIVING MESSAGE... millis() = ");
-//    debugSerial.println(millis());
-//    
-//    debugSerial.println("Packet received from a remote XBee.");
-    
-    // should be a znet tx status
     if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
-//      debugSerial.println("Packet is a TX status response.");
+      TxStatusResponse txStatus = TxStatusResponse();
+       xbee.getResponse().getTxStatusResponse(txStatus);
       
-      xbee.getResponse().getTxStatusResponse(txStatus);
-      
-      // get the delivery status, the fifth byte
-      if (txStatus.getStatus() == SUCCESS) {
-        // message was sent successfully
-        
-//        debugSerial.println("SUCCESS");
-        confirmation = true;
-        
-        txStatus = TxStatusResponse();
-        
-//        debugSerial.println("After txStatus = TxStatusResponse();");
-        
-      } else {
-        // the remote XBee did not receive our packet
-//        debugSerial.println("XBee didn't receive packet.");
-      }
-    }
-  }
-  
-  else if (xbee.getResponse().isError()) {
-    
-//    debugSerial.print("Error reading packet.  Error code: ");
-//    debugSerial.println(xbee.getResponse().getErrorCode());
-  }
-  
-  else {
-    
-    // local XBee did not provide a timely TX Status Response. 
-    // Radio is not configured properly or connected.
-    
-//    debugSerial.println("No TX status response received.");
+       if (txStatus.getStatus() == SUCCESS) {
+          debugSerial.println(success);
+          messageReceived = true;
+          return;
+       }
+       
+     } else {
+        debugSerial.println(failure);
+        return;
+     }
+  } else if (xbee.getResponse().isError()) {
+    debugSerial.println("Error reading packet: ");
+    debugSerial.println(xbee.getResponse().getErrorCode());
+    return;
+  } else {
+    debugSerial.println(timeout);
+    return;
   }
 }
 
-
-// ---------------------------------------------------------//
-// ----  Print out the values in the outgoing payload  -----//
-// ---------------------------------------------------------//
-void printOutArray(uint8_t message[]) {
-  // debugSerial.print("{");
-  for(int i = 0; i < sizeof(message) + 1; i++) {
-    // debugSerial.print(message[i]);
-    // if(i != sizeof(message)) // debugSerial.print(", ");
-  }
-  // debugSerial.println("} was transmitted via XBee.");
-}
 

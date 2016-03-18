@@ -1,51 +1,59 @@
+// This code will run on the console and control all the suits
+
 #include <XBee.h>
 #include <SoftwareSerial.h>
 
 
 // ---------------------------------------------------------//
-// ------------  Game state and logic variables ------------//
+// --------------------  Global arrays ---------------------//
 // ---------------------------------------------------------//
+// 89 for blue, 88 for red, 80 for purple/white
 
-// 90 for blue, 91 for red, 92 for purple/white
+uint8_t states[] = { 80, 80, 80, 80, 80,
+  80, 80, 80, 80, 80 };
+  
+boolean activeSuits[] = { false, false, false, false, false,
+  false, false, false, false, false };
+  
+uint16_t addresses[] = { 0x1, 0x2, 0x3, 0x4, 0x5, 
+  0x6, 0x7, 0x8, 0x9, 0x10 };
 
-int stateArray[] = { 90, 90, 90, 90, 90, 90, 90, 90, 90, 90 };
 
+// ---------------------------------------------------------//
+// --------------------- Packet types  ---------------------//
+// ---------------------------------------------------------//
+uint8_t taggedByte = 99;
+uint8_t gameStartByte = 98;
+uint8_t positiveResponseByte = 97;
+uint8_t negativeResponseByte = 96;
+uint8_t gameOverByte = 95;
+
+
+// ---------------------------------------------------------//
+// -------------------  Global variables  ------------------//
+// ---------------------------------------------------------//
 uint8_t suitID;
 uint8_t taggerID;
 
-// admin messages are sent at the start of a new game
-// and they tell each suit which colour it starts as
+uint8_t gameMode;
 
-uint8_t suitAdminID;
-uint8_t taggerAdminID;
-
-int gameMode = 0;
+boolean instructionReceived;
 
 
 // ---------------------------------------------------------//
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
 
-SoftwareSerial xbeeSerial (2, 3);
-
-SoftwareSerial debugSerial (9, 8); //rx, tx
+// SoftwareSerial debugSerial (9, 8); //rx, tx
 
 XBee xbee = XBee();
 
-uint8_t payload[] =  {0, 0, 0};
+uint16_t address = 0x0;
+uint8_t payload[] = {0};
+uint8_t packetSize = 0;
 
-Tx16Request tx = Tx16Request(0x2, payload, sizeof(payload));
-TxStatusResponse txStatus = TxStatusResponse();
+Tx16Request tx = Tx16Request(address, payload, packetSize);
 
-Rx16Response rx16 = Rx16Response();
-
-uint8_t startBit = 99;
-
-unsigned char colourChangeInstruction = 0;
-
-int tempSuitState = 0;
-
-boolean confirmation = false;
 
 // ---------------------------------------------------------//
 // ------------------------  Setup  ------------------------//
@@ -53,12 +61,10 @@ boolean confirmation = false;
 void setup() {
   
   Serial.begin(9600);
-  //xbeeSerial.begin(9600);
-  
   xbee.setSerial(Serial);
   
-  debugSerial.begin(9600);
-  debugSerial.println("Starting...");
+  // debugSerial.begin(9600);
+  // debugSerial.println("Starting...");
   
   delay(10);
   
@@ -73,6 +79,8 @@ void setup() {
 // ---------------------------------------------------------//
 void loop() {
   lookForMessages();
+  gameStateCheck();
+  sendToTouch();
 }
 
 

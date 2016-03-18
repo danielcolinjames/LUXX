@@ -45,12 +45,12 @@ void setup() {
 
   delay(5000);
   debugSerial.println("sendAdminMessage()");
-  
-  sendAdminMessage();
 }
 
 void loop() {
-  //sendPacket();
+  sendPacket(99, 5, 0x1);
+  sendPacket(99, 21, 0x2);
+  
   //lookForPacket();
 }
 
@@ -83,12 +83,12 @@ void lookForPacket() {
 }
 
 
-void sendPacket() {
+void sendPacket(uint8_t payload0, uint8_t payload1, uint16_t address) {
   if (millis() - start > 3000) {
-    payload[0] = 99;
-    payload[1] = 50;
+    payload[0] = payload0;
+    payload[1] = payload1;
     
-    tx = Tx16Request(0x2, payload, 2);
+    tx = Tx16Request(address, payload, 2);
 
     xbee.send(tx);
   }
@@ -99,8 +99,9 @@ void sendPacket() {
       xbee.getResponse().getTxStatusResponse(txStatus);
       
        if (txStatus.getStatus() == SUCCESS) {
-
-          debugSerial.println("SUCCESS");
+          debugSerial.print("Sent to ");
+          debugSerial.print((String)address);
+          debugSerial.println(", SUCCESS");
           
        } else {
           debugSerial.println("FAILURE");
