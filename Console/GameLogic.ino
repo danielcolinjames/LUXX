@@ -50,28 +50,32 @@ void assignStartingColours() {
 // ----------- Check to see if the game should end ---------//
 // ---------------------------------------------------------//
 void gameStateCheck() {
-  int sum = 0;
-  for (int i = 0; i < (sizeof(states)/sizeof(int)); i++) {
-    if (activeSuits[i] == true) {
-      sum = sum + states[i];
-    }
-  }
   
-  if (sum == (89 * (sizeof(activeSuits)/sizeof(int)))) {
-    debugSerial.println("All suits are red. Red wins.");
-    printOutStates();
-    sendGameOver();
-  }
+  if (states[0] == states[1] == states[2] == states[3] == states[4]
+    == states[5] == states[6] == states[7] == states[8] == states[9]) {
+      debugSerial.println();
+      debugSerial.println();
+      debugSerial.println("Game over, everyone is the same colour.");
 
-  if (sum == (88 * (sizeof(activeSuits)/sizeof(int)))) {
-    debugSerial.println("All suits are blue. Blue wins.");
-    printOutStates();
-    sendGameOver();
+      gameOver();
   }
   
   if (millis() > 300000) {
-    sendGameOver();
+    debugSerial.println();
+    debugSerial.println();
     debugSerial.println("Game over, time limit reached.");
+    gameOver();
+  }
+}
+
+
+// ---------------------------------------------------------//
+// ----------- Check to see if the game should end ---------//
+// ---------------------------------------------------------//
+void gameOver() {
+  sendGameOver();
+  while(1) {
+    // game over, wait for manual reset (from Max?)
   }
 }
 
@@ -80,9 +84,10 @@ void gameStateCheck() {
 // ----------   Prints out the state of each suit  ---------//
 // ---------------------------------------------------------//
 void printOutStates() {
+  debugSerial.println();
   debugSerial.println("GAME STATE: ");
   
-  for (int i = 0; i < (sizeof(states)/sizeof(int)); i++) {
+  for (int i = 0; i < 10; i++) {
     debugSerial.print("Suit ");
     debugSerial.print(i + 1);
     debugSerial.print(" = ");

@@ -41,7 +41,7 @@ void printCurrentTag() {
 // ---------------------------------------------------------//
 void whoTaggedMe() {
   
-  // debugSerial.println("Tag detected. Looking for match...");
+  debugSerial.println("Tag detected. Looking for match...");
   
   verifyKey = false;
   
@@ -61,6 +61,9 @@ void whoTaggedMe() {
       sendIWasTagged();
     }
     i++;
+  }
+  if (verifyKey == false) {
+    debugSerial.println("No match found.");
   }
 }
 

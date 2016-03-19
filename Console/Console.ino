@@ -9,13 +9,13 @@
 // ---------------------------------------------------------//
 // 89 for blue, 88 for red, 80 for purple/white
 
-uint8_t states[10] = { 80, 80, 80, 80, 80,
+uint8_t states[] = { 80, 80, 80, 80, 80,
   80, 80, 80, 80, 80 };
   
-boolean activeSuits[10] = { false, false, false, false, false,
+boolean activeSuits[] = { false, false, false, false, false,
   false, false, false, false, false };
   
-uint16_t addresses[10] = { 0x1, 0x2, 0x3, 0x4, 0x5, 
+uint16_t addresses[] = { 0x1, 0x2, 0x3, 0x4, 0x5, 
   0x6, 0x7, 0x8, 0x9, 0x10 };
 
 

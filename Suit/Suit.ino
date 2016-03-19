@@ -7,18 +7,20 @@
 
 #define PINONE 9
 #define PINTWO 10
-#define NUMPIXELS 16
+#define NUMPIXELSONE 9
+#define NUMPIXELSTWO 9
 #define NUMBER_OF_CARDS 10
 
 uint8_t suitID = 1;
 
+
 // ---------------------------------------------------------//
 // ---------------   Instantiate libraries  ----------------//
 // ---------------------------------------------------------//
-Adafruit_NeoPixel pixelsOne = Adafruit_NeoPixel(NUMPIXELS, 
+Adafruit_NeoPixel pixelsOne = Adafruit_NeoPixel(NUMPIXELSONE, 
   PINONE, NEO_GRB + NEO_KHZ800);
 
-Adafruit_NeoPixel pixelsTwo = Adafruit_NeoPixel(NUMPIXELS, 
+Adafruit_NeoPixel pixelsTwo = Adafruit_NeoPixel(NUMPIXELSTWO, 
   PINTWO, NEO_GRB + NEO_KHZ800);
   
 RFIDuino rfiduino(1.1);
@@ -34,9 +36,15 @@ XBee xbee = XBee();
 uint8_t taggerID = 0;
 
 long prevMillis = millis();
+long prevMillisOne = millis();
+long prevMillisTwo = millis();
+
+long gameOverMillis = millis();
 
 boolean messageReceived = false;
-boolean waitingForInstruction = false;
+
+boolean soundOn = false;
+boolean soundOff = true;
 
 uint8_t instruction;
 
@@ -71,8 +79,6 @@ Rx16Response rx16 = Rx16Response();
 // ---------------------------------------------------------//
 byte tagData[5]; // holds the ID numbers from the tag
 byte tagDataBuffer[5]; // a buffer for verifying the tag data
-
-int loopCounter = 0;
 
 int readCount = 0;
 boolean tagCheck = false;
@@ -110,13 +116,19 @@ byte keyTag[NUMBER_OF_CARDS][5] = {
 // ---------------------------------------------------------//
 // --------------------   LED variables  -------------------//
 // ---------------------------------------------------------//
-uint8_t currentColour = 0;
+uint8_t currentColour = 80;
 
 uint8_t rVal = 0;
 uint8_t gVal = 0;
 uint8_t bVal = 0;
 
 long lightMillis = 0;
+long lightMillisOne = 0;
+long lightMillisTwo = 0;
+
+int loopCounter = 0;
+int loopCounterOne = 0;
+int loopCounterTwo = 0;
 
 
 // ---------------------------------------------------------//
@@ -153,12 +165,14 @@ void loop() {
 // ---------------------------------------------------------//
 void gameOver() {
   boolean gameRestartDetected = false;
+  debugSerial.println("GAME OVER UNTIL 98 RECEIVED");
   
   while (gameRestartDetected == false) {
-    gameOverLights();
-
+    gameOverBeep();
+    stepThroughLights();
+    
     xbee.readPacket();
-  
+    
     if (xbee.getResponse().isAvailable()) {
       debugSerial.print("Packet found.");
       if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
@@ -175,7 +189,4 @@ void gameOver() {
     }
   }
 }
-
-
-
 

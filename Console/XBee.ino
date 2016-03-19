@@ -30,15 +30,17 @@ void lookForMessages() {
         
         suitID = rx16.getData(1);
         taggerID = rx16.getData(2);
-        
-        debugSerial.print("SUIT:     >  ");
+
+        debugSerial.println();
+        debugSerial.print("Suit  ");
         debugSerial.print(suitID);
         
-        debugSerial.print("  <     WAS TAGGED BY SUIT:     >  ");
+        debugSerial.print(" was tagged by suit ");
         debugSerial.print(taggerID);
-        debugSerial.println("  <");
-
+        debugSerial.println(".");
+        
         sendInstruction();
+        printOutStates();
       }
     }
   }
@@ -49,49 +51,51 @@ void lookForMessages() {
 // -------- Tell each suit which colour it starts as  ------//
 // ---------------------------------------------------------//
 void sendStartingColours() {
-  for (int i = 0; i < (sizeof(states)/sizeof(int)); i++) {
+  for (int i = 0; i < 10; i++) {
     suitID = i + 1;
     
-    if (i == 1 || i == 2) {
+    if (suitID == 1 || suitID == 2) {
       debugSerial.print("----------------------- ");
       debugSerial.print("INITIALIZING SUIT  >  ");
       debugSerial.print(suitID);
       debugSerial.println("  < ---------------------");
+      
+      delay(200);
+      
+      address = addresses[suitID - 1];
+      
+      payload[0] = gameStartByte;
+      payload[1] = states[suitID - 1];
+
+      packetSize = 2;
+      
+      tx = Tx16Request(address, payload, packetSize);
+      
+      xbee.send(tx);
+      confirmDelivery(gameStartByte, 1, suitID);
+      
+      if (suitReceivedInstruction == false) {
+        xbee.send(tx);
+        confirmDelivery(gameStartByte, 2, suitID);
+      }
+      
+      if (suitReceivedInstruction == false) {
+        xbee.send(tx);
+        confirmDelivery(gameStartByte, 3, suitID);
+      }
     }
     
     else {
-      debugSerial.print("Skipping suit ");
+      debugSerial.print("----- Skipping suit ");
       debugSerial.print(suitID);
-      debugSerial.println(" during testing phase.");
-    }
-    
-    delay(100);
-    
-    address = addresses[i];
-    
-    payload[0] = gameStartByte;
-    payload[1] = states[i];
-
-    packetSize = 2;
-    
-    xbee.send(tx);
-    confirmDelivery(gameStartByte, 1, suitID);
-    
-    if (suitReceivedInstruction == false) {
-      xbee.send(tx);
-      confirmDelivery(gameStartByte, 2, suitID);
-    }
-    
-    if (suitReceivedInstruction == false) {
-      xbee.send(tx);
-      confirmDelivery(gameStartByte, 3, suitID);
+      debugSerial.println(" during testing phase. -----");
     }
     
     if (suitReceivedInstruction == true) {
-      activeSuits[i] = true;
+      activeSuits[suitID - 1] = true;
     }
     else {
-      activeSuits[i] = false;
+      activeSuits[suitID - 1] = false;
     }
   }
 }
@@ -101,7 +105,7 @@ void sendStartingColours() {
 // -----------   Tell each suit the game is over   ---------//
 // ---------------------------------------------------------//
 void sendGameOver() {
-  for (int i = 0; i < (sizeof(states)/sizeof(int)); i++) {
+  for (int i = 0; i < 10; i++) {
     suitID = i + 1;
 
     // only turn off the suits that are active this round
@@ -112,41 +116,58 @@ void sendGameOver() {
         debugSerial.print("DEACTIVATING SUIT  >  ");
         debugSerial.print(suitID);
         debugSerial.println("  < ---------------------");
-      }
+        
+        delay(200);
+        
+        address = addresses[suitID - 1];
+        payload[0] = gameOverByte;
+        packetSize = 1;
+        
+        tx = Tx16Request(address, payload, packetSize);
+
+        // check 5 times instead of 3, because game over
+        // is more important than a regular message
+        xbee.send(tx);
+        confirmDelivery(gameOverByte, 1, suitID);
+        
+        if (suitReceivedInstruction == false) {
+          xbee.send(tx);
+          confirmDelivery(gameOverByte, 2, suitID);
+        }
+        
+        if (suitReceivedInstruction == false) {
+          xbee.send(tx);
+          confirmDelivery(gameOverByte, 3, suitID);
+        }
+        
+        if (suitReceivedInstruction == false) {
+          delay(500);
+          xbee.send(tx);
+          confirmDelivery(gameOverByte, 4, suitID);
+        }
+        
+        if (suitReceivedInstruction == false) {
+          delay(500);
+          xbee.send(tx);
+          confirmDelivery(gameOverByte, 5, suitID);
+        }
+        
+        if (suitReceivedInstruction == true) {
+          activeSuits[suitID - 1] = false;
+        }
+        else {
+          activeSuits[suitID - 1] = true;
+        }
+     }
       
       else {
-        debugSerial.print("Skipping suit ");
+        debugSerial.print("----- Skipping suit ");
         debugSerial.print(suitID);
-        debugSerial.println(" during testing phase.");
-      }
-      
-      delay(100);
-      
-      address = addresses[suitID - 1];
-      payload[0] = gameOverByte;
-      packetSize = 1;
-      
-      xbee.send(tx);
-      confirmDelivery(gameOverByte, 1, suitID);
-      
-      if (suitReceivedInstruction == false) {
-        xbee.send(tx);
-        confirmDelivery(gameOverByte, 2, suitID);
-      }
-      
-      if (suitReceivedInstruction == false) {
-        xbee.send(tx);
-        confirmDelivery(gameOverByte, 3, suitID);
-      }
-      
-      if (suitReceivedInstruction == true) {
-        activeSuits[suitID - 1] = false;
-      }
-      else {
-        activeSuits[suitID - 1] = true;
+        debugSerial.println(" during testing phase. -----");
       }
     }
   }
+  gameOver();
 }
 
 
@@ -162,9 +183,11 @@ void sendInstruction() {
       // taggerID doesn't know anything happened
       // so there's no need to address it at all
       
-      address = addresses[suitID];
+      address = addresses[suitID - 1];
       payload[0] = negativeResponseByte;
       packetSize = 1;
+      
+      tx = Tx16Request(address, payload, packetSize);
       
       xbee.send(tx);
       confirmDelivery(negativeResponseByte, 1, suitID);
@@ -185,7 +208,7 @@ void sendInstruction() {
         debugSerial.print(" didn't change colours ");
         debugSerial.print("because it is the same colour (");
         debugSerial.print(states[suitID - 1]);
-        debugSerial.print(" as suit ");
+        debugSerial.print(") as suit ");
         debugSerial.print(taggerID);
         debugSerial.print(" (");
         debugSerial.print(states[taggerID - 1]);
@@ -201,6 +224,8 @@ void sendInstruction() {
       payload[0] = positiveResponseByte;
       payload[1] = states[taggerID - 1];
       packetSize = 2;
+
+      tx = Tx16Request(address, payload, packetSize);
       
       xbee.send(tx);
       confirmDelivery(positiveResponseByte, 1, suitID);
@@ -234,6 +259,8 @@ void sendInstruction() {
       payload[0] = positiveResponseByte;
       payload[1] = states[taggerID - 1];
       packetSize = 2;
+
+      tx = Tx16Request(address, payload, packetSize);
       
       xbee.send(tx);
       confirmDelivery(positiveResponseByte, 1, suitID);
@@ -270,6 +297,8 @@ void sendInstruction() {
         payload[0] = positiveResponseByte;
         payload[1] = tempSuitState;
         packetSize = 2;
+
+        tx = Tx16Request(address, payload, packetSize);
         
         xbee.send(tx);
         confirmDelivery(positiveResponseByte, 1, taggerID);
@@ -306,7 +335,7 @@ void sendInstruction() {
 // ---------------------------------------------------------//
 void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
   suitReceivedInstruction = false;
-  if (xbee.readPacket(250)) {
+  if (xbee.readPacket(300)) {
 
     if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
       TxStatusResponse txStatus = TxStatusResponse();
@@ -321,7 +350,6 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
         debugSerial.println(".");
         
         suitReceivedInstruction = true;
-        return;
       }
     } else {
         debugSerial.print(packetType);
@@ -330,12 +358,10 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
         debugSerial.print(" on attempt ");
         debugSerial.print(attempt);
         debugSerial.println(".");
-        return;
     }
   } else if (xbee.getResponse().isError()) {
     debugSerial.println("Error reading packet: ");
     debugSerial.println(xbee.getResponse().getErrorCode());
-    return;
   } else {
       debugSerial.print(packetType);
       debugSerial.print(" message to suit ");
@@ -343,7 +369,6 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
       debugSerial.print(" time out on attempt ");
       debugSerial.print(attempt);
       debugSerial.println(".");
-      return;
   }
 }
 
@@ -353,7 +378,6 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
 // ----  Print out the values in the outgoing payload  -----//
 // ---------------------------------------------------------//
 void printOutArray(uint8_t message[]) {
- 
   debugSerial.print("{");
   for(int i = 0; i < sizeof(message); i++) {
     debugSerial.print(message[i]);
