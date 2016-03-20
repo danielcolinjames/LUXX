@@ -7,6 +7,8 @@ void stepThroughLights() {
     stepThroughLightsTwo();
   }
   else {
+    // assume both strands have 9 pixels
+    
     // compare current millis() reading to the last reading.
     // if the difference is larger than 50 milliseconds, we
     // need to move ahead one light.
@@ -38,6 +40,7 @@ void stepThroughLights() {
     }
   }
 }
+
 
 // ---------------------------------------------------------//
 // -- Turn on next light, turn off previous on strand one --//
@@ -75,14 +78,15 @@ void stepThroughLightsOne() {
   }
 }
 
+
 // ---------------------------------------------------------//
 // -- Turn on next light, turn off previous on strand two --//
 // ---------------------------------------------------------//
 void stepThroughLightsTwo() {
 
-  // compare current millis() reading to the last reading.
-  // if the difference is larger than 50 milliseconds, we
-  // need to move ahead one light.
+  // for the second strand of lights, there is 1 extra pixel,
+  // so wait 50 - (50/10) = 45 milliseconds and they'll both take
+  // the same time to go through all the lights (45 * 10 = 450 = 9 * 50)
   
   if ((millis() - prevMillisTwo) > 45) {
     
@@ -243,9 +247,6 @@ void changeColour(int r, int g, int b) {
     pixelsTwo.setPixelColor(i, pixelsTwo.Color(r, g, b));
     pixelsTwo.show();
   }
-  
-  rfiduino.successSound();
-  delay(1000);
 }
 
 

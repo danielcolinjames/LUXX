@@ -2,38 +2,20 @@
 // ------  Looks for a tag, calls appropriate methods ------//
 // ---------------------------------------------------------//
 void lookForTags() {
-  
-  tagCheck = rfiduino.decodeTag(tagData);
 
+  tagCheck = rfiduino.decodeTag(tagData);
+  
   if (tagCheck) {
     readCount++;
   }
   else {
     readCount = 0;
   }
-
+  
   if (readCount == 1) {
     whoTaggedMe();
   }
 }
-
-
-// ---------------------------------------------------------//
-// --------  Print out the current tag's ID number  --------//
-// ---------------------------------------------------------//
-void printCurrentTag() {
-  
-//  if (debugging) Serial.print("RFID Tag ID:");
-  
-  for (int n = 0; n < 5; n++) {
-//    if (debugging) Serial.print(tagData[n], DEC);
-    if (n < 4) {
-//      if (debugging) Serial.print(", ");
-    }
-  }
-//  if (debugging) Serial.print("\n\r");
-}
-
 
 
 // ---------------------------------------------------------//
@@ -68,4 +50,17 @@ void whoTaggedMe() {
 }
 
 
-
+// ---------------------------------------------------------//
+// --------  Print out the current tag's ID number  --------//
+// ---------------------------------------------------------//
+void printCurrentTag() {
+  
+  debugSerial.print("RFID Tag ID:");
+  
+  for (int n = 0; n < 5; n++) {
+    debugSerial.print(tagData[n], DEC);
+    if (n < 4) {
+      debugSerial.print(", ");
+    }
+  }
+}

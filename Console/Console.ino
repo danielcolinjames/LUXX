@@ -11,18 +11,20 @@
 
 uint8_t states[] = { 80, 80, 80, 80, 80,
   80, 80, 80, 80, 80 };
-  
+
+// this is to keep track of which suits are active in each game
+// since there's a good chance we won't have 10 people in each game
 boolean activeSuits[] = { false, false, false, false, false,
   false, false, false, false, false };
   
 uint16_t addresses[] = { 0x1, 0x2, 0x3, 0x4, 0x5, 
   0x6, 0x7, 0x8, 0x9, 0x10 };
 
+uint8_t suitsInGame[] = { };
 
 // ---------------------------------------------------------//
 // --------------------- Packet types  ---------------------//
 // ---------------------------------------------------------//
-
 uint8_t taggedByte = 99;
 uint8_t gameStartByte = 98;
 uint8_t positiveResponseByte = 97;
@@ -38,7 +40,20 @@ uint8_t taggerID;
 
 uint8_t gameMode;
 
+boolean gameOverBool = false;
+
+uint8_t numberOfActiveSuits;
+
+uint8_t numberOfRedSuits;
+uint8_t numberOfBlueSuits;
+
 boolean suitReceivedInstruction;
+
+long stateMillis = 0;
+int stateCheckInterval = 1000;
+
+int fiveMinutes = 300000;
+int tenMinutes = 600000;
 
 
 // ---------------------------------------------------------//
@@ -61,6 +76,7 @@ Tx16Request tx = Tx16Request(address, payload, packetSize);
 void setup() {
   
   Serial.begin(9600);
+  
   xbee.setSerial(Serial);
   
   debugSerial.begin(9600);

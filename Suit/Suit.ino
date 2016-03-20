@@ -5,15 +5,44 @@
 #include <SoftwareSerial.h>
 #include <XBee.h>
 
-#define PINONE 9
-#define PINTWO 10
-#define NUMPIXELSONE 9
-#define NUMPIXELSTWO 9
 #define NUMBER_OF_CARDS 10
 
-uint8_t suitID = 1;
+#define PINONE 9
+#define PINTWO 10
 
+#define NUMPIXELSONE 9
+#define NUMPIXELSTWO 9
 
+uint8_t suitID = 5;
+
+byte keyTag[NUMBER_OF_CARDS][5] = {
+  {114, 0, 95, 44, 9},        // Tag 1
+  {114, 0, 95, 73, 207},      // Tag 2
+  {114, 0, 95, 43, 231},      // Tag 3
+  {114, 0, 95, 38, 99},       // Tag 4
+  {255, 255, 255, 255, 255},  // ignore this suit's tag
+  {114, 0, 95, 126, 166},     // Tag 6
+  {114, 0, 95, 109, 22},      // Tag 7
+  {114, 0, 95, 98, 170},      // Tag 8
+  {114, 0, 95, 44, 7},        // Tag 9
+  {114, 0, 95, 67, 234}       // Tag 10
+};
+
+/*
+ * 
+ * Suit 1: 114, 0, 95, 44, 9
+ * Suit 2: 114, 0, 95, 73, 207
+ * Suit 3: 114, 0, 95, 43, 231
+ * Suit 4: 114, 0, 95, 38, 99
+ * Suit 5: 114, 0, 95, 44, 0
+ * Suit 6: 114, 0, 95, 126, 166
+ * Suit 7: 114, 0, 95, 109, 22
+ * Suit 8: 114, 0, 95, 98, 170
+ * Suit 9: 114, 0, 95, 44, 7
+ * Suit 10: 114, 0, 95, 67, 234
+ */
+
+ 
 // ---------------------------------------------------------//
 // ---------------   Instantiate libraries  ----------------//
 // ---------------------------------------------------------//
@@ -35,11 +64,11 @@ XBee xbee = XBee();
 // ---------------------------------------------------------//
 uint8_t taggerID = 0;
 
-long prevMillis = millis();
-long prevMillisOne = millis();
-long prevMillisTwo = millis();
+long prevMillis = 0;
+long prevMillisOne = 0;
+long prevMillisTwo = 0;
 
-long gameOverMillis = millis();
+long gameOverMillis = 0;
 
 boolean messageReceived = false;
 
@@ -84,33 +113,6 @@ int readCount = 0;
 boolean tagCheck = false;
 boolean verifyKey = false;
 int i;
-
-byte keyTag[NUMBER_OF_CARDS][5] = {
-  {255, 255, 255, 255, 255},          //Tag 1 - THIS SUIT
-  {114, 0, 95, 73, 207},    //Tag 2
-  {114, 0, 95, 43, 231},    //Tag 3
-  {114, 0, 95, 38, 99},     //Tag 4
-  {114, 0, 95, 44, 0},      //Tag 5
-  {114, 0, 95, 126, 166},   //Tag 6
-  {114, 0, 95, 109, 22},    //Tag 7
-  {114, 0, 95, 98, 170},    //Tag 8
-  {114, 0, 95, 44, 7},      //Tag 9
-  {114, 0, 95, 67, 234}     //Tag 10
-};
-
-/*
- * 
- * Suit 1: 114, 0, 95, 44, 9
- * Suit 2: 114, 0, 95, 73, 207
- * Suit 3: 114, 0, 95, 43, 231
- * Suit 4: 114, 0, 95, 38, 99
- * Suit 5: 114, 0, 95, 44, 0
- * Suit 6: 114, 0, 95, 126, 166
- * Suit 7: 114, 0, 95, 109, 22
- * Suit 8: 114, 0, 95, 98, 170
- * Suit 9: 114, 0, 95, 44, 7
- * Suit 10: 114, 0, 95, 67, 234
- */
 
 
 // ---------------------------------------------------------//
@@ -165,7 +167,7 @@ void loop() {
 // ---------------------------------------------------------//
 void gameOver() {
   boolean gameRestartDetected = false;
-  debugSerial.println("GAME OVER UNTIL 98 RECEIVED");
+  debugSerial.println("----- Game over until 98 received -----");
   
   while (gameRestartDetected == false) {
     gameOverBeep();

@@ -53,12 +53,14 @@ void lookForMessages() {
 void sendStartingColours() {
   for (int i = 0; i < 10; i++) {
     suitID = i + 1;
-    
-    if (suitID == 1 || suitID == 2) {
-      debugSerial.print("----------------------- ");
+
+    // in the final version, this if statement will be gone
+   // if (suitID == 3) {
+      debugSerial.print("-------------- ");
       debugSerial.print("INITIALIZING SUIT  >  ");
       debugSerial.print(suitID);
-      debugSerial.println("  < ---------------------");
+      debugSerial.println("  < ------------");
+      debugSerial.println();
       
       delay(200);
       
@@ -66,37 +68,38 @@ void sendStartingColours() {
       
       payload[0] = gameStartByte;
       payload[1] = states[suitID - 1];
-
+      
       packetSize = 2;
       
       tx = Tx16Request(address, payload, packetSize);
-      
+
+      // first attempt
       xbee.send(tx);
       confirmDelivery(gameStartByte, 1, suitID);
-      
+
+      // second attempt
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
         confirmDelivery(gameStartByte, 2, suitID);
       }
-      
+
+      // third attempt
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
         confirmDelivery(gameStartByte, 3, suitID);
       }
-    }
+      
+      // the suit got the message, do the following
+      if (suitReceivedInstruction == true) {
+        activeSuits[suitID - 1] = true;
+      }
+//    }
     
-    else {
-      debugSerial.print("----- Skipping suit ");
-      debugSerial.print(suitID);
-      debugSerial.println(" during testing phase. -----");
-    }
-    
-    if (suitReceivedInstruction == true) {
-      activeSuits[suitID - 1] = true;
-    }
-    else {
-      activeSuits[suitID - 1] = false;
-    }
+//    else {
+//      debugSerial.print("----- Skipping suit ");
+//      debugSerial.print(suitID);
+//      debugSerial.println(" during testing phase. -----");
+//    }
   }
 }
 
@@ -107,11 +110,11 @@ void sendStartingColours() {
 void sendGameOver() {
   for (int i = 0; i < 10; i++) {
     suitID = i + 1;
-
+    
     // only turn off the suits that are active this round
     if (activeSuits[suitID - 1] == true) {
-
-      if (suitID == 1 || suitID == 2) {
+      
+      if (suitID == 3) {
         debugSerial.print("----------------------- ");
         debugSerial.print("DEACTIVATING SUIT  >  ");
         debugSerial.print(suitID);
@@ -124,7 +127,7 @@ void sendGameOver() {
         packetSize = 1;
         
         tx = Tx16Request(address, payload, packetSize);
-
+        
         // check 5 times instead of 3, because game over
         // is more important than a regular message
         xbee.send(tx);
@@ -141,33 +144,36 @@ void sendGameOver() {
         }
         
         if (suitReceivedInstruction == false) {
+          // wait a little bit if it still hasn't got the message after 3 times
           delay(500);
           xbee.send(tx);
           confirmDelivery(gameOverByte, 4, suitID);
         }
         
         if (suitReceivedInstruction == false) {
+          // wait a little bit if it still hasn't got the message after 4 times
           delay(500);
           xbee.send(tx);
           confirmDelivery(gameOverByte, 5, suitID);
         }
-        
+
+        // if it has gotten the message, set it as inactive
         if (suitReceivedInstruction == true) {
           activeSuits[suitID - 1] = false;
         }
         else {
+          // if it doesn't get the message, it's still active
           activeSuits[suitID - 1] = true;
         }
-     }
-      
-      else {
-        debugSerial.print("----- Skipping suit ");
-        debugSerial.print(suitID);
-        debugSerial.println(" during testing phase. -----");
       }
     }
+    
+    else {
+        debugSerial.print("----- Skipping deactivation of suit ");
+        debugSerial.print(suitID);
+        debugSerial.println(" during testing phase. -----");
+    }
   }
-  gameOver();
 }
 
 
@@ -176,7 +182,7 @@ void sendGameOver() {
 // ---------------------------------------------------------//
 void sendInstruction() {
   if (states[suitID - 1] == states[taggerID - 1]) {
-    if (gameMode == 1 || gameMode == 2) {
+    if (gameMode == 0 || gameMode == 1 || gameMode == 2) {
       
       // both suits are the same colour > 96
       // tell suitID not to change colour
@@ -188,21 +194,30 @@ void sendInstruction() {
       packetSize = 1;
       
       tx = Tx16Request(address, payload, packetSize);
-      
+
+      // first attempt
       xbee.send(tx);
       confirmDelivery(negativeResponseByte, 1, suitID);
-      
+     
+      // second attempt
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
         confirmDelivery(negativeResponseByte, 2, suitID);
       }
 
+      // third attempt
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
         confirmDelivery(negativeResponseByte, 3, suitID);
       }
-      
+
+      // if the suit got the message, we don't need to do anything,
+      // but it's good to know what the console is doing
       if (suitReceivedInstruction == true) {
+
+        // we know the suit is still active
+        activeSuits[suitID - 1] = true;
+        
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
         debugSerial.print(" didn't change colours ");
@@ -214,12 +229,65 @@ void sendInstruction() {
         debugSerial.print(states[taggerID - 1]);
         debugSerial.println(").");
       }
+      else {
+        // this suit is no longer active
+        activeSuits[suitID - 1] = false;
+      }
     }
   }
 
   // suits are different colours > 97
   else {
-    if (gameMode == 1) {
+    if (gameMode == 0) {
+
+      // Viral Tag Original: one person starts red, tries to make
+      // everyone red. Only a red suit can tag a blue suit.
+      
+      if (states[suitID - 1] == 88 && states[taggerID - 1] == 89) {
+        address = addresses[suitID - 1];
+        payload[0] = positiveResponseByte;
+        payload[1] = states[taggerID - 1];
+        packetSize = 2;
+        
+        tx = Tx16Request(address, payload, packetSize);
+        
+        // first attempt
+        xbee.send(tx);
+        confirmDelivery(positiveResponseByte, 1, suitID);
+
+        // second attempt
+        if (suitReceivedInstruction == false) {
+          xbee.send(tx);
+          confirmDelivery(positiveResponseByte, 2, suitID);
+        }
+        
+        // third attempt
+        if (suitReceivedInstruction == false) {
+          xbee.send(tx);
+          confirmDelivery(positiveResponseByte, 3, suitID);
+        }
+        
+        // if the message was received, do this
+        if (suitReceivedInstruction == true) {
+          debugSerial.print("Suit ");
+          debugSerial.print(suitID);
+          debugSerial.print(" changed from ");
+          debugSerial.print(states[suitID - 1]);
+          debugSerial.print(" to ");
+          debugSerial.print(states[taggerID - 1]);
+          debugSerial.println(".");
+          
+          states[suitID - 1] = states[taggerID - 1];
+        }
+      }
+    }
+
+    else if (gameMode == 1) {
+
+      // Viral Tag Split: half start blue, half start red.
+      // If someone tags anyone of the opposite colour,
+      // the person tagged changes to the tagger's colour.
+      
       address = addresses[suitID - 1];
       payload[0] = positiveResponseByte;
       payload[1] = states[taggerID - 1];
@@ -241,7 +309,6 @@ void sendInstruction() {
       }
 
       // if the message was received, do this
-      
       if (suitReceivedInstruction == true) {
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
@@ -254,12 +321,18 @@ void sendInstruction() {
         states[suitID - 1] = states[taggerID - 1];
       }
     }
+
     else if (gameMode == 2) {
+
+      // Traditional Tag: both suits need to change. The
+      // colour is "transferred" from the tagger to the 
+      // person who was tagged.
+      
       address = addresses[suitID - 1];
       payload[0] = positiveResponseByte;
       payload[1] = states[taggerID - 1];
       packetSize = 2;
-
+      
       tx = Tx16Request(address, payload, packetSize);
       
       xbee.send(tx);
@@ -269,14 +342,14 @@ void sendInstruction() {
         xbee.send(tx);
         confirmDelivery(positiveResponseByte, 2, suitID);
       }
-
+      
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
         confirmDelivery(positiveResponseByte, 3, suitID);
       }
-
+      
       if (suitReceivedInstruction == true) {
-
+        
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
         debugSerial.print(" changed from ");
@@ -285,14 +358,13 @@ void sendInstruction() {
         debugSerial.print(states[taggerID - 1]);
         debugSerial.println(".");
 
-        // update the array to reflect the changes
         // store suitID before it's changed
-        
         uint8_t tempSuitState = states[suitID - 1];
+
+        // update the array to reflect the changes
         states[suitID - 1] = states[taggerID - 1];
         
         // only send to taggerID if suitID changed colour
-        
         address = addresses[taggerID - 1];
         payload[0] = positiveResponseByte;
         payload[1] = tempSuitState;
@@ -371,7 +443,6 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
       debugSerial.println(".");
   }
 }
-
 
 
 // ---------------------------------------------------------//

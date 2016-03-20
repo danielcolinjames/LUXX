@@ -52,6 +52,8 @@ void lookForInstruction() {
           setColour(instruction);
           debugSerial.print("Setting colour to ");
           debugSerial.println(instruction);
+          rfiduino.successSound();
+          delay(1000);
         }
         
         // game over command
@@ -59,16 +61,17 @@ void lookForInstruction() {
           rVal = 255;
           gVal = 255;
           bVal = 255;
-    
+          
           digitalWrite(rfiduino.led1, LOW); // red off
           digitalWrite(rfiduino.led2, LOW); // green off
-    
+          
           gameOver();
         }
         
         // game start command, next byte in payload is
         // going to be the starting colour
         else if (packetType == 98) {
+          
           uint8_t colour = rx16.getData(1);
           debugSerial.print("Starting colour received: ");
           debugSerial.print(colour);
@@ -76,6 +79,13 @@ void lookForInstruction() {
           
           initializeSuitColour(colour);
         }
+      }
+      else {
+        // if the message WAS 96
+        setColour(currentColour);
+        debugSerial.println("Keeping colour the same");
+        rfiduino.errorSound();
+        delay(1000);
       }
     }
   }
@@ -134,7 +144,7 @@ void lookForMessages() {
 void confirmDelivery(uint8_t packetType, uint8_t attempt) {
   messageReceived = false;
   if (xbee.readPacket(300)) {
-
+    
     if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
       TxStatusResponse txStatus = TxStatusResponse();
       xbee.getResponse().getTxStatusResponse(txStatus);
@@ -158,7 +168,7 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt) {
     debugSerial.println(xbee.getResponse().getErrorCode());
   } else {
       debugSerial.print(packetType);
-      debugSerial.print(" message to console on attempt ");
+      debugSerial.print(" message to console timed out on attempt ");
       debugSerial.print(attempt);
       debugSerial.println(".");
   }
