@@ -58,9 +58,6 @@ void lookForInstruction() {
         
         // game over command
         else if (packetType == 95) {
-          rVal = 255;
-          gVal = 255;
-          bVal = 255;
           
           digitalWrite(rfiduino.led1, LOW); // red off
           digitalWrite(rfiduino.led2, LOW); // green off
@@ -113,10 +110,7 @@ void lookForMessages() {
 
       // game over
       if (packetType == 95) {
-        rVal = 255;
-        gVal = 255;
-        bVal = 255;
-  
+        
         digitalWrite(rfiduino.led1, LOW); // red off
         digitalWrite(rfiduino.led2, LOW); // green off
 

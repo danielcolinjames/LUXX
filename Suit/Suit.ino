@@ -13,14 +13,14 @@
 #define NUMPIXELSONE 9
 #define NUMPIXELSTWO 9
 
-uint8_t suitID = 5;
+uint8_t suitID = 4;
 
 byte keyTag[NUMBER_OF_CARDS][5] = {
   {114, 0, 95, 44, 9},        // Tag 1
   {114, 0, 95, 73, 207},      // Tag 2
   {114, 0, 95, 43, 231},      // Tag 3
-  {114, 0, 95, 38, 99},       // Tag 4
-  {255, 255, 255, 255, 255},  // ignore this suit's tag
+  {255, 255, 255, 255, 255},       // Tag 4
+  {114, 0, 95, 44, 0},  // ignore this suit's tag
   {114, 0, 95, 126, 166},     // Tag 6
   {114, 0, 95, 109, 22},      // Tag 7
   {114, 0, 95, 98, 170},      // Tag 8

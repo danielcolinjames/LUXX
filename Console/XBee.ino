@@ -51,18 +51,19 @@ void lookForMessages() {
 // -------- Tell each suit which colour it starts as  ------//
 // ---------------------------------------------------------//
 void sendStartingColours() {
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; i++) {    
     suitID = i + 1;
 
     // in the final version, this if statement will be gone
    // if (suitID == 3) {
+      debugSerial.println();
       debugSerial.print("-------------- ");
       debugSerial.print("INITIALIZING SUIT  >  ");
       debugSerial.print(suitID);
       debugSerial.println("  < ------------");
       debugSerial.println();
       
-      delay(200);
+      delay(50);
       
       address = addresses[suitID - 1];
       
@@ -72,17 +73,17 @@ void sendStartingColours() {
       packetSize = 2;
       
       tx = Tx16Request(address, payload, packetSize);
-
+            
       // first attempt
       xbee.send(tx);
       confirmDelivery(gameStartByte, 1, suitID);
-
+      
       // second attempt
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
         confirmDelivery(gameStartByte, 2, suitID);
       }
-
+      
       // third attempt
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
@@ -92,6 +93,15 @@ void sendStartingColours() {
       // the suit got the message, do the following
       if (suitReceivedInstruction == true) {
         activeSuits[suitID - 1] = true;
+        debugSerial.print("Suit ");
+        debugSerial.print(suitID);
+        debugSerial.println(" is ACTIVE.");
+      }
+      else {
+        activeSuits[suitID - 1] = false;
+        debugSerial.print("Suit ");
+        debugSerial.print(suitID);
+        debugSerial.println(" is inactive.");
       }
 //    }
     
@@ -114,13 +124,15 @@ void sendGameOver() {
     // only turn off the suits that are active this round
     if (activeSuits[suitID - 1] == true) {
       
-      if (suitID == 3) {
-        debugSerial.print("----------------------- ");
+//      if (suitID == 3) {
+        debugSerial.println();
+        debugSerial.print("---------- ");
         debugSerial.print("DEACTIVATING SUIT  >  ");
         debugSerial.print(suitID);
-        debugSerial.println("  < ---------------------");
+        debugSerial.println("  < ----------");
+        debugSerial.println();
         
-        delay(200);
+        delay(50);
         
         address = addresses[suitID - 1];
         payload[0] = gameOverByte;
@@ -165,14 +177,14 @@ void sendGameOver() {
           // if it doesn't get the message, it's still active
           activeSuits[suitID - 1] = true;
         }
-      }
+//      }
     }
     
-    else {
-        debugSerial.print("----- Skipping deactivation of suit ");
-        debugSerial.print(suitID);
-        debugSerial.println(" during testing phase. -----");
-    }
+//    else {
+//        debugSerial.print("----- Skipping deactivation of suit ");
+//        debugSerial.print(suitID);
+//        debugSerial.println(" during testing phase. -----");
+//    }
   }
 }
 
@@ -214,10 +226,6 @@ void sendInstruction() {
       // if the suit got the message, we don't need to do anything,
       // but it's good to know what the console is doing
       if (suitReceivedInstruction == true) {
-
-        // we know the suit is still active
-        activeSuits[suitID - 1] = true;
-        
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
         debugSerial.print(" didn't change colours ");
@@ -228,10 +236,6 @@ void sendInstruction() {
         debugSerial.print(" (");
         debugSerial.print(states[taggerID - 1]);
         debugSerial.println(").");
-      }
-      else {
-        // this suit is no longer active
-        activeSuits[suitID - 1] = false;
       }
     }
   }
@@ -269,6 +273,7 @@ void sendInstruction() {
         
         // if the message was received, do this
         if (suitReceivedInstruction == true) {
+                    
           debugSerial.print("Suit ");
           debugSerial.print(suitID);
           debugSerial.print(" changed from ");
@@ -357,7 +362,7 @@ void sendInstruction() {
         debugSerial.print(" to ");
         debugSerial.print(states[taggerID - 1]);
         debugSerial.println(".");
-
+        
         // store suitID before it's changed
         uint8_t tempSuitState = states[suitID - 1];
 
@@ -407,6 +412,7 @@ void sendInstruction() {
 // ---------------------------------------------------------//
 void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
   suitReceivedInstruction = false;
+  
   if (xbee.readPacket(300)) {
 
     if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
@@ -438,7 +444,7 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
       debugSerial.print(packetType);
       debugSerial.print(" message to suit ");
       debugSerial.print(recepient);
-      debugSerial.print(" time out on attempt ");
+      debugSerial.print(" timed out on attempt ");
       debugSerial.print(attempt);
       debugSerial.println(".");
   }

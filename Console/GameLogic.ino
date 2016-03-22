@@ -91,6 +91,8 @@ void gameStateCheck() {
         }
       }
     }
+
+    
     
     // if there's only one suit left that's a different colour, check the state quicker
     if (numberOfBlueSuits == (numberOfActiveSuits - 1) || numberOfRedSuits == (numberOfActiveSuits - 1)) {
@@ -98,6 +100,22 @@ void gameStateCheck() {
     }
     else {
       stateCheckInterval = 1000;
+    }
+
+    if (millis() - debugMillis > 2000) {
+      debugMillis = millis();
+      
+      debugSerial.print("Number of active suits: ");
+      debugSerial.println(numberOfActiveSuits);
+      
+      debugSerial.print("Number of red suits: ");
+      debugSerial.println(numberOfRedSuits);
+      
+      debugSerial.print("Number of blue suits: ");
+      debugSerial.println(numberOfBlueSuits);
+
+      debugSerial.print("State check interval: ");
+      debugSerial.println(stateCheckInterval);
     }
     
     // all the suits are blue
@@ -109,7 +127,7 @@ void gameStateCheck() {
     }
 
     // all the suits are red
-    if (numberOfRedSuits == numberOfActiveSuits) {
+    else if (numberOfRedSuits == numberOfActiveSuits) {
         debugSerial.println();
         debugSerial.println("Game over: everyone is red.");
         
@@ -117,7 +135,7 @@ void gameStateCheck() {
     }
 
     // game has timed out
-    if (millis() > tenMinutes) {
+    if (millis() > 600000) {
       debugSerial.println();
       debugSerial.println("Game over: time limit reached.");
       
@@ -155,10 +173,12 @@ void printOutStates() {
   debugSerial.println("GAME STATE: ");
   
   for (int i = 0; i < 10; i++) {
-    debugSerial.print("Suit ");
-    debugSerial.print(i + 1);
-    debugSerial.print(" = ");
-    debugSerial.println(states[i]);
+    if (activeSuits[i] == true) {
+      debugSerial.print("Suit ");
+      debugSerial.print(i + 1);
+      debugSerial.print(" = ");
+      debugSerial.println(states[i]);
+    }
   }
 }
 

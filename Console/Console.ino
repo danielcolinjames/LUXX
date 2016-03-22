@@ -17,7 +17,7 @@ uint8_t states[] = { 80, 80, 80, 80, 80,
 boolean activeSuits[] = { false, false, false, false, false,
   false, false, false, false, false };
   
-uint16_t addresses[] = { 0x1, 0x2, 0x3, 0x4, 0x5, 
+uint16_t addresses[] = { 0x1, 0x2, 0x3, 0x4, 0x5,
   0x6, 0x7, 0x8, 0x9, 0x10 };
 
 uint8_t suitsInGame[] = { };
@@ -53,7 +53,8 @@ long stateMillis = 0;
 int stateCheckInterval = 1000;
 
 int fiveMinutes = 300000;
-int tenMinutes = 600000;
+
+long debugMillis = 0;
 
 
 // ---------------------------------------------------------//

@@ -21,18 +21,18 @@ void stepThroughLights() {
   
       // as long as it's not light 0, turn off the one before it
       if (loopCounter > 0) {
-        turnOffPreviousLight(loopCounter - 1);
+        turnOffPreviousLight((loopCounter - 1), 0);
       }
   
       // if we reach the last light, start back at 0 and turn
       // off the last light.
       if (loopCounter > NUMPIXELSONE - 1) {
         loopCounter = 0;
-        turnOffPreviousLight(NUMPIXELSONE - 1);
+        turnOffPreviousLight((NUMPIXELSONE - 1), 0);
       }
   
       // turn on the next light in the sequence
-      turnOnNextLight(loopCounter);
+      turnOnNextLight(loopCounter, 0);
   
       // increment loopCounter to go to the next light
       // the next time (millis() - prevMillis) > 100
@@ -59,18 +59,18 @@ void stepThroughLightsOne() {
 
     // as long as it's not light 0, turn off the one before it
     if (loopCounterOne > 0) {
-      turnOffPreviousLight(loopCounterOne - 1);
+      turnOffPreviousLight((loopCounterOne - 1), 1);
     }
 
     // if we reach the last light, start back at 0 and turn
     // off the last light.
     if (loopCounterOne > NUMPIXELSONE - 1) {
       loopCounterOne = 0;
-      turnOffPreviousLight(NUMPIXELSONE - 1);
+      turnOffPreviousLight((NUMPIXELSONE - 1), 1);
     }
 
     // turn on the next light in the sequence
-    turnOnNextLight(loopCounterOne);
+    turnOnNextLight(loopCounterOne, 1);
 
     // increment loopCounter to go to the next light
     // the next time (millis() - prevMillis) > 100
@@ -96,18 +96,18 @@ void stepThroughLightsTwo() {
 
     // as long as it's not light 0, turn off the one before it
     if (loopCounterTwo > 0) {
-      turnOffPreviousLight(loopCounterTwo - 1);
+      turnOffPreviousLight((loopCounterTwo - 1), 2);
     }
 
     // if we reach the last light, start back at 0 and turn
     // off the last light.
     if (loopCounterTwo > NUMPIXELSTWO - 1) {
       loopCounterTwo = 0;
-      turnOffPreviousLight(NUMPIXELSTWO - 1);
+      turnOffPreviousLight((NUMPIXELSTWO - 1), 2);
     }
 
     // turn on the next light in the sequence
-    turnOnNextLight(loopCounterTwo);
+    turnOnNextLight(loopCounterTwo, 2);
 
     // increment loopCounter to go to the next light
     // the next time (millis() - prevMillis) > 100
@@ -119,22 +119,42 @@ void stepThroughLightsTwo() {
 // ---------------------------------------------------------//
 // -----------   Turn off the previous light   -------------//
 // ---------------------------------------------------------//
-void turnOffPreviousLight(int prevLight) {
-  pixelsOne.setPixelColor(prevLight, pixelsOne.Color(0, 0, 0));
-  pixelsOne.show();
-  pixelsTwo.setPixelColor(prevLight, pixelsTwo.Color(0, 0, 0));
-  pixelsTwo.show();
+void turnOffPreviousLight(int prevLight, int strand) {
+  if (strand == 0) {
+    pixelsOne.setPixelColor(prevLight, pixelsOne.Color(0, 0, 0));
+    pixelsOne.show();
+    pixelsTwo.setPixelColor(prevLight, pixelsTwo.Color(0, 0, 0));
+    pixelsTwo.show();
+  }
+  else if (strand == 1) {
+    pixelsOne.setPixelColor(prevLight, pixelsOne.Color(0, 0, 0));
+    pixelsOne.show();
+  }
+  else if (strand == 2) {
+    pixelsTwo.setPixelColor(prevLight, pixelsTwo.Color(0, 0, 0));
+    pixelsTwo.show();
+  }
 }
 
 
 // ---------------------------------------------------------//
 // --------- Turn on the next light in the sequence --------//
 // ---------------------------------------------------------//
-void turnOnNextLight(int currLight) {
-  pixelsOne.setPixelColor(currLight, pixelsOne.Color(rVal, gVal, bVal));
-  pixelsOne.show();
-  pixelsTwo.setPixelColor(currLight, pixelsTwo.Color(rVal, gVal, bVal));
-  pixelsTwo.show();
+void turnOnNextLight(int currLight, int strand) {
+  if (strand == 0) {
+    pixelsOne.setPixelColor(currLight, pixelsOne.Color(rVal, gVal, bVal));
+    pixelsOne.show();
+    pixelsTwo.setPixelColor(currLight, pixelsTwo.Color(rVal, gVal, bVal));
+    pixelsTwo.show();
+  }
+  else if (strand == 1) {
+    pixelsOne.setPixelColor(currLight, pixelsOne.Color(rVal, gVal, bVal));
+    pixelsOne.show();
+  }
+  else if (strand == 2) {
+    pixelsTwo.setPixelColor(currLight, pixelsTwo.Color(rVal, gVal, bVal));
+    pixelsTwo.show();
+  }
 }
 
 
