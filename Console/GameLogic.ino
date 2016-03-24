@@ -91,53 +91,43 @@ void gameStateCheck() {
         }
       }
     }
-
-    
     
     // if there's only one suit left that's a different colour, check the state quicker
     if (numberOfBlueSuits == (numberOfActiveSuits - 1) || numberOfRedSuits == (numberOfActiveSuits - 1)) {
       stateCheckInterval = 10;
+      outputInterval = 10;
     }
     else {
       stateCheckInterval = 1000;
-    }
-
-    if (millis() - debugMillis > 2000) {
-      debugMillis = millis();
-      
-      debugSerial.print("Number of active suits: ");
-      debugSerial.println(numberOfActiveSuits);
-      
-      debugSerial.print("Number of red suits: ");
-      debugSerial.println(numberOfRedSuits);
-      
-      debugSerial.print("Number of blue suits: ");
-      debugSerial.println(numberOfBlueSuits);
-
-      debugSerial.print("State check interval: ");
-      debugSerial.println(stateCheckInterval);
+      outputInterval = 1500;
     }
     
     // all the suits are blue
     if (numberOfBlueSuits == numberOfActiveSuits) {
-        debugSerial.println();
-        debugSerial.println("Game over: everyone is blue.");
-        
-        gameOver();
+      debugSerial.println();
+      debugSerial.println("Game over: everyone is blue.");
+      
+      sendMessageToTouch(75, 89);
+      
+      gameOver();
     }
 
     // all the suits are red
     else if (numberOfRedSuits == numberOfActiveSuits) {
-        debugSerial.println();
-        debugSerial.println("Game over: everyone is red.");
-        
-        gameOver();
+      debugSerial.println();
+      debugSerial.println("Game over: everyone is red.");
+      
+      sendMessageToTouch(75, 89);
+      
+      gameOver();
     }
 
     // game has timed out
     if (millis() > 600000) {
       debugSerial.println();
       debugSerial.println("Game over: time limit reached.");
+      
+      sendMessageToTouch(75, 0);
       
       gameOver();
     }
@@ -151,17 +141,6 @@ void gameStateCheck() {
 void gameOver() {
   sendGameOver();
   waitForReset();
-}
-
-
-// ---------------------------------------------------------//
-// ------------- Wait until game is reset by us ------------//
-// ---------------------------------------------------------//
-void waitForReset() {
-  debugSerial.println("Waiting for reset...");
-  while(1 == 1) {
-    // game over, wait for manual reset (from Max?)
-  }
 }
 
 

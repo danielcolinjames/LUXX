@@ -92,6 +92,7 @@ void sendStartingColours() {
       
       // the suit got the message, do the following
       if (suitReceivedInstruction == true) {
+        numberOfActiveSuits++;
         activeSuits[suitID - 1] = true;
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
@@ -111,6 +112,7 @@ void sendStartingColours() {
 //      debugSerial.println(" during testing phase. -----");
 //    }
   }
+  sendMessageToTouch(78, numberOfActiveSuits);
 }
 
 
@@ -226,6 +228,9 @@ void sendInstruction() {
       // if the suit got the message, we don't need to do anything,
       // but it's good to know what the console is doing
       if (suitReceivedInstruction == true) {
+
+        sendMessageToTouch(76, states[suitID - 1]);
+        
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
         debugSerial.print(" didn't change colours ");
@@ -273,7 +278,9 @@ void sendInstruction() {
         
         // if the message was received, do this
         if (suitReceivedInstruction == true) {
-                    
+
+          sendMessageToTouch(77, states[suitID - 1]);
+          
           debugSerial.print("Suit ");
           debugSerial.print(suitID);
           debugSerial.print(" changed from ");
@@ -315,6 +322,9 @@ void sendInstruction() {
 
       // if the message was received, do this
       if (suitReceivedInstruction == true) {
+        
+        sendMessageToTouch(77, states[suitID - 1]);
+        
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
         debugSerial.print(" changed from ");
@@ -354,6 +364,9 @@ void sendInstruction() {
       }
       
       if (suitReceivedInstruction == true) {
+
+        // don't send anything to Touch yet,
+        // wait until both suits have confirmed
         
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
@@ -384,13 +397,17 @@ void sendInstruction() {
           xbee.send(tx);
           confirmDelivery(positiveResponseByte, 2, taggerID);
         }
-  
+        
         if (suitReceivedInstruction == false) {
           xbee.send(tx);
           confirmDelivery(positiveResponseByte, 3, taggerID);
         }
         
         if (suitReceivedInstruction == true) {
+
+          // tell Touch the colour was transferred
+          sendMessageToTouch(77, 0);
+          
           debugSerial.print("Suit ");
           debugSerial.print(taggerID);
           debugSerial.print(" changed from ");

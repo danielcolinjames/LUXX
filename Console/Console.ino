@@ -54,13 +54,17 @@ int stateCheckInterval = 1000;
 
 int fiveMinutes = 300000;
 
-long debugMillis = 0;
+long outputMillis = 0;
+int outputInterval = 1000;
 
 
 // ---------------------------------------------------------//
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
 SoftwareSerial debugSerial (9, 8); //rx, tx
+
+SoftwareSerial outputSerial(7, 6); // send info to TouchDesigner
+SoftwareSerial inputSerial(5, 4); // receive information from TouchDesigner
 
 XBee xbee = XBee();
 
@@ -97,7 +101,7 @@ void setup() {
 void loop() {
   lookForMessages();
   gameStateCheck();
-  sendToTouch();
+  sendStateToTouch();
 }
 
 
