@@ -72,6 +72,13 @@ void assignStartingColours() {
 // ---------------------------------------------------------//
 void gameStateCheck() {
   
+  /*
+   * Game modes:
+   *    0 = viral tag original
+   *    1 = viral tag split
+   *    2 = traditional tag
+   */
+   
   if ((millis() - stateMillis) > stateCheckInterval) {
     
     stateMillis = millis();
@@ -91,38 +98,64 @@ void gameStateCheck() {
         }
       }
     }
-    
-    // if there's only one suit left that's a different colour, check the state quicker
-    if (numberOfBlueSuits == (numberOfActiveSuits - 1) || numberOfRedSuits == (numberOfActiveSuits - 1)) {
-      stateCheckInterval = 10;
-      outputInterval = 10;
-    }
-    else {
-      stateCheckInterval = 1000;
-      outputInterval = 1500;
-    }
-    
-    // all the suits are blue
-    if (numberOfBlueSuits == numberOfActiveSuits) {
-      debugSerial.println();
-      debugSerial.println("Game over: everyone is blue.");
+
+    // Viral Tag original:
+    if (gameMode == 0) {
+      // if there's only one suit left that's blue (uninfected), check the state quicker
+      if (numberOfRedSuits == (numberOfActiveSuits - 1)) {
+        stateCheckInterval = 10;
+        outputInterval = 10;
+      }
+      else {
+        stateCheckInterval = 1000;
+        outputInterval = 1500;
+      }
       
-      sendMessageToTouch(75, 89);
+      // all the suits are red (infected)
+      if (numberOfRedSuits == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is red.");
+        
+        sendMessageToTouch(75, 89);
+        
+        gameOver();
+      }
+    }
+    
+    // Viral Tag split:
+    else if (gameMode == 1) {
+      // if there's only one suit left that's a different colour, check the state quicker
+      if (numberOfBlueSuits == (numberOfActiveSuits - 1) || numberOfRedSuits == (numberOfActiveSuits - 1)) {
+        stateCheckInterval = 10;
+        outputInterval = 10;
+      }
+      else {
+        stateCheckInterval = 1000;
+        outputInterval = 1500;
+      }
       
-      gameOver();
+      // all the suits are blue
+      if (numberOfBlueSuits == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is blue.");
+        
+        sendMessageToTouch(75, 89);
+        
+        gameOver();
+      }
+  
+      // all the suits are red
+      else if (numberOfRedSuits == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is red.");
+        
+        sendMessageToTouch(75, 89);
+        
+        gameOver();
+      }
     }
 
-    // all the suits are red
-    else if (numberOfRedSuits == numberOfActiveSuits) {
-      debugSerial.println();
-      debugSerial.println("Game over: everyone is red.");
-      
-      sendMessageToTouch(75, 89);
-      
-      gameOver();
-    }
-
-    // game has timed out
+    // timeout check for all game modes
     if (millis() > 600000) {
       debugSerial.println();
       debugSerial.println("Game over: time limit reached.");

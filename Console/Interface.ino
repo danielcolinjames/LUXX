@@ -1,3 +1,25 @@
+/*
+ * 
+ * 79 - Game state:
+ *      Number of active suits,
+ *      Number of red suits,
+ *      Number of blue suits
+ *      
+ * 78 - Start game:
+ *      Number of active suits
+ *      
+ * 77 - Suit was tagged:
+ *      New colour (0 if only 1 person is it)
+ *      
+ * 76 - Friendly fire:
+ *      Suit colour
+ *      
+ * 75 - Game over:
+ *      Winning colour (or 0 if timeout)
+ *      
+ */
+
+
 // ---------------------------------------------------------//
 // ------------- Wait until game is reset by us ------------//
 // ---------------------------------------------------------//
