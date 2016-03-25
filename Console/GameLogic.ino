@@ -12,50 +12,64 @@ void startGame() {
 // ---------- Initial setup to assign suits colours  -------//
 // ---------------------------------------------------------//
 void assignStartingColours() {
+
+  // min is inclusive, max is exclusive
+  // randomNum = a number from 1 - 4
+  uint8_t randomNum = random(1, 5);
+  
+  // multiply this number by 2, to get one of: (2, 4, 6, 8)
+  randomNum *= 2;
+  
+  // add 80 to make it a colour code
+  // add 1 to get that colour's pair
+  coolColour = 80 + randomNum;
+  warmColour = 80 + randomNum + 1;
+  
   if (gameMode == 0) {
     
-    // Viral Tag Original: one assigned red, rest assigned blue
+    // Viral Tag Original: one assigned warm, rest assigned cool
     
     for (int i = 0; i < 10; i++) {
-      // assign all of the suits except one as 88 (blue)
-      if (i != 9) {
-        states[i] = 88;
+      // assign all of the suits except one as a cool colour
+      if (i != 0) {
+        states[i] = coolColour;
       }
-      // assign the last one as red
+      // assign the first one as warm (first because we don't know
+      // how many suits are active yet)
       else {
-        states[i] = 89;
+        states[i] = warmColour;
       }
     }
   }
   
   else if (gameMode == 1) {
     
-    // Viral Tag Split: half assigned red, half assigned blue
+    // Viral Tag Split: half assigned warm, half assigned cool
     
     for (int i = 0; i < 10; i++) {
-      // assign half of the suits a 89 (blue)
+      // assign half of the suits a cool colour
       if (i % 2 == 0) {
-        states[i] = 89;
+        states[i] = warmColour;
       }
-      // assign the other half a 88 (red)
+      // assign the other half a warm colour
       else {
-        states[i] = 88;
+        states[i] = coolColour;
       }
     }
   }
   
   else if (gameMode == 2) {
     
-    // Traditional Tag: one person is it (red)
+    // Traditional Tag: one person is it (warm)
     
     for (int i = 0; i < 10; i++) {
-      // assign all of the suits a 89 (blue) except the last one
-      if (i != 9) {
-        states[i] = 89;
+      // assign all of the suits a cool colour except the first one
+      if (i != 0) {
+        states[i] = coolColour;
       }
-      // the last one is "it," and assigned a 88 (red)
+      // the first one is "it," and assigned a warm colour
       else {
-        states[i] = 88;
+        states[i] = warmColour;
       }
     }
   }
@@ -84,25 +98,25 @@ void gameStateCheck() {
     stateMillis = millis();
     
     numberOfActiveSuits = 0;
-    numberOfBlueSuits = 0;
-    numberOfRedSuits = 0;
+    numberOfCoolSuits = 0;
+    numberOfWarmSuits = 0;
     
     for (int i = 0; i < 10; i++) {
       if (activeSuits[i] == true) {
         numberOfActiveSuits++;
-        if (states[i] == 88) {
-          numberOfBlueSuits++;
+        if (states[i] % 2 == 0) {
+          numberOfCoolSuits++;
         }
-        else if (states[i] == 89) {
-          numberOfRedSuits++;
+        else if (states[i] % 2 != 0) {
+          numberOfWarmSuits++;
         }
       }
     }
 
     // Viral Tag original:
     if (gameMode == 0) {
-      // if there's only one suit left that's blue (uninfected), check the state quicker
-      if (numberOfRedSuits == (numberOfActiveSuits - 1)) {
+      // if there's only one suit left that's cool (uninfected), check the state quicker
+      if (numberOfWarmSuits == (numberOfActiveSuits - 1)) {
         stateCheckInterval = 10;
         outputInterval = 10;
       }
@@ -111,12 +125,12 @@ void gameStateCheck() {
         outputInterval = 1500;
       }
       
-      // all the suits are red (infected)
-      if (numberOfRedSuits == numberOfActiveSuits) {
+      // all the suits are warm (infected)
+      if (numberOfWarmSuits == numberOfActiveSuits) {
         debugSerial.println();
-        debugSerial.println("Game over: everyone is red.");
+        debugSerial.println("Game over: everyone is a warm colour.");
         
-        sendMessageToTouch(75, 89);
+        sendMessageToTouch(75, warmColour);
         
         gameOver();
       }
@@ -125,7 +139,7 @@ void gameStateCheck() {
     // Viral Tag split:
     else if (gameMode == 1) {
       // if there's only one suit left that's a different colour, check the state quicker
-      if (numberOfBlueSuits == (numberOfActiveSuits - 1) || numberOfRedSuits == (numberOfActiveSuits - 1)) {
+      if (numberOfCoolSuits == (numberOfActiveSuits - 1) || numberOfWarmSuits == (numberOfActiveSuits - 1)) {
         stateCheckInterval = 10;
         outputInterval = 10;
       }
@@ -134,22 +148,22 @@ void gameStateCheck() {
         outputInterval = 1500;
       }
       
-      // all the suits are blue
-      if (numberOfBlueSuits == numberOfActiveSuits) {
+      // all the suits are cool
+      if (numberOfCoolSuits == numberOfActiveSuits) {
         debugSerial.println();
-        debugSerial.println("Game over: everyone is blue.");
+        debugSerial.println("Game over: everyone is a cool colour.");
         
-        sendMessageToTouch(75, 89);
+        sendMessageToTouch(75, coolColour);
         
         gameOver();
       }
   
-      // all the suits are red
-      else if (numberOfRedSuits == numberOfActiveSuits) {
+      // all the suits are warm
+      else if (numberOfWarmSuits == numberOfActiveSuits) {
         debugSerial.println();
-        debugSerial.println("Game over: everyone is red.");
+        debugSerial.println("Game over: everyone is a warm colour.");
         
-        sendMessageToTouch(75, 89);
+        sendMessageToTouch(75, warmColour);
         
         gameOver();
       }

@@ -55,7 +55,7 @@ void whoTaggedMe() {
 // ---------------------------------------------------------//
 void printCurrentTag() {
   
-  debugSerial.print("RFID Tag ID:");
+  debugSerial.print("RFID Tag ID: ");
   
   for (int n = 0; n < 5; n++) {
     debugSerial.print(tagData[n], DEC);

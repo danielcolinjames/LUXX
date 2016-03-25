@@ -11,7 +11,7 @@
  *      Number of active suits
  *      
  * 77 - Suit was tagged:
- *      New colour
+ *      New colour (0 if only 1 person is it)
  *      
  * 76 - Friendly fire:
  *      Suit colour

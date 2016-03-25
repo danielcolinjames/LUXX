@@ -29,7 +29,6 @@ byte keyTag[NUMBER_OF_CARDS][5] = {
 };
 
 /*
- * 
  * Suit 1: 114, 0, 95, 44, 9
  * Suit 2: 114, 0, 95, 73, 207
  * Suit 3: 114, 0, 95, 43, 231
@@ -118,8 +117,6 @@ int i;
 // ---------------------------------------------------------//
 // --------------------   LED variables  -------------------//
 // ---------------------------------------------------------//
-uint8_t currentColour = 80;
-
 uint8_t rVal = 0;
 uint8_t gVal = 0;
 uint8_t bVal = 0;
@@ -185,7 +182,9 @@ void gameOver() {
         if (packetType == 98) {
           gameRestartDetected = true;
           uint8_t colour = rx16.getData(1);
-          initializeSuitColour(colour);
+          
+          setColour(colour);
+          activateSuit(rVal, gVal, bVal);
         }
       }
     }

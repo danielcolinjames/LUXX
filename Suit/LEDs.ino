@@ -159,28 +159,88 @@ void turnOnNextLight(int currLight, int strand) {
 
 
 // ---------------------------------------------------------//
-// ---------  Initialize suit colour at game start  --------//
+// ------------------  Set the suit's colour  --------------//
 // ---------------------------------------------------------//
-void initializeSuitColour(int colour) {
+void setColour(int colour) {
+  
+  // Yellow
   if (colour == 89) {
+    rVal = 255;
+    gVal = 189;
+    bVal = 0;
+    digitalWrite(rfiduino.led2, LOW); // green off
+    digitalWrite(rfiduino.led1, HIGH); // red on
+    debugSerial.println("Changing suit colour to yellow.");
+  }
+  
+  // Blue
+  else if (colour == 88) {
+    rVal = 0;
+    gVal = 53;
+    bVal = 255;
+    digitalWrite(rfiduino.led1, LOW); // red off
+    digitalWrite(rfiduino.led2, HIGH); // green on
+    debugSerial.println("Changing suit colour to blue.");
+  }
+  
+  // Orange
+  else if (colour == 87) {
+    rVal = 255;
+    gVal = 93;
+    bVal = 0;
+    digitalWrite(rfiduino.led2, LOW); // green off
+    digitalWrite(rfiduino.led1, HIGH); // red on
+    debugSerial.println("Changing suit colour to orange.");
+  }
+
+  // Light blue
+  else if (colour == 86) {
+    rVal = 44;
+    gVal = 255;
+    bVal = 253;
+    digitalWrite(rfiduino.led1, LOW); // red off
+    digitalWrite(rfiduino.led2, HIGH); // green on
+    debugSerial.println("Changing suit colour to light blue.");
+  }
+
+  // Red
+  else if (colour == 85) {
     rVal = 255;
     gVal = 0;
     bVal = 0;
-    activateSuit(rVal, gVal, bVal);
-    currentColour = 89;
     digitalWrite(rfiduino.led2, LOW); // green off
     digitalWrite(rfiduino.led1, HIGH); // red on
-    debugSerial.println("Starting suit as red.");
+    debugSerial.println("Changing suit colour to red.");
   }
-  else if (colour == 88) {
+
+  // Green
+  else if (colour == 84) {
     rVal = 0;
-    gVal = 0;
-    bVal = 255;
-    activateSuit(rVal, gVal, bVal);
-    currentColour = 88;
+    gVal = 255;
+    bVal = 0;
     digitalWrite(rfiduino.led1, LOW); // red off
     digitalWrite(rfiduino.led2, HIGH); // green on
-    debugSerial.println("Starting suit as blue.");
+    debugSerial.println("Changing suit colour to green.");
+  }
+
+  // Pink
+  else if (colour == 83) {
+    rVal = 215;
+    gVal = 0;
+    bVal = 255;
+    digitalWrite(rfiduino.led2, LOW); // green off
+    digitalWrite(rfiduino.led1, HIGH); // red on
+    debugSerial.println("Changing suit colour to pink.");
+  }
+  
+  // Light green
+  else if (colour == 82) {
+    rVal = 141;
+    gVal = 255;
+    bVal = 0;
+    digitalWrite(rfiduino.led1, LOW); // red off
+    digitalWrite(rfiduino.led2, HIGH); // green on
+    debugSerial.println("Changing suit colour to green.");
   }
 }
 
@@ -223,33 +283,6 @@ void activateSuit(int r, int g, int b) {
   delay(300);
   noTone(rfiduino.buzzer);
   delay(300);
-}
-
-
-// ---------------------------------------------------------//
-// ------------  Change the colour of this suit  -----------//
-// ---------------------------------------------------------//
-void setColour(uint8_t colour) {
-  if (colour == 89) {
-    rVal = 255;
-    gVal = 0;
-    bVal = 0;
-    changeColour(rVal, gVal, bVal);
-    currentColour = 89;
-    digitalWrite(rfiduino.led2, LOW); // green off
-    digitalWrite(rfiduino.led1, HIGH); // red on
-    debugSerial.println("Colour changed to red.");
-  }
-  else if (colour == 88) {
-    rVal = 0;
-    gVal = 0;
-    bVal = 255;
-    changeColour(rVal, gVal, bVal);
-    currentColour = 88;
-    digitalWrite(rfiduino.led1, LOW); // red off
-    digitalWrite(rfiduino.led2, HIGH); // green on
-    debugSerial.println("Colour changed to blue.");
-  }
 }
 
 

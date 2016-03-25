@@ -2,8 +2,8 @@
  * 
  * 79 - Game state:
  *      Number of active suits,
- *      Number of red suits,
- *      Number of blue suits
+ *      Number of warm suits,
+ *      Number of cool suits
  *      
  * 78 - Start game:
  *      Number of active suits
@@ -51,8 +51,8 @@ void sendStateToTouch() {
     
     outputSerial.print((uint8_t)79);
     outputSerial.print((uint8_t)numberOfActiveSuits);
-    outputSerial.print((uint8_t)numberOfRedSuits);
-    outputSerial.print((uint8_t)numberOfBlueSuits);
+    outputSerial.print((uint8_t)numberOfWarmSuits);
+    outputSerial.print((uint8_t)numberOfCoolSuits);
   }
 }
 

@@ -249,8 +249,8 @@ void sendInstruction() {
   else {
     if (gameMode == 0) {
 
-      // Viral Tag Original: one person starts red, tries to make
-      // everyone red. Only a red suit can tag a blue suit.
+      // Viral Tag Original: one person starts warm, tries to make
+      // everyone warm. Only a warm suit can tag a cool suit.
       
       if (states[suitID - 1] == 88 && states[taggerID - 1] == 89) {
         address = addresses[suitID - 1];
@@ -296,7 +296,7 @@ void sendInstruction() {
 
     else if (gameMode == 1) {
 
-      // Viral Tag Split: half start blue, half start red.
+      // Viral Tag Split: half start cool, half start warm.
       // If someone tags anyone of the opposite colour,
       // the person tagged changes to the tagger's colour.
       

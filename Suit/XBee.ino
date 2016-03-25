@@ -49,7 +49,10 @@ void lookForInstruction() {
         // if it's a 97, change to the instruction's colour
         if (packetType == 97) {
           instruction = rx16.getData(1);
+          
           setColour(instruction);
+          changeColour(rVal, gVal, bVal);
+
           debugSerial.print("Setting colour to ");
           debugSerial.println(instruction);
           rfiduino.successSound();
@@ -58,6 +61,12 @@ void lookForInstruction() {
         
         // game over command
         else if (packetType == 95) {
+          
+          changeColour(rVal, gVal, bVal);
+          rfiduino.successSound();
+          delay(2000);
+          
+          changeColour(255, 255, 255);
           
           digitalWrite(rfiduino.led1, LOW); // red off
           digitalWrite(rfiduino.led2, LOW); // green off
@@ -74,13 +83,14 @@ void lookForInstruction() {
           debugSerial.print(colour);
           debugSerial.println(".");
           
-          initializeSuitColour(colour);
+          setColour(colour);
+          activateSuit(rVal, gVal, bVal);
         }
       }
       else {
         // if the message WAS 96
-        setColour(currentColour);
-        debugSerial.println("Keeping colour the same");
+        changeColour(rVal, gVal, bVal);
+        debugSerial.println("Keeping colour the same.");
         rfiduino.errorSound();
         delay(1000);
       }
@@ -110,6 +120,12 @@ void lookForMessages() {
 
       // game over
       if (packetType == 95) {
+
+        changeColour(rVal, gVal, bVal);
+        rfiduino.successSound();
+        delay(2000);
+        
+        changeColour(255, 255, 255);
         
         digitalWrite(rfiduino.led1, LOW); // red off
         digitalWrite(rfiduino.led2, LOW); // green off
@@ -125,7 +141,8 @@ void lookForMessages() {
         debugSerial.print(colour);
         debugSerial.println(".");
         
-        initializeSuitColour(colour);
+        setColour(colour);
+        activateSuit(rVal, gVal, bVal);      
       }
     }
   }
