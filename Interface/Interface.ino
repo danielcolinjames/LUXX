@@ -31,7 +31,7 @@ void setup() {
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {}
-
+  
   consoleToTouch.begin(9600);
   touchToConsole.begin(9600);
 }
@@ -40,8 +40,14 @@ void loop() {
   
   consoleToTouch.listen();
   while (consoleToTouch.available() > 0) {
-    fromConsole = (uint8_t)consoleToTouch.readString().toInt();
+    fromConsole = consoleToTouch.readString().toInt();
     Serial.print((uint8_t)fromConsole);
+  }
+  
+  touchToConsole.listen();
+  while (touchToConsole.available() > 0) {
+    toConsole = touchToConsole.readString().toInt();
+    Serial.print((uint8_t)toConsole);
   }
 }
 

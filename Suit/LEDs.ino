@@ -10,10 +10,10 @@ void stepThroughLights() {
     // assume both strands have 9 pixels
     
     // compare current millis() reading to the last reading.
-    // if the difference is larger than 50 milliseconds, we
+    // if the difference is larger than the interval, we
     // need to move ahead one light.
     
-    if ((millis() - prevMillis) > 50) {
+    if ((millis() - prevMillis) > (450/NUMPIXELSONE)) {
       
       // assign the current value to a variable so that we
       // can compare it the next time we enter this method
@@ -48,10 +48,10 @@ void stepThroughLights() {
 void stepThroughLightsOne() {
 
   // compare current millis() reading to the last reading.
-  // if the difference is larger than 50 milliseconds, we
+  // if the difference is larger than the interval, we
   // need to move ahead one light.
   
-  if ((millis() - prevMillisOne) > 50) {
+  if ((millis() - prevMillisOne) > (450/NUMPIXELSONE)) {
     
     // assign the current value to a variable so that we
     // can compare it the next time we enter this method
@@ -84,11 +84,11 @@ void stepThroughLightsOne() {
 // ---------------------------------------------------------//
 void stepThroughLightsTwo() {
 
-  // for the second strand of lights, there is 1 extra pixel,
-  // so wait 50 - (50/10) = 45 milliseconds and they'll both take
-  // the same time to go through all the lights (45 * 10 = 450 = 9 * 50)
+  // for the second strand of lights, do the same thing,
+  // check to see if the current time minus the last check
+  // is more than the interval between lights
   
-  if ((millis() - prevMillisTwo) > 45) {
+  if ((millis() - prevMillisTwo) > (450/NUMPIXELSTWO)) {
     
     // assign the current value to a variable so that we
     // can compare it the next time we enter this method

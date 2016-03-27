@@ -90,6 +90,9 @@ void setup() {
   delay(10);
   
   gameMode = 1;
+
+  // for randomization
+  randomSeed(analogRead(5));
   
   startGame();
 }

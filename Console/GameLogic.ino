@@ -17,6 +17,9 @@ void assignStartingColours() {
   // randomNum = a number from 1 - 4
   uint8_t randomNum = random(1, 5);
   
+  debugSerial.print("Random number: ");
+  debugSerial.println(randomNum);
+  
   // multiply this number by 2, to get one of: (2, 4, 6, 8)
   randomNum *= 2;
   
@@ -24,6 +27,11 @@ void assignStartingColours() {
   // add 1 to get that colour's pair
   coolColour = 80 + randomNum;
   warmColour = 80 + randomNum + 1;
+  
+  debugSerial.print("Cool: ");
+  debugSerial.println(coolColour);
+  debugSerial.print("Warm: ");
+  debugSerial.println(warmColour);
   
   if (gameMode == 0) {
     
@@ -112,7 +120,7 @@ void gameStateCheck() {
         }
       }
     }
-
+    
     // Viral Tag original:
     if (gameMode == 0) {
       // if there's only one suit left that's cool (uninfected), check the state quicker
@@ -168,7 +176,7 @@ void gameStateCheck() {
         gameOver();
       }
     }
-
+    
     // timeout check for all game modes
     if (millis() > 600000) {
       debugSerial.println();
