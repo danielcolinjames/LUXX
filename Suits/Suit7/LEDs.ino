@@ -13,7 +13,7 @@ void stepThroughLights() {
     // if the difference is larger than the interval, we
     // need to move ahead one light.
     
-    if ((millis() - prevMillis) > (450/NUMPIXELSONE)) {
+    if ((millis() - prevMillis) > 72) {
       
       // assign the current value to a variable so that we
       // can compare it the next time we enter this method
@@ -51,7 +51,7 @@ void stepThroughLightsOne() {
   // if the difference is larger than the interval, we
   // need to move ahead one light.
   
-  if ((millis() - prevMillisOne) > (450/NUMPIXELSONE)) {
+  if ((millis() - prevMillisOne) > 72) {
     
     // assign the current value to a variable so that we
     // can compare it the next time we enter this method
@@ -88,7 +88,7 @@ void stepThroughLightsTwo() {
   // check to see if the current time minus the last check
   // is more than the interval between lights
   
-  if ((millis() - prevMillisTwo) > (450/NUMPIXELSTWO)) {
+  if ((millis() - prevMillisTwo) > 64) {
     
     // assign the current value to a variable so that we
     // can compare it the next time we enter this method
