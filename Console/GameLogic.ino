@@ -2,9 +2,75 @@
 // -------------------- Start the game ---------------------//
 // ---------------------------------------------------------//
 void startGame() {
-  assignStartingColours();
-  sendStartingColours();
-  printOutStates();
+  
+  pingSuits();
+
+  if (numberOfActiveSuits > 1) {
+    assignStartingColours();
+    sendStartingColours();
+    printOutStates();
+  }
+  else {
+    debugSerial.println("There must be more than 1 suit to play.");
+  }
+}
+
+
+
+// ---------------------------------------------------------//
+// ---------- Initial setup to assign suits colours  -------//
+// ---------------------------------------------------------//
+void pingSuits() {
+  for (int i = 0; i < 10; i++) {
+    suitID = i + 1;
+    
+    debugSerial.println();
+    debugSerial.print("-------------- ");
+    debugSerial.print("PINGING SUIT  >  ");
+    debugSerial.print(suitID);
+    debugSerial.println("  < ------------");
+    debugSerial.println();
+        
+    address = addresses[suitID - 1];
+    
+    payload[0] = pingByte;
+    
+    packetSize = 1;
+    
+    tx = Tx16Request(address, payload, packetSize);
+          
+    // first attempt
+    xbee.send(tx);
+    confirmDelivery(pingByte, 1, suitID);
+    
+    // second attempt
+    if (suitReceivedInstruction == false) {
+      xbee.send(tx);
+      confirmDelivery(pingByte, 2, suitID);
+    }
+    
+    // third attempt
+    if (suitReceivedInstruction == false) {
+      xbee.send(tx);
+      confirmDelivery(pingByte, 3, suitID);
+    }
+    
+    // the suit got the message, do the following
+    if (suitReceivedInstruction == true) {
+      numberOfActiveSuits++;
+      activeSuits[suitID - 1] = true;
+      debugSerial.print("Suit ");
+      debugSerial.print(suitID);
+      debugSerial.println(" is ACTIVE.");
+    }
+    
+    else {
+      activeSuits[suitID - 1] = false;
+      debugSerial.print("Suit ");
+      debugSerial.print(suitID);
+      debugSerial.println(" is inactive.");
+    }
+  }
 }
 
 
@@ -36,16 +102,23 @@ void assignStartingColours() {
   if (gameMode == 0) {
     
     // Viral Tag Original: one assigned warm, rest assigned cool
-    
     for (int i = 0; i < 10; i++) {
-      // assign all of the suits except one as a cool colour
-      if (i != 0) {
-        states[i] = coolColour;
-      }
-      // assign the first one as warm (first because we don't know
-      // how many suits are active yet)
-      else {
-        states[i] = warmColour;
+      
+      uint8_t temp = 0;
+      
+      if (activeSuits[i] == true) {
+        
+        temp++;
+
+        // the last suit is warm
+        if (temp == numberOfActiveSuits) {
+          states[i] = warmColour;
+        }
+
+        // all other suits are cool
+        else {
+          states[i] = coolColour;
+        }
       }
     }
   }
@@ -55,13 +128,20 @@ void assignStartingColours() {
     // Viral Tag Split: half assigned warm, half assigned cool
     
     for (int i = 0; i < 10; i++) {
-      // assign half of the suits a cool colour
-      if (i % 2 == 0) {
-        states[i] = warmColour;
-      }
-      // assign the other half a warm colour
-      else {
-        states[i] = coolColour;
+
+      uint8_t temp = 0;
+
+      if (activeSuits[i] == true) {
+        temp++;
+      
+        // assign half of the suits a cool colour
+        if (temp <= (numberOfActiveSuits/2)) {
+          states[i] = coolColour;
+        }
+        // assign the other half a warm colour
+        else {
+          states[i] = warmColour;
+        }
       }
     }
   }
@@ -85,6 +165,135 @@ void assignStartingColours() {
   // START GAME OF OTHER TAG
   else if (gameMode == 3) {
   //TODO
+  }
+}
+
+
+// ---------------------------------------------------------//
+// -------- Tell each suit which colour it starts as  ------//
+// ---------------------------------------------------------//
+void sendStartingColours() {
+  for (int i = 0; i < 10; i++) {    
+    suitID = i + 1;
+    
+    debugSerial.println();
+    debugSerial.print("-------------- ");
+    debugSerial.print("INITIALIZING SUIT  >  ");
+    debugSerial.print(suitID);
+    debugSerial.println("  < ------------");
+    debugSerial.println();
+    
+    address = addresses[suitID - 1];
+    
+    payload[0] = gameStartByte;
+    payload[1] = states[suitID - 1];
+    
+    packetSize = 1;
+    
+    tx = Tx16Request(address, payload, packetSize);
+          
+    // first attempt
+    xbee.send(tx);
+    confirmDelivery(pingByte, 1, suitID);
+    
+    // second attempt
+    if (suitReceivedInstruction == false) {
+      xbee.send(tx);
+      confirmDelivery(pingByte, 2, suitID);
+    }
+    
+    // third attempt
+    if (suitReceivedInstruction == false) {
+      xbee.send(tx);
+      confirmDelivery(pingByte, 3, suitID);
+    }
+    
+    // the suit got the message, do the following
+    if (suitReceivedInstruction == true) {
+      debugSerial.print("Suit ");
+      debugSerial.print(suitID);
+      debugSerial.println(" is ACTIVE.");
+    }
+    else {
+      debugSerial.print("Suit ");
+      debugSerial.print(suitID);
+      debugSerial.println(" is inactive.");
+    }
+  }
+}
+
+
+// ---------------------------------------------------------//
+// -----------   Tell each suit the game is over   ---------//
+// ---------------------------------------------------------//
+void sendGameOver() {
+  for (int i = 0; i < 10; i++) {
+    suitID = i + 1;
+    
+    // only turn off the suits that are active this round
+    if (activeSuits[suitID - 1] == true) {
+      
+//      if (suitID == 3) {
+        debugSerial.println();
+        debugSerial.print("---------- ");
+        debugSerial.print("DEACTIVATING SUIT  >  ");
+        debugSerial.print(suitID);
+        debugSerial.println("  < ----------");
+        debugSerial.println();
+        
+        delay(50);
+        
+        address = addresses[suitID - 1];
+        payload[0] = gameOverByte;
+        packetSize = 1;
+        
+        tx = Tx16Request(address, payload, packetSize);
+        
+        // check 5 times instead of 3, because game over
+        // is more important than a regular message
+        xbee.send(tx);
+        confirmDelivery(gameOverByte, 1, suitID);
+        
+        if (suitReceivedInstruction == false) {
+          xbee.send(tx);
+          confirmDelivery(gameOverByte, 2, suitID);
+        }
+        
+        if (suitReceivedInstruction == false) {
+          xbee.send(tx);
+          confirmDelivery(gameOverByte, 3, suitID);
+        }
+        
+        if (suitReceivedInstruction == false) {
+          // wait a little bit if it still hasn't got the message after 3 times
+          delay(500);
+          xbee.send(tx);
+          confirmDelivery(gameOverByte, 4, suitID);
+        }
+        
+        if (suitReceivedInstruction == false) {
+          // wait a little bit if it still hasn't got the message after 4 times
+          delay(500);
+          xbee.send(tx);
+          confirmDelivery(gameOverByte, 5, suitID);
+        }
+
+        // if it has gotten the message, set it as inactive
+        if (suitReceivedInstruction == true) {
+          activeSuits[suitID - 1] = false;
+        }
+        else {
+          // if it doesn't get the message, it's still active
+          activeSuits[suitID - 1] = true;
+        }
+//      }
+    }
+    
+//    else {
+//        debugSerial.print("----- Skipping deactivation of suit ");
+//        debugSerial.print(suitID);
+//        debugSerial.println(" during testing phase. -----");
+//    }
   }
 }
 

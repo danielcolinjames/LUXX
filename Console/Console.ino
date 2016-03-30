@@ -22,6 +22,7 @@ uint16_t addresses[] = { 0x1, 0x2, 0x3, 0x4, 0x5,
 // ---------------------------------------------------------//
 // --------------------- Packet types  ---------------------//
 // ---------------------------------------------------------//
+uint8_t pingByte = 101;
 uint8_t taggedByte = 99;
 uint8_t gameStartByte = 98;
 uint8_t positiveResponseByte = 97;
@@ -95,6 +96,10 @@ void setup() {
   randomSeed(analogRead(5));
   
   startGame();
+
+  delay(1000);
+
+//  gameOver();
 }
 
 
