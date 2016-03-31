@@ -64,9 +64,11 @@ void lookForInstruction() {
           
           changeColour(rVal, gVal, bVal);
           rfiduino.successSound();
-          delay(2000);
+          delay(3000);
           
-          changeColour(255, 255, 255);
+          rVal = 255;
+          gVal = 255;
+          bVal = 255;
           
           digitalWrite(rfiduino.led1, LOW); // red off
           digitalWrite(rfiduino.led2, LOW); // green off
@@ -122,10 +124,13 @@ void lookForMessages() {
       if (packetType == 95) {
 
         changeColour(rVal, gVal, bVal);
-        rfiduino.successSound();
-        delay(2000);
         
-        changeColour(255, 255, 255);
+        rfiduino.successSound();
+        delay(3000);
+        
+        rVal = 255;
+        gVal = 255;
+        bVal = 255;
         
         digitalWrite(rfiduino.led1, LOW); // red off
         digitalWrite(rfiduino.led2, LOW); // green off

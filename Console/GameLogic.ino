@@ -188,36 +188,36 @@ void sendStartingColours() {
     payload[0] = gameStartByte;
     payload[1] = states[suitID - 1];
     
-    packetSize = 1;
+    packetSize = 2;
     
     tx = Tx16Request(address, payload, packetSize);
           
     // first attempt
     xbee.send(tx);
-    confirmDelivery(pingByte, 1, suitID);
+    confirmDelivery(gameStartByte, 1, suitID);
     
     // second attempt
     if (suitReceivedInstruction == false) {
       xbee.send(tx);
-      confirmDelivery(pingByte, 2, suitID);
+      confirmDelivery(gameStartByte, 2, suitID);
     }
     
     // third attempt
     if (suitReceivedInstruction == false) {
       xbee.send(tx);
-      confirmDelivery(pingByte, 3, suitID);
+      confirmDelivery(gameStartByte, 3, suitID);
     }
     
     // the suit got the message, do the following
     if (suitReceivedInstruction == true) {
       debugSerial.print("Suit ");
       debugSerial.print(suitID);
-      debugSerial.println(" is ACTIVE.");
+      debugSerial.println("started.");
     }
     else {
       debugSerial.print("Suit ");
       debugSerial.print(suitID);
-      debugSerial.println(" is inactive.");
+      debugSerial.println("not started.");
     }
   }
 }
