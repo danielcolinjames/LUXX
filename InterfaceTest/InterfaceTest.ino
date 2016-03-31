@@ -22,8 +22,8 @@
  */
 
 
-SoftwareSerial consoleToInterface(5, 4); // to send into TouchDesigner
-SoftwareSerial interfaceToConsole(3, 2); // to receive from TouchDesigner
+SoftwareSerial consoleInterface(3, 2); // rx, tx
+SoftwareSerial debugSerial(8, 7);
 
 int fromConsole;
 uint8_t toConsole;
@@ -37,69 +37,34 @@ void setup() {
   Serial.begin(9600);
   while (!Serial) {}
   
-  consoleToInterface.begin(9600);
-  interfaceToConsole.begin(9600);
+  consoleInterface.begin(9600);
+  debugSerial.begin(9600);
+  debugSerial.println("Starting debug...");
 }
+
 
 void loop() {
-//  toSendToInterface();
-testSend();
-//  toSendToConsole();
-
-//  sendValuesToMax();
-//  toSendToConsole();
+  listenToConsole();
+  listenToMax();
 }
 
 
-void sendValuesToMax() {
-  Serial.println(one);
-  delay(100);
-  Serial.println(two);
-  delay(100);
-  Serial.println(three);
-  delay(100);
-}
-
-void testSend() {
-  Serial.print(75);
-  Serial.println();
-  delay(500);
-
-  Serial.print(8);
-  Serial.println();
-  delay(500);
-
-  Serial.print(3);
-  Serial.println();
-  delay(500);
-}
-
-void toSendToInterface() {
-  consoleToInterface.listen();
-  while (consoleToInterface.available() > 0) {
-    fromConsole = consoleToInterface.read();
+void listenToConsole() {
+  consoleInterface.listen();
+  while (consoleInterface.available() > 0) {
+    fromConsole = consoleInterface.read();
+    debugSerial.println(fromConsole);
     Serial.println(fromConsole);
-    delay(1000);
-//    fromConsole = consoleToInterface.readString().toInt();
-//    Serial.println(fromConsole.toInt());
   }
 }
 
 
-void toSendToConsole() {
-//  toConsole = Serial.read();
+void listenToMax() {
   if (Serial.available()) {
     int reading = Serial.read();
-    if (reading == 9) {
-      one = 4;
-      two = 5;
-      three = 6;
-    }
-    else {
-      one = 75;
-      two = 10;
-      three = 11;
-    }
+    debugSerial.print("Message from Max: ");
+    debugSerial.println(reading);
+    consoleInterface.write(reading);
   }
 }
 

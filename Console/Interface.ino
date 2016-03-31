@@ -28,13 +28,20 @@ void waitForReset() {
   boolean reset = false;
   
   while(reset == false) {
-    // game over, wait for manual reset from TouchDesigner
-    if (inputSerial.available() > 0) {
-      debugSerial.println("Message received from TouchDesigner");
-      String incoming = inputSerial.readString();
-      if (incoming.toInt() == 98) {
-        debugSerial.println("98 received from TouchDesigner. Starting new game...");
+    
+    interfaceSerial.listen();
+    
+    while (interfaceSerial.available() && listeningBoolean == true) {
+      uint8_t reading = interfaceSerial.read();
+      debugSerial.print("Reading: ");
+      debugSerial.println(reading);
+      
+      if (reading == 1) {
+        listeningBoolean = false;
         reset = true;
+        
+        debugSerial.println("RESTARTING GAME");
+        
         startGame();
       }
     }
@@ -43,9 +50,9 @@ void waitForReset() {
 
 
 // ---------------------------------------------------------//
-// ---------- Send information into TouchDesigner ----------//
+// ---------- Send information into the interface ----------//
 // ---------------------------------------------------------//
-void sendStateToTouch() {
+void sendStateToInterface() {
   if (millis() - outputMillis > outputInterval) {
     outputMillis = millis();
     
@@ -58,13 +65,50 @@ void sendStateToTouch() {
 
 
 // ---------------------------------------------------------//
-// ---------- Send information into TouchDesigner ----------//
+// ---------- Send information into the interface ----------//
 // ---------------------------------------------------------//
-void sendMessageToTouch(uint8_t messageType, uint8_t message) {
-  if (millis() - outputMillis > outputInterval) {
-    outputMillis = millis();
+void sendMessageToInterface(uint8_t messageType, uint8_t message) {  
+  interfaceSerial.write(messageType);
+  interfaceSerial.write(message);
+}
+
+// ---------------------------------------------------------//
+// ---------- Listen for messages sent through Max ---------//
+// ---------------------------------------------------------//
+void listenToInterface() {
+  interfaceSerial.listen();
+  while (interfaceSerial.available() && listeningBoolean == true) {
+    int reading = interfaceSerial.read();
+    debugSerial.print("Reading: ");
+    debugSerial.println(reading);
     
-    outputSerial.print((uint8_t)messageType);
-    outputSerial.print((uint8_t)message);
+    if (reading == 1) {
+      listeningBoolean = false;
+      
+      debugSerial.println("STARTING GAME");
+      
+      startGame();
+    }
+    else if (reading == 2) {
+      listeningBoolean = false;
+      
+      debugSerial.println("ENDING GAME");
+      
+      gameOver();
+    }
   }
 }
+
+
+// ---------------------------------------------------------//
+// ---------------- Send a message into Max ----------------//
+// ---------------------------------------------------------//
+void sendToInterface(uint8_t value) {  
+  interfaceSerial.write(value);
+}
+
+
+
+
+
+

@@ -22,32 +22,49 @@
  */
 
 
-SoftwareSerial consoleToTouch(5, 4); // to send into TouchDesigner
-SoftwareSerial touchToConsole(3, 2); // to receive from TouchDesigner
+SoftwareSerial consoleInterface(3, 2); // rx, tx
+SoftwareSerial debugSerial(8, 7);
 
-uint8_t fromConsole;
+int fromConsole;
+uint8_t toConsole;
+
+uint8_t one = 1;
+uint8_t two = 2;
+uint8_t three = 3;
 
 void setup() {
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {}
   
-  consoleToTouch.begin(9600);
-  touchToConsole.begin(9600);
+  consoleInterface.begin(9600);
+  debugSerial.begin(9600);
+  debugSerial.println("Starting debug...");
 }
 
+
 void loop() {
-  
-  consoleToTouch.listen();
-  while (consoleToTouch.available() > 0) {
-    fromConsole = consoleToTouch.readString().toInt();
-    Serial.print((uint8_t)fromConsole);
+  listenToConsole();
+  listenToMax();
+}
+
+
+void listenToConsole() {
+  consoleInterface.listen();
+  while (consoleInterface.available() > 0) {
+    fromConsole = consoleInterface.read();
+    debugSerial.println(fromConsole);
+    Serial.println(fromConsole);
   }
-  
-  touchToConsole.listen();
-  while (touchToConsole.available() > 0) {
-    toConsole = touchToConsole.readString().toInt();
-    Serial.print((uint8_t)toConsole);
+}
+
+
+void listenToMax() {
+  if (Serial.available()) {
+    int reading = Serial.read();
+    debugSerial.print("Message from Max: ");
+    debugSerial.println(reading);
+    consoleInterface.write(reading);
   }
 }
 

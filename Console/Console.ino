@@ -58,14 +58,14 @@ int fiveMinutes = 300000;
 long outputMillis = 0;
 int outputInterval = 1000;
 
+boolean listeningBoolean = true;
 
 // ---------------------------------------------------------//
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
 SoftwareSerial debugSerial (9, 8); //rx, tx
+SoftwareSerial interfaceSerial(7, 6); // rx, tx
 
-SoftwareSerial outputSerial(7, 6); // send info to TouchDesigner
-SoftwareSerial inputSerial(5, 4); // receive information from TouchDesigner
 
 XBee xbee = XBee();
 
@@ -87,12 +87,14 @@ void setup() {
   
   debugSerial.begin(9600);
   debugSerial.println("Starting...");
+
+  interfaceSerial.begin(9600);
   
   delay(10);
   
   gameMode = 1;
 
-  // for randomization
+  // necessary for randomization in colour selection
   randomSeed(analogRead(5));
   
   startGame();
@@ -109,9 +111,8 @@ void setup() {
 void loop() {
   lookForMessages();
   gameStateCheck();
-  sendStateToTouch();
+  listenToInterface();
 }
-
 
 
 
