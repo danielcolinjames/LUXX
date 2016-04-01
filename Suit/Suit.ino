@@ -82,7 +82,9 @@ int notes[] = { 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
 // ---------------------------------------------------------//
 // --------------------- Packet types  ---------------------//
 // ---------------------------------------------------------//
+uint8_t confusedByte = 100;
 uint8_t taggedByte = 99;
+
 uint8_t gameStartByte = 98;
 uint8_t positiveResponseByte = 97;
 uint8_t negativeResponseByte = 96;
@@ -146,6 +148,8 @@ void setup() {
   rVal = 255;
   gVal = 255;
   bVal = 255;
+
+  waitForStartCommand();
 }
 
 

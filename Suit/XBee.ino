@@ -1,5 +1,74 @@
 // ---------------------------------------------------------//
-// ------  Send suitID and taggerID to the console  ------//
+// -------  Send suitID and taggerID to the console  -------//
+// ---------------------------------------------------------//
+void waitForStartCommand() {
+  boolean waiting = true;
+  boolean sentConfused = false;
+
+  while (waiting == true) {
+    
+    stepThroughLights();
+    
+    xbee.readPacket();
+    
+    if (xbee.getResponse().isAvailable()) {
+    
+      debugSerial.print("Packet found.");
+      
+      if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
+        xbee.getResponse().getRx16Response(rx16);
+        
+        uint8_t packetType = rx16.getData(0);
+        
+        debugSerial.print(" Packet type = ");
+        debugSerial.print(packetType);
+        debugSerial.println(".");
+        
+        // game start command, next byte in payload is
+        // going to be the starting colour
+        if (packetType == 98) {
+          
+          waiting = false;
+          
+          uint8_t colour = rx16.getData(1);
+          debugSerial.print("Starting colour received: ");
+          debugSerial.print(colour);
+          debugSerial.println(".");
+          
+          setColour(colour);
+          activateSuit(rVal, gVal, bVal);      
+        }
+      }
+    }
+    if (sentConfused == false) {
+      payload[0] = confusedByte;
+      payload[1] = suitID;
+      
+      Tx16Request tx = Tx16Request(address, payload, 2);
+      
+      xbee.send(tx);
+      confirmDelivery(confusedByte, 1);
+      
+      if (messageReceived == false) {
+        xbee.send(tx);
+        confirmDelivery(confusedByte, 2);
+      }
+      
+      if (messageReceived == false) {
+        xbee.send(tx);
+        confirmDelivery(confusedByte, 3);
+      }
+
+      if (messageReceived == true) {
+        sentConfused = true;
+      }
+    }
+  }
+}
+
+
+// ---------------------------------------------------------//
+// -------  Send suitID and taggerID to the console  -------//
 // ---------------------------------------------------------//
 void sendIWasTagged() {
   
