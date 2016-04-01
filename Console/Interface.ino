@@ -72,6 +72,7 @@ void sendMessageToInterface(uint8_t messageType, uint8_t message) {
   interfaceSerial.write(message);
 }
 
+
 // ---------------------------------------------------------//
 // ---------- Listen for messages sent through Max ---------//
 // ---------------------------------------------------------//

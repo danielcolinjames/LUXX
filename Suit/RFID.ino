@@ -35,15 +35,16 @@ void whoTaggedMe() {
     
     if (verifyKey == true) {
       
-      taggerID = i + 1;
+      taggerID = i;
       
       debugSerial.print("Tag recognized. Suit: ");
       debugSerial.println(taggerID);
-
+      
       sendIWasTagged();
     }
     i++;
   }
+  
   if (verifyKey == false) {
     debugSerial.println("No match found.");
   }

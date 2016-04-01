@@ -47,13 +47,11 @@ void lookForMessages() {
 }
 
 
-
-
 // ---------------------------------------------------------//
 // ------- Tells suits if they should change colour --------//
 // ---------------------------------------------------------//
 void sendInstruction() {
-  if (states[suitID - 1] == states[taggerID - 1]) {
+  if (states[suitID] == states[taggerID]) {
     if (gameMode == 0 || gameMode == 1 || gameMode == 2) {
       
       // both suits are the same colour > 96
@@ -61,7 +59,7 @@ void sendInstruction() {
       // taggerID doesn't know anything happened
       // so there's no need to address it at all
       
-      address = addresses[suitID - 1];
+      address = addresses[suitID];
       payload[0] = negativeResponseByte;
       packetSize = 1;
       
@@ -86,23 +84,21 @@ void sendInstruction() {
       // if the suit got the message, we don't need to do anything,
       // but it's good to know what the console is doing
       if (suitReceivedInstruction == true) {
-
-        sendMessageToTouch(76, states[suitID - 1]);
-        
+                
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
         debugSerial.print(" didn't change colours ");
         debugSerial.print("because it is the same colour (");
-        debugSerial.print(states[suitID - 1]);
+        debugSerial.print(states[suitID]);
         debugSerial.print(") as suit ");
         debugSerial.print(taggerID);
         debugSerial.print(" (");
-        debugSerial.print(states[taggerID - 1]);
+        debugSerial.print(states[taggerID]);
         debugSerial.println(").");
       }
     }
   }
-
+  
   // suits are different colours > 97
   else {
     if (gameMode == 0) {
@@ -110,10 +106,10 @@ void sendInstruction() {
       // Viral Tag Original: one person starts warm, tries to make
       // everyone warm. Only a warm suit can tag a cool suit.
       
-      if (states[suitID - 1] == 88 && states[taggerID - 1] == 89) {
-        address = addresses[suitID - 1];
+      if (states[suitID] == coolColour && states[taggerID] == warmColour) {
+        address = addresses[suitID];
         payload[0] = positiveResponseByte;
-        payload[1] = states[taggerID - 1];
+        payload[1] = states[taggerID];
         packetSize = 2;
         
         tx = Tx16Request(address, payload, packetSize);
@@ -136,18 +132,16 @@ void sendInstruction() {
         
         // if the message was received, do this
         if (suitReceivedInstruction == true) {
-
-          sendMessageToTouch(77, states[suitID - 1]);
-          
+                    
           debugSerial.print("Suit ");
           debugSerial.print(suitID);
           debugSerial.print(" changed from ");
-          debugSerial.print(states[suitID - 1]);
+          debugSerial.print(states[suitID]);
           debugSerial.print(" to ");
-          debugSerial.print(states[taggerID - 1]);
+          debugSerial.print(states[taggerID]);
           debugSerial.println(".");
           
-          states[suitID - 1] = states[taggerID - 1];
+          states[suitID] = states[taggerID];
         }
       }
     }
@@ -158,9 +152,9 @@ void sendInstruction() {
       // If someone tags anyone of the opposite colour,
       // the person tagged changes to the tagger's colour.
       
-      address = addresses[suitID - 1];
+      address = addresses[suitID];
       payload[0] = positiveResponseByte;
-      payload[1] = states[taggerID - 1];
+      payload[1] = states[taggerID];
       packetSize = 2;
 
       tx = Tx16Request(address, payload, packetSize);
@@ -180,18 +174,16 @@ void sendInstruction() {
 
       // if the message was received, do this
       if (suitReceivedInstruction == true) {
-        
-        sendMessageToTouch(77, states[suitID - 1]);
-        
+                
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
         debugSerial.print(" changed from ");
-        debugSerial.print(states[suitID - 1]);
+        debugSerial.print(states[suitID]);
         debugSerial.print(" to ");
-        debugSerial.print(states[taggerID - 1]);
+        debugSerial.print(states[taggerID]);
         debugSerial.println(".");
         
-        states[suitID - 1] = states[taggerID - 1];
+        states[suitID] = states[taggerID];
       }
     }
 
@@ -201,9 +193,9 @@ void sendInstruction() {
       // colour is "transferred" from the tagger to the 
       // person who was tagged.
       
-      address = addresses[suitID - 1];
+      address = addresses[suitID];
       payload[0] = positiveResponseByte;
-      payload[1] = states[taggerID - 1];
+      payload[1] = states[taggerID];
       packetSize = 2;
       
       tx = Tx16Request(address, payload, packetSize);
@@ -222,26 +214,23 @@ void sendInstruction() {
       }
       
       if (suitReceivedInstruction == true) {
-
-        // don't send anything to Touch yet,
-        // wait until both suits have confirmed
         
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
         debugSerial.print(" changed from ");
-        debugSerial.print(states[suitID - 1]);
+        debugSerial.print(states[suitID]);
         debugSerial.print(" to ");
-        debugSerial.print(states[taggerID - 1]);
+        debugSerial.print(states[taggerID]);
         debugSerial.println(".");
         
         // store suitID before it's changed
-        uint8_t tempSuitState = states[suitID - 1];
+        uint8_t tempSuitState = states[suitID];
 
         // update the array to reflect the changes
-        states[suitID - 1] = states[taggerID - 1];
+        states[suitID] = states[taggerID];
         
         // only send to taggerID if suitID changed colour
-        address = addresses[taggerID - 1];
+        address = addresses[taggerID];
         payload[0] = positiveResponseByte;
         payload[1] = tempSuitState;
         packetSize = 2;
@@ -262,19 +251,16 @@ void sendInstruction() {
         }
         
         if (suitReceivedInstruction == true) {
-
-          // tell Touch the colour was transferred
-          sendMessageToTouch(77, 0);
           
           debugSerial.print("Suit ");
           debugSerial.print(taggerID);
           debugSerial.print(" changed from ");
-          debugSerial.print(states[taggerID - 1]);
+          debugSerial.print(states[taggerID]);
           debugSerial.print(" to ");
           debugSerial.print(tempSuitState);
           debugSerial.println(".");
           
-          states[taggerID - 1] = tempSuitState;
+          states[taggerID] = tempSuitState;
         }
       }
     }

@@ -22,7 +22,7 @@ void startGame() {
 // ---------------------------------------------------------//
 void pingSuits() {
   for (int i = 0; i < 10; i++) {
-    suitID = i + 1;
+    suitID = i;
     
     debugSerial.println();
     debugSerial.print("-------------- ");
@@ -31,7 +31,7 @@ void pingSuits() {
     debugSerial.println("  < ------------");
     debugSerial.println();
         
-    address = addresses[suitID - 1];
+    address = addresses[suitID];
     
     payload[0] = pingByte;
     
@@ -58,14 +58,17 @@ void pingSuits() {
     // the suit got the message, do the following
     if (suitReceivedInstruction == true) {
       numberOfActiveSuits++;
-      activeSuits[suitID - 1] = true;
+      activeSuits[suitID] = true;
+
+      interfaceSerial.write(suitID + 10);
+      
       debugSerial.print("Suit ");
       debugSerial.print(suitID);
       debugSerial.println(" is ACTIVE.");
     }
     
     else {
-      activeSuits[suitID - 1] = false;
+      activeSuits[suitID] = false;
       debugSerial.print("Suit ");
       debugSerial.print(suitID);
       debugSerial.println(" is inactive.");
@@ -90,8 +93,9 @@ void assignStartingColours() {
   randomNum *= 2;
   
   // add 80 to make it a colour code
-  // add 1 to get that colour's pair
   coolColour = 80 + randomNum;
+  
+  // add 1 to get that colour's pair
   warmColour = 80 + randomNum + 1;
   
   debugSerial.print("Cool: ");
@@ -104,14 +108,14 @@ void assignStartingColours() {
     // Viral Tag Original: one assigned warm, rest assigned cool
     for (int i = 0; i < 10; i++) {
       
-      uint8_t temp = 0;
+      uint8_t counter = 0;
       
       if (activeSuits[i] == true) {
         
-        temp++;
-
+        counter++;
+        
         // the last suit is warm
-        if (temp == numberOfActiveSuits) {
+        if (counter == numberOfActiveSuits) {
           states[i] = warmColour;
         }
 
@@ -129,13 +133,14 @@ void assignStartingColours() {
     
     for (int i = 0; i < 10; i++) {
 
-      uint8_t temp = 0;
+      uint8_t counter = 0;
 
       if (activeSuits[i] == true) {
-        temp++;
+        
+        counter++;
       
         // assign half of the suits a cool colour
-        if (temp <= (numberOfActiveSuits/2)) {
+        if (counter <= (numberOfActiveSuits/2)) {
           states[i] = coolColour;
         }
         // assign the other half a warm colour
@@ -151,13 +156,21 @@ void assignStartingColours() {
     // Traditional Tag: one person is it (warm)
     
     for (int i = 0; i < 10; i++) {
-      // assign all of the suits a cool colour except the first one
-      if (i != 0) {
-        states[i] = coolColour;
-      }
-      // the first one is "it," and assigned a warm colour
-      else {
-        states[i] = warmColour;
+      
+      uint8_t counter = 0;
+      
+      if (activeSuits[i] == true) {
+        counter++;
+        
+        // the last suit is warm
+        if (counter == numberOfActiveSuits) {
+          states[i] = warmColour;
+        }
+        
+        // all other suits are cool
+        else {
+          states[i] = coolColour;
+        }
       }
     }
   }
@@ -174,7 +187,7 @@ void assignStartingColours() {
 // ---------------------------------------------------------//
 void sendStartingColours() {
   for (int i = 0; i < 10; i++) {    
-    suitID = i + 1;
+    suitID = i;
     
     debugSerial.println();
     debugSerial.print("-------------- ");
@@ -183,10 +196,10 @@ void sendStartingColours() {
     debugSerial.println("  < ------------");
     debugSerial.println();
     
-    address = addresses[suitID - 1];
+    address = addresses[suitID];
     
     payload[0] = gameStartByte;
-    payload[1] = states[suitID - 1];
+    payload[1] = states[suitID];
     
     packetSize = 2;
     
@@ -228,10 +241,10 @@ void sendStartingColours() {
 // ---------------------------------------------------------//
 void sendGameOver() {
   for (int i = 0; i < 10; i++) {
-    suitID = i + 1;
+    suitID = i;
     
     // only turn off the suits that are active this round
-    if (activeSuits[suitID - 1] == true) {
+    if (activeSuits[suitID] == true) {
       
 //      if (suitID == 3) {
         debugSerial.println();
@@ -243,7 +256,7 @@ void sendGameOver() {
         
         delay(50);
         
-        address = addresses[suitID - 1];
+        address = addresses[suitID];
         payload[0] = gameOverByte;
         packetSize = 1;
         
@@ -280,11 +293,11 @@ void sendGameOver() {
 
         // if it has gotten the message, set it as inactive
         if (suitReceivedInstruction == true) {
-          activeSuits[suitID - 1] = false;
+          activeSuits[suitID] = false;
         }
         else {
           // if it doesn't get the message, it's still active
-          activeSuits[suitID - 1] = true;
+          activeSuits[suitID] = true;
         }
 //      }
     }
@@ -346,9 +359,7 @@ void gameStateCheck() {
       if (numberOfWarmSuits == numberOfActiveSuits) {
         debugSerial.println();
         debugSerial.println("Game over: everyone is a warm colour.");
-        
-        sendMessageToTouch(75, warmColour);
-        
+                
         gameOver();
       }
     }
@@ -369,9 +380,7 @@ void gameStateCheck() {
       if (numberOfCoolSuits == numberOfActiveSuits) {
         debugSerial.println();
         debugSerial.println("Game over: everyone is a cool colour.");
-        
-        sendMessageToTouch(75, coolColour);
-        
+                
         gameOver();
       }
   
@@ -379,9 +388,7 @@ void gameStateCheck() {
       else if (numberOfWarmSuits == numberOfActiveSuits) {
         debugSerial.println();
         debugSerial.println("Game over: everyone is a warm colour.");
-        
-        sendMessageToTouch(75, warmColour);
-        
+                
         gameOver();
       }
     }
@@ -390,9 +397,7 @@ void gameStateCheck() {
     if (millis() > 600000) {
       debugSerial.println();
       debugSerial.println("Game over: time limit reached.");
-      
-      sendMessageToTouch(75, 0);
-      
+            
       gameOver();
     }
   }
@@ -418,7 +423,7 @@ void printOutStates() {
   for (int i = 0; i < 10; i++) {
     if (activeSuits[i] == true) {
       debugSerial.print("Suit ");
-      debugSerial.print(i + 1);
+      debugSerial.print(i);
       debugSerial.print(" = ");
       debugSerial.println(states[i]);
     }
