@@ -4,7 +4,7 @@
 void startGame() {
   
   pingSuits();
-
+  
   if (numberOfActiveSuits > 1) {
     assignStartingColours();
     sendStartingColours();
@@ -14,7 +14,6 @@ void startGame() {
     debugSerial.println("There must be more than 1 suit to play.");
   }
 }
-
 
 
 // ---------------------------------------------------------//
@@ -59,8 +58,6 @@ void pingSuits() {
     if (suitReceivedInstruction == true) {
       numberOfActiveSuits++;
       activeSuits[suitID] = true;
-
-      interfaceSerial.write(suitID + 10);
       
       debugSerial.print("Suit ");
       debugSerial.print(suitID);
@@ -73,6 +70,10 @@ void pingSuits() {
       debugSerial.print(suitID);
       debugSerial.println(" is inactive.");
     }
+
+    // sends a colour change report from 0 - 99 to the interface
+    stateReport = (suitID * 10) + (states[suitID] - 80);
+    interfaceSerial.write(stateReport);
   }
 }
 
@@ -232,6 +233,10 @@ void sendStartingColours() {
       debugSerial.print(suitID);
       debugSerial.println("not started.");
     }
+
+    // sends a colour change report from 0 - 99 to the interface
+    stateReport = (suitID * 10) + (states[suitID] - 80);
+    interfaceSerial.write(stateReport);
   }
 }
 
@@ -246,67 +251,60 @@ void sendGameOver() {
     // only turn off the suits that are active this round
     if (activeSuits[suitID] == true) {
       
-//      if (suitID == 3) {
-        debugSerial.println();
-        debugSerial.print("---------- ");
-        debugSerial.print("DEACTIVATING SUIT  >  ");
-        debugSerial.print(suitID);
-        debugSerial.println("  < ----------");
-        debugSerial.println();
-        
-        delay(50);
-        
-        address = addresses[suitID];
-        payload[0] = gameOverByte;
-        packetSize = 1;
-        
-        tx = Tx16Request(address, payload, packetSize);
-        
-        // check 5 times instead of 3, because game over
-        // is more important than a regular message
+      debugSerial.println();
+      debugSerial.print("---------- ");
+      debugSerial.print("DEACTIVATING SUIT  >  ");
+      debugSerial.print(suitID);
+      debugSerial.println("  < ----------");
+      debugSerial.println();
+      
+      address = addresses[suitID];
+      payload[0] = gameOverByte;
+      packetSize = 1;
+      
+      tx = Tx16Request(address, payload, packetSize);
+      
+      // check 5 times instead of 3, because game over
+      // is more important than a regular message
+      xbee.send(tx);
+      confirmDelivery(gameOverByte, 1, suitID);
+      
+      if (suitReceivedInstruction == false) {
         xbee.send(tx);
-        confirmDelivery(gameOverByte, 1, suitID);
-        
-        if (suitReceivedInstruction == false) {
-          xbee.send(tx);
-          confirmDelivery(gameOverByte, 2, suitID);
-        }
-        
-        if (suitReceivedInstruction == false) {
-          xbee.send(tx);
-          confirmDelivery(gameOverByte, 3, suitID);
-        }
-        
-        if (suitReceivedInstruction == false) {
-          // wait a little bit if it still hasn't got the message after 3 times
-          delay(500);
-          xbee.send(tx);
-          confirmDelivery(gameOverByte, 4, suitID);
-        }
-        
-        if (suitReceivedInstruction == false) {
-          // wait a little bit if it still hasn't got the message after 4 times
-          delay(500);
-          xbee.send(tx);
-          confirmDelivery(gameOverByte, 5, suitID);
-        }
-
-        // if it has gotten the message, set it as inactive
-        if (suitReceivedInstruction == true) {
-          activeSuits[suitID] = false;
-        }
-        else {
-          // if it doesn't get the message, it's still active
-          activeSuits[suitID] = true;
-        }
-//      }
+        confirmDelivery(gameOverByte, 2, suitID);
+      }
+      
+      if (suitReceivedInstruction == false) {
+        xbee.send(tx);
+        confirmDelivery(gameOverByte, 3, suitID);
+      }
+      
+      if (suitReceivedInstruction == false) {
+        // wait a little bit if it still hasn't got the message after 3 times
+        delay(500);
+        xbee.send(tx);
+        confirmDelivery(gameOverByte, 4, suitID);
+      }
+      
+      if (suitReceivedInstruction == false) {
+        // wait a little bit if it still hasn't got the message after 4 times
+        delay(500);
+        xbee.send(tx);
+        confirmDelivery(gameOverByte, 5, suitID);
+      }
+      
+      // if it has gotten the message, set it as inactive
+      if (suitReceivedInstruction == true) {
+        activeSuits[suitID] = false;
+      }
+      else {
+        // if it doesn't get the message, it's still active
+        activeSuits[suitID] = true;
+      }
     }
-    
-//    else {
-//        debugSerial.print("----- Skipping deactivation of suit ");
-//        debugSerial.print(suitID);
-//        debugSerial.println(" during testing phase. -----");
-//    }
+    // sends a colour change report from 0 - 99 to the interface
+    stateReport = (suitID * 10) + (states[suitID] - 80);
+    interfaceSerial.write(stateReport);
   }
 }
 
@@ -368,6 +366,10 @@ void gameStateCheck() {
     else if (gameMode == 1) {
       // if there's only one suit left that's a different colour, check the state quicker
       if (numberOfCoolSuits == (numberOfActiveSuits - 1) || numberOfWarmSuits == (numberOfActiveSuits - 1)) {
+        
+        stateReport = 105;
+        sendToInterface(105);
+        
         stateCheckInterval = 10;
         outputInterval = 10;
       }
@@ -376,19 +378,23 @@ void gameStateCheck() {
         outputInterval = 1500;
       }
       
-      // all the suits are cool
+      // all the suits are cool colours
       if (numberOfCoolSuits == numberOfActiveSuits) {
         debugSerial.println();
         debugSerial.println("Game over: everyone is a cool colour.");
-                
+
+        stateReport = 110 + (coolColour - 80);
+        sendToInterface(stateReport);
         gameOver();
       }
-  
+      
       // all the suits are warm
       else if (numberOfWarmSuits == numberOfActiveSuits) {
         debugSerial.println();
         debugSerial.println("Game over: everyone is a warm colour.");
-                
+        
+        stateReport = 110 + (warmColour - 80);
+        sendToInterface(stateReport);
         gameOver();
       }
     }
@@ -397,7 +403,9 @@ void gameStateCheck() {
     if (millis() > 600000) {
       debugSerial.println();
       debugSerial.println("Game over: time limit reached.");
-            
+
+      stateReport = 111;
+      sendToInterface(stateReport);
       gameOver();
     }
   }

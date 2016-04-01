@@ -23,7 +23,10 @@ uint16_t addresses[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5,
 // --------------------- Packet types  ---------------------//
 // ---------------------------------------------------------//
 uint8_t pingByte = 101;
+
+uint8_t confusedByte = 100;
 uint8_t taggedByte = 99;
+
 uint8_t gameStartByte = 98;
 uint8_t positiveResponseByte = 97;
 uint8_t negativeResponseByte = 96;
@@ -59,6 +62,7 @@ long outputMillis = 0;
 int outputInterval = 1000;
 
 boolean listeningBoolean = true;
+uint8_t stateReport;
 
 // ---------------------------------------------------------//
 // ---------------------  XBee variables  ------------------//

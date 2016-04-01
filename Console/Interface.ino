@@ -1,25 +1,3 @@
-/*
- * 
- * 79 - Game state:
- *      Number of active suits,
- *      Number of warm suits,
- *      Number of cool suits
- *      
- * 78 - Start game:
- *      Number of active suits
- *      
- * 77 - Suit was tagged:
- *      New colour (0 if only 1 person is it)
- *      
- * 76 - Friendly fire:
- *      Suit colour
- *      
- * 75 - Game over:
- *      Winning colour (or 0 if timeout)
- *      
- */
-
-
 // ---------------------------------------------------------//
 // ------------- Wait until game is reset by us ------------//
 // ---------------------------------------------------------//
@@ -50,30 +28,6 @@ void waitForReset() {
 
 
 // ---------------------------------------------------------//
-// ---------- Send information into the interface ----------//
-// ---------------------------------------------------------//
-void sendStateToInterface() {
-  if (millis() - outputMillis > outputInterval) {
-    outputMillis = millis();
-    
-    outputSerial.print((uint8_t)79);
-    outputSerial.print((uint8_t)numberOfActiveSuits);
-    outputSerial.print((uint8_t)numberOfWarmSuits);
-    outputSerial.print((uint8_t)numberOfCoolSuits);
-  }
-}
-
-
-// ---------------------------------------------------------//
-// ---------- Send information into the interface ----------//
-// ---------------------------------------------------------//
-void sendMessageToInterface(uint8_t messageType, uint8_t message) {  
-  interfaceSerial.write(messageType);
-  interfaceSerial.write(message);
-}
-
-
-// ---------------------------------------------------------//
 // ---------- Listen for messages sent through Max ---------//
 // ---------------------------------------------------------//
 void listenToInterface() {
@@ -83,19 +37,35 @@ void listenToInterface() {
     debugSerial.print("Reading: ");
     debugSerial.println(reading);
     
-    if (reading == 1) {
+    if (reading == 100) {
       listeningBoolean = false;
-      
-      debugSerial.println("STARTING GAME");
-      
+      debugSerial.println("STARTING GAME, MODE 0");
+      gameMode = 0;
       startGame();
     }
-    else if (reading == 2) {
+    else if (reading == 101) {
       listeningBoolean = false;
-      
-      debugSerial.println("ENDING GAME");
-      
+      debugSerial.println("STARTING GAME, MODE 1");
+      gameMode = 1;
+      startGame();
+    }
+    else if (reading == 102) {
+      listeningBoolean = false;
+      debugSerial.println("STARTING GAME, MODE 2");
+      gameMode = 2;
+      startGame();
+    }
+    else if (reading == 111) {
+      listeningBoolean = false;
+      debugSerial.println("MANUAL GAME OVER TRIGGERED");
       gameOver();
+    }
+    else {
+      listeningBoolean = false;
+      uint8_t tempColour = 80 + (reading % 10);
+      uint8_t tempAddress = (reading - tempColour) / 10;
+      debugSerial.println("MANUALLY TARGETTING SUIT");
+      manualColourAssignment(tempAddress, tempColour);
     }
   }
 }

@@ -42,6 +42,14 @@ void lookForMessages() {
         sendInstruction();
         printOutStates();
       }
+
+      else if (packetType == confusedByte) {
+        suitID = rx16.getData(1);
+        
+        // tell the interface a suit is white
+        stateReport = (suitID * 10) + 1;
+        sendToInterface(stateReport);
+      }
     }
   }
 }
@@ -84,7 +92,7 @@ void sendInstruction() {
       // if the suit got the message, we don't need to do anything,
       // but it's good to know what the console is doing
       if (suitReceivedInstruction == true) {
-                
+        
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
         debugSerial.print(" didn't change colours ");
@@ -132,7 +140,7 @@ void sendInstruction() {
         
         // if the message was received, do this
         if (suitReceivedInstruction == true) {
-                    
+          
           debugSerial.print("Suit ");
           debugSerial.print(suitID);
           debugSerial.print(" changed from ");
@@ -142,6 +150,10 @@ void sendInstruction() {
           debugSerial.println(".");
           
           states[suitID] = states[taggerID];
+
+          // sends a colour change report from 0 - 99 to the interface
+          stateReport = (suitID * 10) + (states[suitID] - 80);
+          interfaceSerial.write(stateReport);
         }
       }
     }
@@ -184,6 +196,10 @@ void sendInstruction() {
         debugSerial.println(".");
         
         states[suitID] = states[taggerID];
+
+        // sends a colour change report from 0 - 99 to the interface
+        stateReport = (suitID * 10) + (states[suitID] - 80);
+        interfaceSerial.write(stateReport);
       }
     }
 
@@ -225,10 +241,14 @@ void sendInstruction() {
         
         // store suitID before it's changed
         uint8_t tempSuitState = states[suitID];
-
+        
         // update the array to reflect the changes
         states[suitID] = states[taggerID];
-        
+
+        // sends a colour change report from 0 - 99 to the interface
+        stateReport = (suitID * 10) + (states[suitID] - 80);
+        interfaceSerial.write(stateReport);
+          
         // only send to taggerID if suitID changed colour
         address = addresses[taggerID];
         payload[0] = positiveResponseByte;
@@ -261,12 +281,58 @@ void sendInstruction() {
           debugSerial.println(".");
           
           states[taggerID] = tempSuitState;
+
+          // sends a colour change report from 0 - 99 to the interface
+          stateReport = (taggerID * 10) + (states[taggerID] - 80);
+          interfaceSerial.write(stateReport);
         }
       }
     }
   }
 }
 
+
+// ---------------------------------------------------------//
+// ----- Manually assign colours through the interface -----//
+// ---------------------------------------------------------//
+void manualColourAssignment(uint8_t recepient, uint8_t colour) {
+  
+  address = addresses[recepient];
+  payload[0] = colour;
+  packetSize = 1;
+  
+  tx = Tx16Request(address, payload, packetSize);
+
+  // first attempt
+  xbee.send(tx);
+  confirmDelivery(negativeResponseByte, 1, recepient);
+ 
+  // second attempt
+  if (suitReceivedInstruction == false) {
+    xbee.send(tx);
+    confirmDelivery(negativeResponseByte, 2, recepient);
+  }
+
+  // third attempt
+  if (suitReceivedInstruction == false) {
+    xbee.send(tx);
+    confirmDelivery(negativeResponseByte, 3, recepient);
+  }
+  
+  if (suitReceivedInstruction == true) {
+    debugSerial.print("Suit ");
+    debugSerial.print(recepient);
+    debugSerial.print(" manually changed to ");
+    debugSerial.print(colour);
+    debugSerial.println(".");
+
+    states[recepient] = colour;
+    
+    // sends a colour change report from 0 - 99 to the interface
+    stateReport = (recepient * 10) + (colour - 80);
+    interfaceSerial.write(stateReport);
+  }
+}
 
 // ---------------------------------------------------------//
 // -------  Confirms reception of transmitted packet  ------//
