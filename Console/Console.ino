@@ -64,12 +64,14 @@ int outputInterval = 1000;
 boolean listeningBoolean = true;
 uint8_t stateReport;
 
+long statePrintMillis = 0;
+
+
 // ---------------------------------------------------------//
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
 SoftwareSerial debugSerial (9, 8); //rx, tx
 SoftwareSerial interfaceSerial(7, 6); // rx, tx
-
 
 XBee xbee = XBee();
 
@@ -116,6 +118,7 @@ void loop() {
   lookForMessages();
   gameStateCheck();
   listenToInterface();
+  printOutStates();
 }
 
 
