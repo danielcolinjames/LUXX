@@ -13,7 +13,7 @@ void setup() {
   
   consoleInterface.begin(9600);
   debugSerial.begin(9600);
-  debugSerial.println("Starting debug...");
+  debugSerial.println("Starting debugger from interface...");
 }
 
 
@@ -27,6 +27,7 @@ void listenToConsole() {
   consoleInterface.listen();
   while (consoleInterface.available() > 0) {
     fromConsole = consoleInterface.read();
+    debugSerial.print("Message from console: ");
     debugSerial.println(fromConsole);
     Serial.println(fromConsole);
   }

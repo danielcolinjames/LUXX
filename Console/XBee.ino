@@ -347,33 +347,33 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
       xbee.getResponse().getTxStatusResponse(txStatus);
       
       if (txStatus.getStatus() == SUCCESS) {
-        debugSerial.print(packetType);
-        debugSerial.print(" sent successfully to suit ");
-        debugSerial.print(recepient);
-        debugSerial.print(" on attempt ");
-        debugSerial.print(attempt);
-        debugSerial.println(".");
+//        debugSerial.print(packetType);
+//        debugSerial.print(" sent successfully to suit ");
+//        debugSerial.print(recepient);
+//        debugSerial.print(" on attempt ");
+//        debugSerial.print(attempt);
+//        debugSerial.println(".");
         
         suitReceivedInstruction = true;
       }
     } else {
-        debugSerial.print(packetType);
-        debugSerial.print(" sent unsuccessfully to suit ");
-        debugSerial.print(recepient);
-        debugSerial.print(" on attempt ");
-        debugSerial.print(attempt);
-        debugSerial.println(".");
+//        debugSerial.print(packetType);
+//        debugSerial.print(" sent unsuccessfully to suit ");
+//        debugSerial.print(recepient);
+//        debugSerial.print(" on attempt ");
+//        debugSerial.print(attempt);
+//        debugSerial.println(".");
     }
   } else if (xbee.getResponse().isError()) {
     debugSerial.println("Error reading packet: ");
     debugSerial.println(xbee.getResponse().getErrorCode());
   } else {
-      debugSerial.print(packetType);
-      debugSerial.print(" message to suit ");
-      debugSerial.print(recepient);
-      debugSerial.print(" timed out on attempt ");
-      debugSerial.print(attempt);
-      debugSerial.println(".");
+//      debugSerial.print(packetType);
+//      debugSerial.print(" message to suit ");
+//      debugSerial.print(recepient);
+//      debugSerial.print(" timed out on attempt ");
+//      debugSerial.print(attempt);
+//      debugSerial.println(".");
   }
 }
 

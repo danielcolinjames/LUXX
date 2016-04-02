@@ -13,12 +13,12 @@
 #define NUMPIXELSONE 9
 #define NUMPIXELSTWO 9
 
-uint8_t suitID = 2;
+uint8_t suitID = 9;
 
 byte keyTag[NUMBER_OF_CARDS][5] = {
   {114, 0, 95, 44, 9},        // Tag 0
   {114, 0, 95, 73, 207},      // Tag 1
-  {255, 255, 255, 255, 255},      // Tag 2
+  {114, 0, 95, 43, 231},      // Tag 2
   {114, 0, 95, 38, 99},       // Tag 3
   {114, 0, 95, 44, 0},        // Tag 4
   {114, 0, 95, 126, 166},     // Tag 5
@@ -182,7 +182,7 @@ void gameOver() {
         xbee.getResponse().getRx16Response(rx16);
         
         uint8_t packetType = rx16.getData(0);
-
+        
         if (packetType == 98) {
           gameRestartDetected = true;
           uint8_t colour = rx16.getData(1);
