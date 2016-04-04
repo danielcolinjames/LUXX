@@ -48,6 +48,10 @@ void pingSuits() {
       numberOfActiveSuits++;
       activeSuits[suitID] = true;
       
+      // tells the console that these suits are white
+      stateReport = (suitID * 10) + 1;
+      interfaceSerial.write(stateReport);
+      
       debugSerial.print("Suit ");
       debugSerial.print(suitID);
       debugSerial.println(" is active.");
@@ -56,10 +60,6 @@ void pingSuits() {
     else {
       activeSuits[suitID] = false;
     }
-    
-    // sends a colour change report from 0 - 99 to the interface
-    stateReport = (suitID * 10) + (states[suitID] - 80);
-    interfaceSerial.write(stateReport);
   }
 }
 

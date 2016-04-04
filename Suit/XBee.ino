@@ -12,7 +12,7 @@ void waitForStartCommand() {
     xbee.readPacket();
     
     if (xbee.getResponse().isAvailable()) {
-    
+      
       debugSerial.print("Packet found.");
       
       if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
@@ -58,7 +58,7 @@ void waitForStartCommand() {
         xbee.send(tx);
         confirmDelivery(confusedByte, 3);
       }
-
+      
       if (messageReceived == true) {
         sentConfused = true;
       }
@@ -88,7 +88,7 @@ void sendIWasTagged() {
     xbee.send(tx);
     confirmDelivery(taggedByte, 3);
   }
-
+  
   if (messageReceived == true) {
     lookForInstruction();
   }
@@ -112,16 +112,17 @@ void lookForInstruction() {
       debugSerial.print(" Packet type = ");
       debugSerial.print(packetType);
       debugSerial.println(".");
-      
-      if (packetType != 96) {
+
+      // check if we shouldn't do anything first, in the name of efficiency
+      if (packetType != negativeResponseByte) {
         
         // if it's a 97, change to the instruction's colour
-        if (packetType == 97) {
+        if (packetType == positiveResponseByte) {
           instruction = rx16.getData(1);
           
           setColour(instruction);
           changeColour(rVal, gVal, bVal);
-
+          
           debugSerial.print("Setting colour to ");
           debugSerial.println(instruction);
           rfiduino.successSound();
@@ -129,7 +130,7 @@ void lookForInstruction() {
         }
         
         // game over command
-        else if (packetType == 95) {
+        else if (packetType == gameOverByte) {
           
           changeColour(rVal, gVal, bVal);
           rfiduino.successSound();
@@ -147,7 +148,7 @@ void lookForInstruction() {
         
         // game start command, next byte in payload is
         // going to be the starting colour
-        else if (packetType == 98) {
+        else if (packetType == gameStartByte) {
           
           uint8_t colour = rx16.getData(1);
           debugSerial.print("Starting colour received: ");
@@ -156,6 +157,17 @@ void lookForInstruction() {
           
           setColour(colour);
           activateSuit(rVal, gVal, bVal);
+        }
+        
+        // manual colour change message detected
+        else if (packetType == manualChangeByte) {
+          instruction = rx16.getData(1);
+          
+          setColour(instruction);
+          changeColour(rVal, gVal, bVal);
+          
+          debugSerial.print("Setting colour to ");
+          debugSerial.println(instruction);
         }
       }
       else {
@@ -188,14 +200,14 @@ void lookForMessages() {
       debugSerial.print(" Packet type = ");
       debugSerial.print(packetType);
       debugSerial.println(".");
-
+      
       // game over
-      if (packetType == 95) {
+      if (packetType == gameOverByte) {
 
         changeColour(rVal, gVal, bVal);
         
         rfiduino.successSound();
-        delay(3000);
+        delay(5000);
         
         rVal = 255;
         gVal = 255;
@@ -203,13 +215,13 @@ void lookForMessages() {
         
         digitalWrite(rfiduino.led1, LOW); // red off
         digitalWrite(rfiduino.led2, LOW); // green off
-
+        
         gameOver();
       }
 
       // game start command, next byte in payload is
       // going to be the starting colour
-      else if (packetType == 98) {
+      else if (packetType == gameStartByte) {
         uint8_t colour = rx16.getData(1);
         debugSerial.print("Starting colour received: ");
         debugSerial.print(colour);
@@ -217,6 +229,15 @@ void lookForMessages() {
         
         setColour(colour);
         activateSuit(rVal, gVal, bVal);      
+      }
+      else if (packetType == manualChangeByte) {
+        instruction = rx16.getData(1);
+        
+        setColour(instruction);
+        changeColour(rVal, gVal, bVal);
+        
+        debugSerial.print("Setting colour to ");
+        debugSerial.println(instruction);
       }
     }
   }

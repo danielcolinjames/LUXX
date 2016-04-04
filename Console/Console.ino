@@ -31,7 +31,7 @@ uint8_t gameStartByte = 98;
 uint8_t positiveResponseByte = 97;
 uint8_t negativeResponseByte = 96;
 uint8_t gameOverByte = 95;
-
+uint8_t manualChangeByte = 94;
 
 // ---------------------------------------------------------//
 // -------------------  Global variables  ------------------//

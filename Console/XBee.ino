@@ -46,9 +46,35 @@ void lookForMessages() {
       else if (packetType == confusedByte) {
         suitID = rx16.getData(1);
         
+        // take this suit out of the game
+        activeSuits[suitID] = false;
+        numberOfActiveSuits--;
+        
         // tell the interface a suit is white
         stateReport = (suitID * 10) + 1;
         sendToInterface(stateReport);
+        
+        // store the suit's state
+        uint8_t tempState = states[suitID];
+        
+        // update its state to white
+        states[suitID] = stateReport;
+        
+        // send the stored state
+        manualColourAssignment(suitID, tempState);
+
+        if (suitReceivedInstruction == true) {
+
+          // make this suit active again
+          numberOfActiveSuits++;
+          activeSuits[suitID] = true;
+          
+          // update its state since it changed
+          stateReport = states[suitID];
+          
+           // tell the interface if it changed or not
+          sendToInterface(stateReport);
+        }
       }
     }
   }
@@ -157,9 +183,9 @@ void sendInstruction() {
         }
       }
     }
-
+    
     else if (gameMode == 1) {
-
+      
       // Viral Tag Split: half start cool, half start warm.
       // If someone tags anyone of the opposite colour,
       // the person tagged changes to the tagger's colour.
@@ -168,7 +194,7 @@ void sendInstruction() {
       payload[0] = positiveResponseByte;
       payload[1] = states[taggerID];
       packetSize = 2;
-
+      
       tx = Tx16Request(address, payload, packetSize);
       
       xbee.send(tx);
@@ -178,15 +204,15 @@ void sendInstruction() {
         xbee.send(tx);
         confirmDelivery(positiveResponseByte, 2, suitID);
       }
-
+      
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
         confirmDelivery(positiveResponseByte, 3, suitID);
       }
-
+      
       // if the message was received, do this
       if (suitReceivedInstruction == true) {
-                
+        
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
         debugSerial.print(" changed from ");
@@ -196,15 +222,15 @@ void sendInstruction() {
         debugSerial.println(".");
         
         states[suitID] = states[taggerID];
-
+        
         // sends a colour change report from 0 - 99 to the interface
         stateReport = (suitID * 10) + (states[suitID] - 80);
         interfaceSerial.write(stateReport);
       }
     }
-
+    
     else if (gameMode == 2) {
-
+      
       // Traditional Tag: both suits need to change. The
       // colour is "transferred" from the tagger to the 
       // person who was tagged.
@@ -244,17 +270,17 @@ void sendInstruction() {
         
         // update the array to reflect the changes
         states[suitID] = states[taggerID];
-
+        
         // sends a colour change report from 0 - 99 to the interface
         stateReport = (suitID * 10) + (states[suitID] - 80);
         interfaceSerial.write(stateReport);
-          
+        
         // only send to taggerID if suitID changed colour
         address = addresses[taggerID];
         payload[0] = positiveResponseByte;
         payload[1] = tempSuitState;
         packetSize = 2;
-
+        
         tx = Tx16Request(address, payload, packetSize);
         
         xbee.send(tx);
@@ -298,34 +324,36 @@ void sendInstruction() {
 void manualColourAssignment(uint8_t recepient, uint8_t colour) {
   
   address = addresses[recepient];
-  payload[0] = colour;
-  packetSize = 1;
+  payload[0] = manualChangeByte;
+  payload[1] = colour;
+  packetSize = 2;
   
   tx = Tx16Request(address, payload, packetSize);
-
+  
   // first attempt
   xbee.send(tx);
-  confirmDelivery(negativeResponseByte, 1, recepient);
- 
+  confirmDelivery(manualChangeByte, 1, recepient);
+  
   // second attempt
   if (suitReceivedInstruction == false) {
     xbee.send(tx);
-    confirmDelivery(negativeResponseByte, 2, recepient);
+    confirmDelivery(manualChangeByte, 2, recepient);
   }
-
+  
   // third attempt
   if (suitReceivedInstruction == false) {
     xbee.send(tx);
-    confirmDelivery(negativeResponseByte, 3, recepient);
+    confirmDelivery(manualChangeByte, 3, recepient);
   }
   
   if (suitReceivedInstruction == true) {
+    
     debugSerial.print("Suit ");
     debugSerial.print(recepient);
     debugSerial.print(" manually changed to ");
     debugSerial.print(colour);
     debugSerial.println(".");
-
+    
     states[recepient] = colour;
     
     // sends a colour change report from 0 - 99 to the interface
