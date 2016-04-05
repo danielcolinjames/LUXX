@@ -28,6 +28,7 @@ byte keyTag[NUMBER_OF_CARDS][5] = {
   {114, 0, 95, 67, 234}       // Tag 9
 };
 
+
 /*
  * Suit 1: 114, 0, 95, 44, 9
  * Suit 2: 114, 0, 95, 73, 207
@@ -68,6 +69,8 @@ long prevMillisOne = 0;
 long prevMillisTwo = 0;
 
 long gameOverMillis = 0;
+
+long waitingForStartMillis = 0;
 
 boolean messageReceived = false;
 
@@ -141,11 +144,14 @@ void setup() {
   xbee.setSerial(Serial);
   
   debugSerial.begin(9600);
-  debugSerial.println("Starting debugger from suit...");  
+  // debugSerial.println("Starting debugger from suit...");  
   
   pixelsOne.begin();
   pixelsTwo.begin();
-  
+
+  pixelsOne.setBrightness(75);
+  pixelsTwo.setBrightness(75);
+
   rVal = 255;
   gVal = 255;
   bVal = 255;
@@ -169,7 +175,7 @@ void loop() {
 // ---------------------------------------------------------//
 void gameOver() {
   boolean gameRestartDetected = false;
-  debugSerial.println("----- Game over until 98 received -----");
+  // debugSerial.println("----- Game over until 98 received -----");
   
   while (gameRestartDetected == false) {
     gameOverBeep();
@@ -178,7 +184,7 @@ void gameOver() {
     xbee.readPacket();
     
     if (xbee.getResponse().isAvailable()) {
-      debugSerial.print("Packet found.");
+      // debugSerial.print("Packet found.");
       if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
         xbee.getResponse().getRx16Response(rx16);
         

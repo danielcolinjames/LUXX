@@ -56,6 +56,7 @@ boolean suitReceivedInstruction;
 long stateMillis = 0;
 int stateCheckInterval = 1000;
 
+long gameOverMillis = 0;
 int fiveMinutes = 300000;
 
 long outputMillis = 0;
@@ -93,21 +94,17 @@ void setup() {
   
   debugSerial.begin(9600);
   debugSerial.println("Starting...");
-
+  
   interfaceSerial.begin(9600);
   
   delay(10);
   
   gameMode = 1;
-
+  
   // necessary for randomization in colour selection
   randomSeed(analogRead(5));
   
-  startGame();
-
-  delay(1000);
-
-//  gameOver();
+  waitForReset();
 }
 
 
@@ -120,7 +117,6 @@ void loop() {
   listenToInterface();
   printOutStates();
 }
-
 
 
 

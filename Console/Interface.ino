@@ -4,6 +4,7 @@
 void waitForReset() {
   debugSerial.println("Waiting for reset...");
   boolean reset = false;
+  listeningBoolean = true;
   
   while(reset == false) {
     
@@ -85,9 +86,9 @@ void listenToInterface() {
       debugSerial.println("MANUAL COLOUR INSTRUCTION");
       listeningBoolean = false;
       uint8_t tempColour = 80 + (reading % 10);
-      uint8_t tempAddress = (reading - tempColour) / 10;
+      uint8_t tempRecepient = (reading - (reading % 10)) / 10;
       debugSerial.println("MANUALLY TARGETTING SUIT");
-      manualColourAssignment(tempAddress, tempColour);
+      manualColourAssignment(tempRecepient, tempColour);
     }
   }
 }

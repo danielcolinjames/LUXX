@@ -14,7 +14,6 @@ void lookForMessages() {
       debugSerial.print("{");
       for (int i = 0; i < rx16.getDataLength(); i++) {
         debugSerial.print(rx16.getData(i));
-        debugSerial.print(" ");
         if (i != (rx16.getDataLength() - 1)) {
           debugSerial.print(", ");
         }
@@ -62,9 +61,9 @@ void lookForMessages() {
         
         // send the stored state
         manualColourAssignment(suitID, tempState);
-
+        
         if (suitReceivedInstruction == true) {
-
+          
           // make this suit active again
           numberOfActiveSuits++;
           activeSuits[suitID] = true;
@@ -72,7 +71,7 @@ void lookForMessages() {
           // update its state since it changed
           stateReport = states[suitID];
           
-           // tell the interface if it changed or not
+          // tell the interface if it changed or not
           sendToInterface(stateReport);
         }
       }
@@ -136,7 +135,7 @@ void sendInstruction() {
   // suits are different colours > 97
   else {
     if (gameMode == 0) {
-
+      
       // Viral Tag Original: one person starts warm, tries to make
       // everyone warm. Only a warm suit can tag a cool suit.
       
@@ -179,7 +178,7 @@ void sendInstruction() {
 
           // sends a colour change report from 0 - 99 to the interface
           stateReport = (suitID * 10) + (states[suitID] - 80);
-          interfaceSerial.write(stateReport);
+          sendToInterface(stateReport);
         }
       }
     }
@@ -225,7 +224,7 @@ void sendInstruction() {
         
         // sends a colour change report from 0 - 99 to the interface
         stateReport = (suitID * 10) + (states[suitID] - 80);
-        interfaceSerial.write(stateReport);
+        sendToInterface(stateReport);
       }
     }
     
@@ -273,11 +272,11 @@ void sendInstruction() {
         
         // sends a colour change report from 0 - 99 to the interface
         stateReport = (suitID * 10) + (states[suitID] - 80);
-        interfaceSerial.write(stateReport);
+        sendToInterface(stateReport);
         
         // only send to taggerID if suitID changed colour
         address = addresses[taggerID];
-        payload[0] = positiveResponseByte;
+        payload[0] = manualChangeByte;
         payload[1] = tempSuitState;
         packetSize = 2;
         
@@ -310,7 +309,7 @@ void sendInstruction() {
 
           // sends a colour change report from 0 - 99 to the interface
           stateReport = (taggerID * 10) + (states[taggerID] - 80);
-          interfaceSerial.write(stateReport);
+          sendToInterface(stateReport);
         }
       }
     }
@@ -358,7 +357,7 @@ void manualColourAssignment(uint8_t recepient, uint8_t colour) {
     
     // sends a colour change report from 0 - 99 to the interface
     stateReport = (recepient * 10) + (colour - 80);
-    interfaceSerial.write(stateReport);
+    sendToInterface(stateReport);
   }
 }
 

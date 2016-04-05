@@ -13,54 +13,60 @@ void waitForStartCommand() {
     
     if (xbee.getResponse().isAvailable()) {
       
-      debugSerial.print("Packet found.");
+      // debugSerial.print("Packet found.");
       
       if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
         xbee.getResponse().getRx16Response(rx16);
         
         uint8_t packetType = rx16.getData(0);
         
-        debugSerial.print(" Packet type = ");
-        debugSerial.print(packetType);
-        debugSerial.println(".");
+        // debugSerial.print(" Packet type = ");
+        // debugSerial.print(packetType);
+        // debugSerial.println(".");
         
         // game start command, next byte in payload is
         // going to be the starting colour
-        if (packetType == 98) {
+        if (packetType == gameStartByte) {
           
           waiting = false;
           
           uint8_t colour = rx16.getData(1);
-          debugSerial.print("Starting colour received: ");
-          debugSerial.print(colour);
-          debugSerial.println(".");
+          // debugSerial.print("Starting colour received: ");
+          // debugSerial.print(colour);
+          // debugSerial.println(".");
           
           setColour(colour);
-          activateSuit(rVal, gVal, bVal);      
+          activateSuit(rVal, gVal, bVal);
+          delay(2000);
         }
       }
     }
-    if (sentConfused == false) {
-      payload[0] = confusedByte;
-      payload[1] = suitID;
+    
+    if (millis() - waitingForStartMillis > 3000) {
+      waitingForStartMillis = millis();
       
-      Tx16Request tx = Tx16Request(address, payload, 2);
-      
-      xbee.send(tx);
-      confirmDelivery(confusedByte, 1);
-      
-      if (messageReceived == false) {
+      if (sentConfused == false) {
+        payload[0] = confusedByte;
+        payload[1] = suitID;
+        
+        Tx16Request tx = Tx16Request(address, payload, 2);
+        
         xbee.send(tx);
-        confirmDelivery(confusedByte, 2);
-      }
-      
-      if (messageReceived == false) {
-        xbee.send(tx);
-        confirmDelivery(confusedByte, 3);
-      }
-      
-      if (messageReceived == true) {
-        sentConfused = true;
+        confirmDelivery(confusedByte, 1);
+        
+        if (messageReceived == false) {
+          xbee.send(tx);
+          confirmDelivery(confusedByte, 2);
+        }
+        
+        if (messageReceived == false) {
+          xbee.send(tx);
+          confirmDelivery(confusedByte, 3);
+        }
+        
+        if (messageReceived == true) {
+          sentConfused = true;
+        }
       }
     }
   }
@@ -102,16 +108,16 @@ void lookForInstruction() {
   // look for a response with instructions
   if (xbee.readPacket(300)) {
     
-    debugSerial.print("Instruction found.");
+    // debugSerial.print("Instruction found.");
     
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
       xbee.getResponse().getRx16Response(rx16);
       
       uint8_t packetType = rx16.getData(0);
       
-      debugSerial.print(" Packet type = ");
-      debugSerial.print(packetType);
-      debugSerial.println(".");
+      // debugSerial.print(" Packet type = ");
+      // debugSerial.print(packetType);
+      // debugSerial.println(".");
 
       // check if we shouldn't do anything first, in the name of efficiency
       if (packetType != negativeResponseByte) {
@@ -123,8 +129,8 @@ void lookForInstruction() {
           setColour(instruction);
           changeColour(rVal, gVal, bVal);
           
-          debugSerial.print("Setting colour to ");
-          debugSerial.println(instruction);
+          // debugSerial.print("Setting colour to ");
+          // debugSerial.println(instruction);
           rfiduino.successSound();
           delay(1000);
         }
@@ -134,7 +140,7 @@ void lookForInstruction() {
           
           changeColour(rVal, gVal, bVal);
           rfiduino.successSound();
-          delay(3000);
+          delay(5000);
           
           rVal = 255;
           gVal = 255;
@@ -151,12 +157,14 @@ void lookForInstruction() {
         else if (packetType == gameStartByte) {
           
           uint8_t colour = rx16.getData(1);
-          debugSerial.print("Starting colour received: ");
-          debugSerial.print(colour);
-          debugSerial.println(".");
+          // debugSerial.print("Starting colour received: ");
+          // debugSerial.print(colour);
+          // debugSerial.println(".");
           
           setColour(colour);
           activateSuit(rVal, gVal, bVal);
+
+          delay(2000);
         }
         
         // manual colour change message detected
@@ -166,14 +174,14 @@ void lookForInstruction() {
           setColour(instruction);
           changeColour(rVal, gVal, bVal);
           
-          debugSerial.print("Setting colour to ");
-          debugSerial.println(instruction);
+          // debugSerial.print("Setting colour to ");
+          // debugSerial.println(instruction);
         }
       }
       else {
         // if the message WAS 96
         changeColour(rVal, gVal, bVal);
-        debugSerial.println("Keeping colour the same.");
+        // debugSerial.println("Keeping colour the same.");
         rfiduino.errorSound();
         delay(1000);
       }
@@ -191,19 +199,19 @@ void lookForMessages() {
   xbee.readPacket();
   
   if (xbee.getResponse().isAvailable()) {
-    debugSerial.print("Packet found.");
+    // debugSerial.print("Packet found.");
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
       xbee.getResponse().getRx16Response(rx16);
       
       uint8_t packetType = rx16.getData(0);
       
-      debugSerial.print(" Packet type = ");
-      debugSerial.print(packetType);
-      debugSerial.println(".");
+      // debugSerial.print(" Packet type = ");
+      // debugSerial.print(packetType);
+      // debugSerial.println(".");
       
       // game over
       if (packetType == gameOverByte) {
-
+        
         changeColour(rVal, gVal, bVal);
         
         rfiduino.successSound();
@@ -218,14 +226,14 @@ void lookForMessages() {
         
         gameOver();
       }
-
+      
       // game start command, next byte in payload is
       // going to be the starting colour
       else if (packetType == gameStartByte) {
         uint8_t colour = rx16.getData(1);
-        debugSerial.print("Starting colour received: ");
-        debugSerial.print(colour);
-        debugSerial.println(".");
+        // debugSerial.print("Starting colour received: ");
+        // debugSerial.print(colour);
+        // debugSerial.println(".");
         
         setColour(colour);
         activateSuit(rVal, gVal, bVal);      
@@ -236,8 +244,8 @@ void lookForMessages() {
         setColour(instruction);
         changeColour(rVal, gVal, bVal);
         
-        debugSerial.print("Setting colour to ");
-        debugSerial.println(instruction);
+        // debugSerial.print("Setting colour to ");
+        // debugSerial.println(instruction);
       }
     }
   }
@@ -256,27 +264,27 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt) {
       xbee.getResponse().getTxStatusResponse(txStatus);
       
       if (txStatus.getStatus() == SUCCESS) {
-        debugSerial.print(packetType);
-        debugSerial.print(" sent successfully to console on attempt ");
-        debugSerial.print(attempt);
-        debugSerial.println(".");
+        // debugSerial.print(packetType);
+        // debugSerial.print(" sent successfully to console on attempt ");
+        // debugSerial.print(attempt);
+        // debugSerial.println(".");
         
         messageReceived = true;
       }
     } else {
-        debugSerial.print(packetType);
-        debugSerial.print(" sent unsuccessfully to console on attempt ");
-        debugSerial.print(attempt);
-        debugSerial.println(".");
+        // debugSerial.print(packetType);
+        // debugSerial.print(" sent unsuccessfully to console on attempt ");
+        // debugSerial.print(attempt);
+        // debugSerial.println(".");
     }
   } else if (xbee.getResponse().isError()) {
-    debugSerial.println("Error reading packet: ");
-    debugSerial.println(xbee.getResponse().getErrorCode());
+    // debugSerial.println("Error reading packet: ");
+    // debugSerial.println(xbee.getResponse().getErrorCode());
   } else {
-      debugSerial.print(packetType);
-      debugSerial.print(" message to console timed out on attempt ");
-      debugSerial.print(attempt);
-      debugSerial.println(".");
+      // debugSerial.print(packetType);
+      // debugSerial.print(" message to console timed out on attempt ");
+      // debugSerial.print(attempt);
+      // debugSerial.println(".");
   }
 }
 

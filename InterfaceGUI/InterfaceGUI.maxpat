@@ -9,7 +9,7 @@
 			"modernui" : 1
 		}
 ,
-		"rect" : [ 34.0, 77.0, 1554.0, 939.0 ],
+		"rect" : [ 44.0, 92.0, 1554.0, 908.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -38,6 +38,19 @@
 		"subpatcher_template" : "",
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-28",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "bang" ],
+					"patching_rect" : [ 13.2, 18.4, 60.0, 22.0 ],
+					"style" : "",
+					"text" : "loadbang"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"id" : "obj-25",
 					"linecount" : 2,
 					"maxclass" : "comment",
@@ -46,9 +59,9 @@
 					"patching_rect" : [ 711.200012, 92.400002, 82.0, 34.0 ],
 					"presentation" : 1,
 					"presentation_linecount" : 2,
-					"presentation_rect" : [ 680.599915, 89.0, 74.0, 34.0 ],
+					"presentation_rect" : [ 680.599915, 89.0, 79.0, 34.0 ],
 					"style" : "",
-					"text" : "Game start\nMode 2"
+					"text" : "Game start\n(Traditional)"
 				}
 
 			}
@@ -74,7 +87,6 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 711.200012, 134.399994, 31.0, 22.0 ],
-					"presentation_rect" : [ 709.200012, 132.399994, 0.0, 0.0 ],
 					"style" : "",
 					"text" : "102"
 				}
@@ -90,9 +102,9 @@
 					"patching_rect" : [ 606.200012, 92.400002, 82.0, 34.0 ],
 					"presentation" : 1,
 					"presentation_linecount" : 2,
-					"presentation_rect" : [ 601.599915, 89.0, 74.0, 34.0 ],
+					"presentation_rect" : [ 601.599915, 89.0, 79.0, 34.0 ],
 					"style" : "",
-					"text" : "Game start\nMode 1"
+					"text" : "Game start\n(Viral Half)"
 				}
 
 			}
@@ -118,7 +130,6 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 606.200012, 134.399994, 31.0, 22.0 ],
-					"presentation_rect" : [ 607.200012, 136.399994, 0.0, 0.0 ],
 					"style" : "",
 					"text" : "101"
 				}
@@ -24185,7 +24196,7 @@
 					"presentation" : 1,
 					"presentation_rect" : [ 299.0, 196.0, 230.0, 36.0 ],
 					"style" : "",
-					"text" : "Suit 1 is pink"
+					"text" : "Suit 0 is off"
 				}
 
 			}
@@ -24227,9 +24238,9 @@
 					"patching_rect" : [ 494.200012, 92.400002, 82.0, 34.0 ],
 					"presentation" : 1,
 					"presentation_linecount" : 2,
-					"presentation_rect" : [ 521.0, 89.0, 74.0, 34.0 ],
+					"presentation_rect" : [ 521.0, 89.0, 79.0, 34.0 ],
 					"style" : "",
-					"text" : "Game start\nMode 0"
+					"text" : "Game start\n(Viral One)"
 				}
 
 			}
@@ -24407,7 +24418,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "int" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 14.2, 39.400002, 24.0, 24.0 ],
+					"patching_rect" : [ 13.2, 49.400002, 24.0, 24.0 ],
 					"style" : ""
 				}
 
@@ -24559,7 +24570,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
-					"patching_rect" : [ 14.2, 85.400002, 58.0, 22.0 ],
+					"patching_rect" : [ 13.2, 91.400002, 58.0, 22.0 ],
 					"style" : "",
 					"text" : "metro 10"
 				}
@@ -24589,7 +24600,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "int", "" ],
-					"patching_rect" : [ 14.2, 200.399994, 79.0, 22.0 ],
+					"patching_rect" : [ 13.2, 203.399994, 79.0, 22.0 ],
 					"style" : "",
 					"text" : "serial d 9600"
 				}
@@ -25571,6 +25582,15 @@
 					"disabled" : 0,
 					"hidden" : 0,
 					"source" : [ "obj-270", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-31", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-28", 0 ]
 				}
 
 			}

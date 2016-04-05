@@ -23,7 +23,7 @@ void lookForTags() {
 // ---------------------------------------------------------//
 void whoTaggedMe() {
   
-  debugSerial.println("Tag detected. Looking for match...");
+  // debugSerial.println("Tag detected. Looking for match...");
   
   verifyKey = false;
   
@@ -37,8 +37,8 @@ void whoTaggedMe() {
       
       taggerID = i;
       
-      debugSerial.print("Tag recognized. Suit: ");
-      debugSerial.println(taggerID);
+      // debugSerial.print("Tag recognized. Suit: ");
+      // debugSerial.println(taggerID);
       
       sendIWasTagged();
     }
@@ -46,7 +46,7 @@ void whoTaggedMe() {
   }
   
   if (verifyKey == false) {
-    debugSerial.println("No match found.");
+    // debugSerial.println("No match found.");
   }
 }
 
@@ -56,12 +56,12 @@ void whoTaggedMe() {
 // ---------------------------------------------------------//
 void printCurrentTag() {
   
-  debugSerial.print("RFID Tag ID: ");
+  // debugSerial.print("RFID Tag ID: ");
   
   for (int n = 0; n < 5; n++) {
-    debugSerial.print(tagData[n], DEC);
+    // debugSerial.print(tagData[n], DEC);
     if (n < 4) {
-      debugSerial.print(", ");
+      // debugSerial.print(", ");
     }
   }
 }

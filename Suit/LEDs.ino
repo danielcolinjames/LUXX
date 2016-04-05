@@ -170,7 +170,7 @@ void setColour(int colour) {
     bVal = 0;
     digitalWrite(rfiduino.led2, LOW); // green off
     digitalWrite(rfiduino.led1, HIGH); // red on
-    debugSerial.println("Changing suit colour to yellow.");
+    // debugSerial.println("Changing suit colour to yellow.");
   }
   
   // Blue
@@ -180,7 +180,7 @@ void setColour(int colour) {
     bVal = 255;
     digitalWrite(rfiduino.led1, LOW); // red off
     digitalWrite(rfiduino.led2, HIGH); // green on
-    debugSerial.println("Changing suit colour to blue.");
+    // debugSerial.println("Changing suit colour to blue.");
   }
   
   // Orange
@@ -190,9 +190,9 @@ void setColour(int colour) {
     bVal = 0;
     digitalWrite(rfiduino.led2, LOW); // green off
     digitalWrite(rfiduino.led1, HIGH); // red on
-    debugSerial.println("Changing suit colour to orange.");
+    // debugSerial.println("Changing suit colour to orange.");
   }
-
+  
   // Light blue
   else if (colour == 86) {
     rVal = 44;
@@ -200,9 +200,9 @@ void setColour(int colour) {
     bVal = 253;
     digitalWrite(rfiduino.led1, LOW); // red off
     digitalWrite(rfiduino.led2, HIGH); // green on
-    debugSerial.println("Changing suit colour to light blue.");
+    // debugSerial.println("Changing suit colour to light blue.");
   }
-
+  
   // Red
   else if (colour == 85) {
     rVal = 255;
@@ -210,9 +210,9 @@ void setColour(int colour) {
     bVal = 0;
     digitalWrite(rfiduino.led2, LOW); // green off
     digitalWrite(rfiduino.led1, HIGH); // red on
-    debugSerial.println("Changing suit colour to red.");
+    // debugSerial.println("Changing suit colour to red.");
   }
-
+  
   // Green
   else if (colour == 84) {
     rVal = 0;
@@ -220,9 +220,9 @@ void setColour(int colour) {
     bVal = 0;
     digitalWrite(rfiduino.led1, LOW); // red off
     digitalWrite(rfiduino.led2, HIGH); // green on
-    debugSerial.println("Changing suit colour to green.");
+    // debugSerial.println("Changing suit colour to green.");
   }
-
+  
   // Pink
   else if (colour == 83) {
     rVal = 215;
@@ -230,7 +230,7 @@ void setColour(int colour) {
     bVal = 255;
     digitalWrite(rfiduino.led2, LOW); // green off
     digitalWrite(rfiduino.led1, HIGH); // red on
-    debugSerial.println("Changing suit colour to pink.");
+    // debugSerial.println("Changing suit colour to pink.");
   }
   
   // Light green
@@ -240,7 +240,27 @@ void setColour(int colour) {
     bVal = 0;
     digitalWrite(rfiduino.led1, LOW); // red off
     digitalWrite(rfiduino.led2, HIGH); // green on
-    debugSerial.println("Changing suit colour to green.");
+    // debugSerial.println("Changing suit colour to green.");
+  }
+  
+  // White
+  else if (colour == 81) {
+    rVal = 255;
+    gVal = 255;
+    bVal = 255;
+    digitalWrite(rfiduino.led1, LOW); // red off
+    digitalWrite(rfiduino.led2, HIGH); // green on
+    // debugSerial.println("Changing suit colour to green.");
+  }
+  
+  // Black
+  else if (colour == 80) {
+    rVal = 0;
+    gVal = 0;
+    bVal = 0;
+    digitalWrite(rfiduino.led2, LOW); // green off
+    digitalWrite(rfiduino.led1, HIGH); // red on
+    // debugSerial.println("Changing suit colour to pink.");
   }
 }
 

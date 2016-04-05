@@ -14,9 +14,14 @@ void startGame() {
 // ---------------------------------------------------------//
 void pingSuits() {
   
+  numberOfActiveSuits = 0;
+  
   debugSerial.println("Pinging suits...");
   
   for (int i = 0; i < 10; i++) {
+
+    delay(100);
+    
     suitID = i;
     
     address = addresses[suitID];
@@ -50,7 +55,9 @@ void pingSuits() {
       
       // tells the console that these suits are white
       stateReport = (suitID * 10) + 1;
-      interfaceSerial.write(stateReport);
+      sendToInterface(stateReport);
+
+      states[suitID] = 81;
       
       debugSerial.print("Suit ");
       debugSerial.print(suitID);
@@ -59,6 +66,7 @@ void pingSuits() {
     
     else {
       activeSuits[suitID] = false;
+      states[suitID] = 80;
     }
   }
 }
@@ -68,11 +76,11 @@ void pingSuits() {
 // ---------- Initial setup to assign suits colours  -------//
 // ---------------------------------------------------------//
 void assignStartingColours() {
-
+  
   // min is inclusive, max is exclusive
   // randomNum = a number from 1 - 4
   uint8_t randomNum = random(1, 5);
-
+  
   debugSerial.println();
   debugSerial.print("Random number: ");
   debugSerial.println(randomNum);
@@ -96,9 +104,9 @@ void assignStartingColours() {
     
     // Viral Tag Original: one assigned warm, rest assigned cool
     uint8_t counter = 0;
-
+    
     for (int i = 0; i < 10; i++) {
-            
+      
       if (activeSuits[i] == true) {
         
         counter++;
@@ -107,7 +115,7 @@ void assignStartingColours() {
         if (counter == numberOfActiveSuits) {
           states[i] = warmColour;
         }
-
+        
         // all other suits are cool
         else {
           states[i] = coolColour;
@@ -120,7 +128,7 @@ void assignStartingColours() {
     
     // Viral Tag Split: half assigned warm, half assigned cool
     uint8_t counter = 0;
-
+    
     for (int i = 0; i < 10; i++) {
       
       if (activeSuits[i] == true) {
@@ -143,9 +151,9 @@ void assignStartingColours() {
     
     // Traditional Tag: one person is it (warm)
     uint8_t counter = 0;
-
+    
     for (int i = 0; i < 10; i++) {
-            
+      
       if (activeSuits[i] == true) {
         counter++;
         
@@ -161,11 +169,6 @@ void assignStartingColours() {
       }
     }
   }
-
-  // START GAME OF OTHER TAG
-  else if (gameMode == 3) {
-  //TODO
-  }
 }
 
 
@@ -173,47 +176,54 @@ void assignStartingColours() {
 // -------- Tell each suit which colour it starts as  ------//
 // ---------------------------------------------------------//
 void sendStartingColours() {
-
+  
   debugSerial.println("Initializing suits...");
   
-  for (int i = 0; i < 10; i++) {    
+  for (int i = 0; i < 10; i++) {
+    
+    delay(100);
+    debugSerial.print("Sending to suit ");
+    debugSerial.println(i);
     suitID = i;
     
-    address = addresses[suitID];
-    
-    payload[0] = gameStartByte;
-    payload[1] = states[suitID];
-    
-    packetSize = 2;
-    
-    tx = Tx16Request(address, payload, packetSize);
-          
-    // first attempt
-    xbee.send(tx);
-    confirmDelivery(gameStartByte, 1, suitID);
-    
-    // second attempt
-    if (suitReceivedInstruction == false) {
+    if (activeSuits[suitID] == true) {
+      
+      address = addresses[suitID];
+      
+      payload[0] = gameStartByte;
+      payload[1] = states[suitID];
+      
+      packetSize = 2;
+      
+      tx = Tx16Request(address, payload, packetSize);
+      
+      // first attempt
       xbee.send(tx);
-      confirmDelivery(gameStartByte, 2, suitID);
+      confirmDelivery(gameStartByte, 1, suitID);
+      
+      // second attempt
+      if (suitReceivedInstruction == false) {
+        xbee.send(tx);
+        confirmDelivery(gameStartByte, 2, suitID);
+      }
+      
+      // third attempt
+      if (suitReceivedInstruction == false) {
+        xbee.send(tx);
+        confirmDelivery(gameStartByte, 3, suitID);
+      }
+      
+      // the suit got the message, do the following
+      if (suitReceivedInstruction == true) {
+        debugSerial.print("Suit ");
+        debugSerial.print(suitID);
+        debugSerial.println(" started.");
+      }
+      
+      // sends a colour change report from 0 - 99 to the interface
+      stateReport = (suitID * 10) + (states[suitID] - 80);
+      sendToInterface(stateReport);
     }
-    
-    // third attempt
-    if (suitReceivedInstruction == false) {
-      xbee.send(tx);
-      confirmDelivery(gameStartByte, 3, suitID);
-    }
-    
-    // the suit got the message, do the following
-    if (suitReceivedInstruction == true) {
-      debugSerial.print("Suit ");
-      debugSerial.print(suitID);
-      debugSerial.println(" started.");
-    }
-    
-    // sends a colour change report from 0 - 99 to the interface
-    stateReport = (suitID * 10) + (states[suitID] - 80);
-    interfaceSerial.write(stateReport);
   }
 }
 
@@ -223,6 +233,9 @@ void sendStartingColours() {
 // ---------------------------------------------------------//
 void sendGameOver() {
   for (int i = 0; i < 10; i++) {
+
+    delay(100);
+    
     suitID = i;
     
     // only turn off the suits that are active this round
@@ -274,7 +287,7 @@ void sendGameOver() {
     }
     // sends a colour change report from 0 - 99 to the interface
     stateReport = (suitID * 10) + (states[suitID] - 80);
-    interfaceSerial.write(stateReport);
+    sendToInterface(stateReport);
   }
 }
 
@@ -341,7 +354,7 @@ void gameStateCheck() {
         sendToInterface(105);
         
         stateCheckInterval = 10;
-        outputInterval = 10;
+        outputInterval = 1000;
       }
       else {
         stateCheckInterval = 1000;
@@ -370,7 +383,9 @@ void gameStateCheck() {
     }
     
     // timeout check for all game modes
-    if (millis() > 600000) {
+    if (millis() - gameOverMillis > 600000) {
+      gameOverMillis = millis();
+      
       debugSerial.println();
       debugSerial.println("Game over: time limit reached.");
       
