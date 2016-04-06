@@ -13,7 +13,7 @@
 #define NUMPIXELSONE 9
 #define NUMPIXELSTWO 9
 
-uint8_t suitID = 9;
+uint8_t suitID = 3;
 
 byte keyTag[NUMBER_OF_CARDS][5] = {
   {114, 0, 95, 44, 9},        // Tag 0
@@ -82,9 +82,11 @@ uint8_t instruction;
 int notes[] = { 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
   1100, 1200, 1300, 1400, 1500, 1600 };
 
+
 // ---------------------------------------------------------//
 // --------------------- Packet types  ---------------------//
 // ---------------------------------------------------------//
+uint8_t pingByte = 101;
 uint8_t confusedByte = 100;
 uint8_t taggedByte = 99;
 

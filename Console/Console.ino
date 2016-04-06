@@ -14,7 +14,7 @@ uint8_t states[] = { 80, 80, 80, 80, 80,
 // since there's a good chance we won't have 10 people in each game
 boolean activeSuits[] = { false, false, false, false, false,
   false, false, false, false, false };
-  
+
 uint16_t addresses[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5,
   0x6, 0x7, 0x8, 0x9 };
 

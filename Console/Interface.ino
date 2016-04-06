@@ -2,9 +2,10 @@
 // ------------- Wait until game is reset by us ------------//
 // ---------------------------------------------------------//
 void waitForReset() {
-  debugSerial.println("Waiting for reset...");
   boolean reset = false;
   listeningBoolean = true;
+  
+  debugSerial.println("Waiting for reset...");
   
   while(reset == false) {
     

@@ -1,10 +1,10 @@
 // ---------------------------------------------------------//
-// -------  Send suitID and taggerID to the console  -------//
+// ---  Wait until the console tells this suit to start  ---//
 // ---------------------------------------------------------//
 void waitForStartCommand() {
   boolean waiting = true;
   boolean sentConfused = false;
-
+  
   while (waiting == true) {
     
     stepThroughLights();
@@ -24,9 +24,14 @@ void waitForStartCommand() {
         // debugSerial.print(packetType);
         // debugSerial.println(".");
         
+        // ping received
+        if (packetType == pingByte) {
+          sendPingResponse();
+        }
+        
         // game start command, next byte in payload is
         // going to be the starting colour
-        if (packetType == gameStartByte) {
+        else if (packetType == gameStartByte) {
           
           waiting = false;
           
@@ -74,6 +79,37 @@ void waitForStartCommand() {
 
 
 // ---------------------------------------------------------//
+// ---------  Tells the console this suit is active  -------//
+// ---------------------------------------------------------//
+void sendPingResponse() {
+  
+  payload[0] = pingByte;
+  payload[1] = suitID;
+  
+  packetSize = 2;
+  
+  Tx16Request tx = Tx16Request(address, payload, packetSize);
+  
+  xbee.send(tx);
+  confirmDelivery(pingByte, 1);
+  
+  if (messageReceived == false) {
+    xbee.send(tx);
+    confirmDelivery(pingByte, 2);
+  }
+  
+  if (messageReceived == false) {
+    xbee.send(tx);
+    confirmDelivery(pingByte, 3);
+  }
+  if (messageReceived == false) {
+    xbee.send(tx);
+    confirmDelivery(pingByte, 4);
+  }
+}
+
+
+// ---------------------------------------------------------//
 // -------  Send suitID and taggerID to the console  -------//
 // ---------------------------------------------------------//
 void sendIWasTagged() {
@@ -81,6 +117,10 @@ void sendIWasTagged() {
   payload[0] = taggedByte;
   payload[1] = suitID;
   payload[2] = taggerID;
+  
+  packetSize = 3;
+  
+  Tx16Request tx = Tx16Request(address, payload, packetSize);
   
   xbee.send(tx);
   confirmDelivery(taggedByte, 1);
@@ -99,6 +139,7 @@ void sendIWasTagged() {
     lookForInstruction();
   }
 }
+
 
 // ---------------------------------------------------------//
 // ----  Look for a response to "I was tagged" message  ----//
@@ -152,21 +193,6 @@ void lookForInstruction() {
           gameOver();
         }
         
-        // game start command, next byte in payload is
-        // going to be the starting colour
-        else if (packetType == gameStartByte) {
-          
-          uint8_t colour = rx16.getData(1);
-          // debugSerial.print("Starting colour received: ");
-          // debugSerial.print(colour);
-          // debugSerial.println(".");
-          
-          setColour(colour);
-          activateSuit(rVal, gVal, bVal);
-
-          delay(2000);
-        }
-        
         // manual colour change message detected
         else if (packetType == manualChangeByte) {
           instruction = rx16.getData(1);
@@ -195,7 +221,7 @@ void lookForInstruction() {
 // ---------------------------------------------------------//
 void lookForMessages() {
   
-  // look for 98 or 95 (game reset/start, or game over)
+  // look for game over or manual colour assignment
   xbee.readPacket();
   
   if (xbee.getResponse().isAvailable()) {
@@ -227,17 +253,6 @@ void lookForMessages() {
         gameOver();
       }
       
-      // game start command, next byte in payload is
-      // going to be the starting colour
-      else if (packetType == gameStartByte) {
-        uint8_t colour = rx16.getData(1);
-        // debugSerial.print("Starting colour received: ");
-        // debugSerial.print(colour);
-        // debugSerial.println(".");
-        
-        setColour(colour);
-        activateSuit(rVal, gVal, bVal);      
-      }
       else if (packetType == manualChangeByte) {
         instruction = rx16.getData(1);
         

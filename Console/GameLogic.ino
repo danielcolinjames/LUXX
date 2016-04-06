@@ -19,8 +19,6 @@ void pingSuits() {
   debugSerial.println("Pinging suits...");
   
   for (int i = 0; i < 10; i++) {
-
-    delay(100);
     
     suitID = i;
     
@@ -48,26 +46,78 @@ void pingSuits() {
       confirmDelivery(pingByte, 3, suitID);
     }
     
-    // the suit got the message, do the following
+    // fourth attempt
+    if (suitReceivedInstruction == false) {
+      xbee.send(tx);
+      confirmDelivery(pingByte, 4, suitID);
+    }
+    
+    // if the suit got the message, make sure it's the right suit
+    // this eliminates the possibility of phantom active suits (in theory)
+    
     if (suitReceivedInstruction == true) {
-      numberOfActiveSuits++;
-      activeSuits[suitID] = true;
       
-      // tells the console that these suits are white
-      stateReport = (suitID * 10) + 1;
-      sendToInterface(stateReport);
-
-      states[suitID] = 81;
+      debugSerial.println("Suit received instruction. Checking for ping response.");
       
-      debugSerial.print("Suit ");
-      debugSerial.print(suitID);
-      debugSerial.println(" is active.");
+      if (xbee.readPacket(200)) {
+        
+        debugSerial.println("Response received.");
+        
+        if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
+          
+          debugSerial.println("Response is an rx16 packet.");
+          
+          Rx16Response rx16 = Rx16Response();
+          xbee.getResponse().getRx16Response(rx16);
+          
+          uint8_t packetType = rx16.getData(0);
+          
+          if (packetType == pingByte) {
+            uint8_t pingResponseFrom = rx16.getData(1);
+            
+            debugSerial.print("Ping response from suit ");
+            debugSerial.println(pingResponseFrom);
+            
+            debugSerial.print("Suit ID = ");
+            debugSerial.println(suitID);
+            
+            debugSerial.print("Ping response from = ");
+            debugSerial.println(pingResponseFrom);
+            
+            if (suitID == pingResponseFrom) {
+              
+              debugSerial.println("suitID == ping response");
+              
+              numberOfActiveSuits++;
+              activeSuits[suitID] = true;
+              
+              // tells the console that these suits are white
+              stateReport = (suitID * 10) + 1;
+              sendToInterface(stateReport);
+              
+              states[suitID] = 81;
+              
+              debugSerial.print("Suit ");
+              debugSerial.print(suitID);
+              debugSerial.println(" is active.");
+            }
+          }
+        }
+        else {
+          debugSerial.println("Response is not an rx16 packet.");
+        }
+      }
     }
     
     else {
       activeSuits[suitID] = false;
       states[suitID] = 80;
+      
+      // tells the console that these suits are off
+      stateReport = (suitID * 10);
+      sendToInterface(stateReport);
     }
+    delay(10);
   }
 }
 
@@ -181,12 +231,12 @@ void sendStartingColours() {
   
   for (int i = 0; i < 10; i++) {
     
-    delay(100);
-    debugSerial.print("Sending to suit ");
-    debugSerial.println(i);
     suitID = i;
     
     if (activeSuits[suitID] == true) {
+      
+      debugSerial.print("Sending to suit ");
+      debugSerial.println(i);
       
       address = addresses[suitID];
       
@@ -225,6 +275,7 @@ void sendStartingColours() {
       sendToInterface(stateReport);
     }
   }
+  delay(10);
 }
 
 
@@ -232,9 +283,9 @@ void sendStartingColours() {
 // -----------   Tell each suit the game is over   ---------//
 // ---------------------------------------------------------//
 void sendGameOver() {
+  debugSerial.println("Sending game over...");
+  
   for (int i = 0; i < 10; i++) {
-
-    delay(100);
     
     suitID = i;
     
@@ -288,6 +339,7 @@ void sendGameOver() {
     // sends a colour change report from 0 - 99 to the interface
     stateReport = (suitID * 10) + (states[suitID] - 80);
     sendToInterface(stateReport);
+    delay(10);
   }
 }
 
@@ -303,7 +355,7 @@ void gameStateCheck() {
    *    1 = viral tag split
    *    2 = traditional tag
    */
-   
+  
   if ((millis() - stateMillis) > stateCheckInterval) {
     
     stateMillis = millis();
@@ -329,7 +381,7 @@ void gameStateCheck() {
       // if there's only one suit left that's cool (uninfected), check the state quicker
       if (numberOfWarmSuits == (numberOfActiveSuits - 1)) {
         stateCheckInterval = 10;
-        outputInterval = 10;
+        outputInterval = 1000;
       }
       else {
         stateCheckInterval = 1000;
