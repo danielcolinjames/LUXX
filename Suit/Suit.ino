@@ -13,7 +13,7 @@
 #define NUMPIXELSONE 9
 #define NUMPIXELSTWO 9
 
-uint8_t suitID = 3;
+uint8_t suitID = 8;
 
 byte keyTag[NUMBER_OF_CARDS][5] = {
   {114, 0, 95, 44, 9},        // Tag 0
@@ -28,6 +28,7 @@ byte keyTag[NUMBER_OF_CARDS][5] = {
   {114, 0, 95, 67, 234}       // Tag 9
 };
 
+byte blocked = 255;
 
 /*
  * Suit 1: 114, 0, 95, 44, 9
@@ -73,6 +74,7 @@ long gameOverMillis = 0;
 long waitingForStartMillis = 0;
 
 boolean messageReceived = false;
+boolean pingReceived = false;
 
 boolean soundOn = false;
 boolean soundOff = true;
@@ -142,6 +144,13 @@ int loopCounterTwo = 0;
 // ----------------------   Setup   ------------------------//
 // ---------------------------------------------------------//
 void setup() {
+
+  keyTag[suitID][0] = blocked;
+  keyTag[suitID][1] = blocked;
+  keyTag[suitID][2] = blocked;
+  keyTag[suitID][3] = blocked;
+  keyTag[suitID][4] = blocked;
+  
   Serial.begin(9600);
   xbee.setSerial(Serial);
   

@@ -44,6 +44,17 @@ void waitForStartCommand() {
           activateSuit(rVal, gVal, bVal);
           delay(2000);
         }
+        
+        // manual colour change message detected
+        else if (packetType == manualChangeByte) {
+          instruction = rx16.getData(1);
+          
+          setColour(instruction);
+          changeColour(rVal, gVal, bVal);
+          
+          // debugSerial.print("Setting colour to ");
+          // debugSerial.println(instruction);
+        }
       }
     }
     
@@ -91,20 +102,19 @@ void sendPingResponse() {
   Tx16Request tx = Tx16Request(address, payload, packetSize);
   
   xbee.send(tx);
-  confirmDelivery(pingByte, 1);
+  confirmPingDelivery();
   
-  if (messageReceived == false) {
+  if (pingReceived == false) {
     xbee.send(tx);
-    confirmDelivery(pingByte, 2);
+    confirmPingDelivery();
   }
   
-  if (messageReceived == false) {
+  if (pingReceived == false) {
     xbee.send(tx);
-    confirmDelivery(pingByte, 3);
+    confirmPingDelivery();
   }
-  if (messageReceived == false) {
+  if (pingReceived == false) {
     xbee.send(tx);
-    confirmDelivery(pingByte, 4);
   }
 }
 
@@ -159,7 +169,7 @@ void lookForInstruction() {
       // debugSerial.print(" Packet type = ");
       // debugSerial.print(packetType);
       // debugSerial.println(".");
-
+      
       // check if we shouldn't do anything first, in the name of efficiency
       if (packetType != negativeResponseByte) {
         
@@ -300,6 +310,26 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt) {
       // debugSerial.print(" message to console timed out on attempt ");
       // debugSerial.print(attempt);
       // debugSerial.println(".");
+  }
+}
+
+
+
+// ---------------------------------------------------------//
+// ---- Confirms reception of transmitted ping response ----//
+// ---------------------------------------------------------//
+void confirmPingDelivery() {
+  pingReceived = false;
+  if (xbee.readPacket(500)) {
+    
+    if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
+      TxStatusResponse txStatus = TxStatusResponse();
+      xbee.getResponse().getTxStatusResponse(txStatus);
+      
+      if (txStatus.getStatus() == SUCCESS) {
+        pingReceived = true;
+      }
+    }
   }
 }
 

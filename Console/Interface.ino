@@ -86,9 +86,15 @@ void listenToInterface() {
     else if (reading < 100 && reading >= 0) {
       debugSerial.println("MANUAL COLOUR INSTRUCTION");
       listeningBoolean = false;
-      uint8_t tempColour = 80 + (reading % 10);
+      
+      // reading % 10 is the colour, so reading - the colour
+      // = the suit's ID * 10, so divide by 10 for the suit's ID
       uint8_t tempRecepient = (reading - (reading % 10)) / 10;
-      debugSerial.println("MANUALLY TARGETTING SUIT");
+      
+      // reading % 10 gives the suit's colour, + 80 for colour code
+      uint8_t tempColour = 80 + (reading % 10);
+      
+      debugSerial.println("MANUALLY TARGETTING SUIT ");
       manualColourAssignment(tempRecepient, tempColour);
     }
   }

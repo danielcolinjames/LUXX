@@ -406,6 +406,29 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
 
 
 // ---------------------------------------------------------//
+// -------  Confirms reception of transmitted packet  ------//
+// ---------------------------------------------------------//
+void confirmPingDelivery() {
+  suitReceivedPing = false;
+  responseReceived[suitID] = false;
+  
+  if (xbee.readPacket(200)) {
+    
+    if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
+      TxStatusResponse txStatus = TxStatusResponse();
+      xbee.getResponse().getTxStatusResponse(txStatus);
+      
+      if (responseReceived[suitID] == false && txStatus.getStatus() == SUCCESS) {
+        responseReceived[suitID] = true;
+        
+        suitReceivedPing = true;
+      }
+    }
+  }
+}
+
+
+// ---------------------------------------------------------//
 // ----  Print out the values in the outgoing payload  -----//
 // ---------------------------------------------------------//
 void printOutArray(uint8_t message[]) {

@@ -32,30 +32,32 @@ void pingSuits() {
     
     // first attempt
     xbee.send(tx);
-    confirmDelivery(pingByte, 1, suitID);
+    confirmPingDelivery();
     
     // second attempt
-    if (suitReceivedInstruction == false) {
+    if (suitReceivedPing == false) {
+      debugSerial.println("attempt 2");
       xbee.send(tx);
-      confirmDelivery(pingByte, 2, suitID);
+      confirmPingDelivery();
     }
     
     // third attempt
-    if (suitReceivedInstruction == false) {
+    if (suitReceivedPing == false) {
+      debugSerial.println("attempt 3");
       xbee.send(tx);
-      confirmDelivery(pingByte, 3, suitID);
+      confirmPingDelivery();
     }
     
     // fourth attempt
-    if (suitReceivedInstruction == false) {
+    if (suitReceivedPing == false) {
+      debugSerial.println("attempt 4");
       xbee.send(tx);
-      confirmDelivery(pingByte, 4, suitID);
+      confirmPingDelivery();
     }
     
     // if the suit got the message, make sure it's the right suit
-    // this eliminates the possibility of phantom active suits (in theory)
     
-    if (suitReceivedInstruction == true) {
+    if (suitReceivedPing == true) {
       
       debugSerial.println("Suit received instruction. Checking for ping response.");
       
@@ -413,8 +415,18 @@ void gameStateCheck() {
         outputInterval = 1500;
       }
       
+      // all the suits are inactive
+      if (numberOfActiveSuits == 0) {
+        debugSerial.println();
+        debugSerial.println("Game over: no suits are active.");
+
+        stateReport = 111;
+        sendToInterface(stateReport);
+        waitForReset();
+      }
+      
       // all the suits are cool colours
-      if (numberOfCoolSuits == numberOfActiveSuits) {
+      else if (numberOfCoolSuits == numberOfActiveSuits) {
         debugSerial.println();
         debugSerial.println("Game over: everyone is a cool colour.");
 
