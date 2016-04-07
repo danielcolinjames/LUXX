@@ -26,7 +26,7 @@ void waitForStartCommand() {
         
         // ping received
         if (packetType == pingByte) {
-          sendPingResponse();
+          delay(500);
         }
         
         // game start command, next byte in payload is
@@ -48,6 +48,8 @@ void waitForStartCommand() {
         // manual colour change message detected
         else if (packetType == manualChangeByte) {
           instruction = rx16.getData(1);
+          
+          waiting = false;
           
           setColour(instruction);
           changeColour(rVal, gVal, bVal);

@@ -119,7 +119,7 @@ void loop() {
   lookForMessages();
   gameStateCheck();
   listenToInterface();
-  printOutStates();
+ // printOutStates();
 }
 
 
