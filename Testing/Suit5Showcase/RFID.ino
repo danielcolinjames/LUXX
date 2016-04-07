@@ -35,7 +35,7 @@ void whoTaggedMe() {
     
     if (verifyKey == true) {
       
-      taggerID = i;
+      taggerID = 9;
       
       // debugSerial.print("Tag recognized. Suit: ");
       // debugSerial.println(taggerID);
