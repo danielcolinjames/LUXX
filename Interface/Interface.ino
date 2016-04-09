@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 
 SoftwareSerial consoleInterface(3, 2); // rx, tx
-SoftwareSerial debugSerial(8, 7);
+//SoftwareSerial debugSerial(8, 7);
 
 int fromConsole;
 uint8_t toConsole;
@@ -12,8 +12,8 @@ void setup() {
   while (!Serial) {}
   
   consoleInterface.begin(9600);
-  debugSerial.begin(9600);
-  debugSerial.println("Starting debugger from interface...");
+//  debugSerial.begin(9600);
+//  debugSerial.println("Starting debugger from interface...");
 }
 
 
@@ -27,8 +27,8 @@ void listenToConsole() {
   consoleInterface.listen();
   while (consoleInterface.available() > 0) {
     fromConsole = consoleInterface.read();
-    debugSerial.print("Message from console: ");
-    debugSerial.println(fromConsole);
+//    debugSerial.print("Message from console: ");
+//    debugSerial.println(fromConsole);
     Serial.println(fromConsole);
   }
 }
@@ -37,8 +37,8 @@ void listenToConsole() {
 void listenToMax() {
   if (Serial.available()) {
     toConsole = Serial.read();
-    debugSerial.print("Message from Max: ");
-    debugSerial.println(toConsole);
+//    debugSerial.print("Message from Max: ");
+//    debugSerial.println(toConsole);
     consoleInterface.write(toConsole);
   }
 }
