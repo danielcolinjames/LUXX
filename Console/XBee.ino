@@ -6,37 +6,37 @@ void lookForMessages() {
   xbee.readPacket();
   
   if (xbee.getResponse().isAvailable()) {
-    debugSerial.print("Packet found: ");
+    // debugSerial.print("Packet found: ");
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
       Rx16Response rx16 = Rx16Response();
       xbee.getResponse().getRx16Response(rx16);
       
-      debugSerial.print("{");
+      // debugSerial.print("{");
       for (int i = 0; i < rx16.getDataLength(); i++) {
-        debugSerial.print(rx16.getData(i));
+        // debugSerial.print(rx16.getData(i));
         if (i != (rx16.getDataLength() - 1)) {
-          debugSerial.print(", ");
+          // debugSerial.print(", ");
         }
       }
-      debugSerial.println("}");
+      // debugSerial.println("}");
       
       uint8_t packetType = rx16.getData(0);
       
-      debugSerial.print("Packet type: ");
-      debugSerial.println(packetType);
+      // debugSerial.print("Packet type: ");
+      // debugSerial.println(packetType);
       
       if (packetType == taggedByte) {
         
         suitID = rx16.getData(1);
         taggerID = rx16.getData(2);
 
-        debugSerial.println();
-        debugSerial.print("Suit  ");
-        debugSerial.print(suitID);
+        // debugSerial.println();
+        // debugSerial.print("Suit  ");
+        // debugSerial.print(suitID);
         
-        debugSerial.print(" was tagged by suit ");
-        debugSerial.print(taggerID);
-        debugSerial.println(".");
+        // debugSerial.print(" was tagged by suit ");
+        // debugSerial.print(taggerID);
+        // debugSerial.println(".");
         
         sendInstruction();
         printOutStates();
@@ -84,7 +84,7 @@ void lookForMessages() {
 // ------- Tells suits if they should change colour --------//
 // ---------------------------------------------------------//
 void sendInstruction() {
-  if (states[suitID] == states[taggerID]) {
+  if (states[suitID] == states[taggerID] || activeSuits[taggerID] == false) {
     if (gameMode == 0 || gameMode == 1 || gameMode == 2) {
       
       // both suits are the same colour > 96
@@ -118,16 +118,16 @@ void sendInstruction() {
       // but it's good to know what the console is doing
       if (suitReceivedInstruction == true) {
         
-        debugSerial.print("Suit ");
-        debugSerial.print(suitID);
-        debugSerial.print(" didn't change colours ");
-        debugSerial.print("because it is the same colour (");
-        debugSerial.print(states[suitID]);
-        debugSerial.print(") as suit ");
-        debugSerial.print(taggerID);
-        debugSerial.print(" (");
-        debugSerial.print(states[taggerID]);
-        debugSerial.println(").");
+        // debugSerial.print("Suit ");
+        // debugSerial.print(suitID);
+        // debugSerial.print(" didn't change colours ");
+        // debugSerial.print("because it is the same colour (");
+        // debugSerial.print(states[suitID]);
+        // debugSerial.print(") as suit ");
+        // debugSerial.print(taggerID);
+        // debugSerial.print(" (");
+        // debugSerial.print(states[taggerID]);
+        // debugSerial.println(").");
       }
     }
   }
@@ -166,13 +166,13 @@ void sendInstruction() {
         // if the message was received, do this
         if (suitReceivedInstruction == true) {
           
-          debugSerial.print("Suit ");
-          debugSerial.print(suitID);
-          debugSerial.print(" changed from ");
-          debugSerial.print(states[suitID]);
-          debugSerial.print(" to ");
-          debugSerial.print(states[taggerID]);
-          debugSerial.println(".");
+          // debugSerial.print("Suit ");
+          // debugSerial.print(suitID);
+          // debugSerial.print(" changed from ");
+          // debugSerial.print(states[suitID]);
+          // debugSerial.print(" to ");
+          // debugSerial.print(states[taggerID]);
+          // debugSerial.println(".");
           
           states[suitID] = states[taggerID];
 
@@ -212,13 +212,13 @@ void sendInstruction() {
       // if the message was received, do this
       if (suitReceivedInstruction == true) {
         
-        debugSerial.print("Suit ");
-        debugSerial.print(suitID);
-        debugSerial.print(" changed from ");
-        debugSerial.print(states[suitID]);
-        debugSerial.print(" to ");
-        debugSerial.print(states[taggerID]);
-        debugSerial.println(".");
+        // debugSerial.print("Suit ");
+        // debugSerial.print(suitID);
+        // debugSerial.print(" changed from ");
+        // debugSerial.print(states[suitID]);
+        // debugSerial.print(" to ");
+        // debugSerial.print(states[taggerID]);
+        // debugSerial.println(".");
         
         states[suitID] = states[taggerID];
         
@@ -256,13 +256,13 @@ void sendInstruction() {
       
       if (suitReceivedInstruction == true) {
         
-        debugSerial.print("Suit ");
-        debugSerial.print(suitID);
-        debugSerial.print(" changed from ");
-        debugSerial.print(states[suitID]);
-        debugSerial.print(" to ");
-        debugSerial.print(states[taggerID]);
-        debugSerial.println(".");
+        // debugSerial.print("Suit ");
+        // debugSerial.print(suitID);
+        // debugSerial.print(" changed from ");
+        // debugSerial.print(states[suitID]);
+        // debugSerial.print(" to ");
+        // debugSerial.print(states[taggerID]);
+        // debugSerial.println(".");
         
         // store suitID before it's changed
         uint8_t tempSuitState = states[suitID];
@@ -297,13 +297,13 @@ void sendInstruction() {
         
         if (suitReceivedInstruction == true) {
           
-          debugSerial.print("Suit ");
-          debugSerial.print(taggerID);
-          debugSerial.print(" changed from ");
-          debugSerial.print(states[taggerID]);
-          debugSerial.print(" to ");
-          debugSerial.print(tempSuitState);
-          debugSerial.println(".");
+          // debugSerial.print("Suit ");
+          // debugSerial.print(taggerID);
+          // debugSerial.print(" changed from ");
+          // debugSerial.print(states[taggerID]);
+          // debugSerial.print(" to ");
+          // debugSerial.print(tempSuitState);
+          // debugSerial.println(".");
           
           states[taggerID] = tempSuitState;
 
@@ -347,11 +347,11 @@ void manualColourAssignment(uint8_t recepient, uint8_t colour) {
   
   if (suitReceivedInstruction == true) {
     
-    debugSerial.print("Suit ");
-    debugSerial.print(recepient);
-    debugSerial.print(" manually changed to ");
-    debugSerial.print(colour);
-    debugSerial.println(".");
+    // debugSerial.print("Suit ");
+    // debugSerial.print(recepient);
+    // debugSerial.print(" manually changed to ");
+    // debugSerial.print(colour);
+    // debugSerial.println(".");
     
     states[recepient] = colour;
     
@@ -374,33 +374,33 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
       xbee.getResponse().getTxStatusResponse(txStatus);
       
       if (txStatus.getStatus() == SUCCESS) {
-//        debugSerial.print(packetType);
-//        debugSerial.print(" sent successfully to suit ");
-//        debugSerial.print(recepient);
-//        debugSerial.print(" on attempt ");
-//        debugSerial.print(attempt);
-//        debugSerial.println(".");
+//        // debugSerial.print(packetType);
+//        // debugSerial.print(" sent successfully to suit ");
+//        // debugSerial.print(recepient);
+//        // debugSerial.print(" on attempt ");
+//        // debugSerial.print(attempt);
+//        // debugSerial.println(".");
         
         suitReceivedInstruction = true;
       }
     } else {
-//        debugSerial.print(packetType);
-//        debugSerial.print(" sent unsuccessfully to suit ");
-//        debugSerial.print(recepient);
-//        debugSerial.print(" on attempt ");
-//        debugSerial.print(attempt);
-//        debugSerial.println(".");
+//        // debugSerial.print(packetType);
+//        // debugSerial.print(" sent unsuccessfully to suit ");
+//        // debugSerial.print(recepient);
+//        // debugSerial.print(" on attempt ");
+//        // debugSerial.print(attempt);
+//        // debugSerial.println(".");
     }
   } else if (xbee.getResponse().isError()) {
-    debugSerial.println("Error reading packet: ");
-    debugSerial.println(xbee.getResponse().getErrorCode());
+    // debugSerial.println("Error reading packet: ");
+    // debugSerial.println(xbee.getResponse().getErrorCode());
   } else {
-//      debugSerial.print(packetType);
-//      debugSerial.print(" message to suit ");
-//      debugSerial.print(recepient);
-//      debugSerial.print(" timed out on attempt ");
-//      debugSerial.print(attempt);
-//      debugSerial.println(".");
+//      // debugSerial.print(packetType);
+//      // debugSerial.print(" message to suit ");
+//      // debugSerial.print(recepient);
+//      // debugSerial.print(" timed out on attempt ");
+//      // debugSerial.print(attempt);
+//      // debugSerial.println(".");
   }
 }
 
@@ -429,15 +429,63 @@ void confirmPingDelivery() {
 
 
 // ---------------------------------------------------------//
+// ---------- Send information to Rick's structure ---------//
+// ---------------------------------------------------------//
+void sendToStructure() {
+  if (millis() - structureMillis > 3000) {
+    structureMillis = millis();
+    
+    address = structureAddress;
+    
+    payload[0] = states[0];
+    payload[1] = states[1];
+    payload[2] = states[2];
+    payload[3] = states[3];
+    payload[4] = states[4];
+    payload[5] = states[5];
+    payload[6] = states[6];
+    payload[7] = states[7];
+    payload[8] = states[8];
+    payload[9] = states[9];
+    
+    tx = Tx16Request(address, payload, packetSize);
+    
+    // first attempt
+    xbee.send(tx);
+    confirmDelivery(77, 1, structureAddress);
+    
+    // second attempt
+    if (suitReceivedInstruction == false) {
+      xbee.send(tx);
+      confirmDelivery(77, 2, structureAddress);
+    }
+    
+    // third attempt
+    if (suitReceivedInstruction == false) {
+      xbee.send(tx);
+      confirmDelivery(77, 3, structureAddress);
+    }
+  }
+}
+
+
+// ---------------------------------------------------------//
+// ---------- Send information to Rick's structure ---------//
+// ---------------------------------------------------------//
+void sendEventToStructure() {
+  
+}
+
+// ---------------------------------------------------------//
 // ----  Print out the values in the outgoing payload  -----//
 // ---------------------------------------------------------//
 void printOutArray(uint8_t message[]) {
-  debugSerial.print("{");
+  // debugSerial.print("{");
   for(int i = 0; i < sizeof(message); i++) {
-    debugSerial.print(message[i]);
+    // debugSerial.print(message[i]);
     if(i != sizeof(message) - 1) {
-      debugSerial.print(", ");
+      // debugSerial.print(", ");
     }
   }
-  debugSerial.println("} was transmitted via XBee.");
+  // debugSerial.println("} was transmitted via XBee.");
 }

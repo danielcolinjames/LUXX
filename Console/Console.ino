@@ -18,6 +18,8 @@ boolean activeSuits[] = { false, false, false, false, false,
 uint16_t addresses[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5,
   0x6, 0x7, 0x8, 0x9 };
 
+uint16_t structureAddress = 0x15;
+
 boolean responseReceived[] = { false, false, false, false, false,
   false, false, false, false, false };
 
@@ -66,6 +68,8 @@ int fiveMinutes = 300000;
 long outputMillis = 0;
 int outputInterval = 1000;
 
+long structureMillis = 0;
+
 boolean listeningBoolean = true;
 uint8_t stateReport;
 
@@ -75,7 +79,8 @@ long statePrintMillis = 0;
 // ---------------------------------------------------------//
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
-SoftwareSerial debugSerial (9, 8); //rx, tx
+
+//SoftwareSerial debugSerial (9, 8); //rx, tx
 SoftwareSerial interfaceSerial(7, 6); // rx, tx
 
 XBee xbee = XBee();
@@ -96,14 +101,10 @@ void setup() {
   
   xbee.setSerial(Serial);
   
-  debugSerial.begin(9600);
-  debugSerial.println("Starting...");
+  // debugSerial.begin(9600);
+  // debugSerial.println("Starting...");
   
   interfaceSerial.begin(9600);
-  
-  delay(10);
-  
-  gameMode = 1;
   
   // necessary for randomization in colour selection
   randomSeed(analogRead(5));
@@ -119,7 +120,7 @@ void loop() {
   lookForMessages();
   gameStateCheck();
   listenToInterface();
- // printOutStates();
+//  sendToStructure();
 }
 
 
