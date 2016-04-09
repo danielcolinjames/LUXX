@@ -14,9 +14,12 @@ uint8_t states[] = { 80, 80, 80, 80, 80,
 // since there's a good chance we won't have 10 people in each game
 boolean activeSuits[] = { false, false, false, false, false,
   false, false, false, false, false };
-  
+
 uint16_t addresses[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5,
   0x6, 0x7, 0x8, 0x9 };
+
+boolean responseReceived[] = { false, false, false, false, false,
+  false, false, false, false, false };
 
 
 // ---------------------------------------------------------//
@@ -32,7 +35,6 @@ uint8_t positiveResponseByte = 97;
 uint8_t negativeResponseByte = 96;
 uint8_t gameOverByte = 95;
 uint8_t manualChangeByte = 94;
-
 
 // ---------------------------------------------------------//
 // -------------------  Global variables  ------------------//
@@ -53,6 +55,7 @@ uint8_t warmColour;
 uint8_t coolColour;
 
 boolean suitReceivedInstruction;
+boolean suitReceivedPing;
 
 long stateMillis = 0;
 int stateCheckInterval = 1000;
@@ -98,16 +101,15 @@ void setup() {
   
   interfaceSerial.begin(9600);
   
-  delay(10);
-  
-  gameMode = 2;
-  
   // necessary for randomization in colour selection
   randomSeed(analogRead(5));
-  
+
+  delay(1000);
+
+  gameMode = 2;
   startGame();
   
-  delay(1000);
+  //waitForReset();
 }
 
 
@@ -118,7 +120,6 @@ void loop() {
   lookForMessages();
 //  gameStateCheck();
 //  listenToInterface();
-//  printOutStates();
 }
 
 

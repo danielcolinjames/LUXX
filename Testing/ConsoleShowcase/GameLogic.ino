@@ -19,8 +19,6 @@ void pingSuits() {
   debugSerial.println("Pinging suits...");
   
   for (int i = 0; i < 10; i++) {
-
-    delay(100);
     
     suitID = i;
     
@@ -34,29 +32,39 @@ void pingSuits() {
     
     // first attempt
     xbee.send(tx);
-    confirmDelivery(pingByte, 1, suitID);
+    confirmPingDelivery();
     
     // second attempt
-    if (suitReceivedInstruction == false) {
+    if (suitReceivedPing == false) {
       xbee.send(tx);
-      confirmDelivery(pingByte, 2, suitID);
+      confirmPingDelivery();
     }
     
     // third attempt
-    if (suitReceivedInstruction == false) {
+    if (suitReceivedPing == false) {
       xbee.send(tx);
-      confirmDelivery(pingByte, 3, suitID);
+      confirmPingDelivery();
     }
     
-    // the suit got the message, do the following
-    if (suitReceivedInstruction == true) {
+    // fourth attempt
+    if (suitReceivedPing == false) {
+      xbee.send(tx);
+      confirmPingDelivery();
+    }
+    
+    // if the suit got the message, make sure it's the right suit
+    
+    if (suitReceivedPing == true) {
+      
+      debugSerial.println("Suit received instruction.");
+      
       numberOfActiveSuits++;
       activeSuits[suitID] = true;
       
-      // tells the console that these suits are white
+      // tells the console that this suit is on and white
       stateReport = (suitID * 10) + 1;
       sendToInterface(stateReport);
-
+      
       states[suitID] = 81;
       
       debugSerial.print("Suit ");
@@ -67,8 +75,18 @@ void pingSuits() {
     else {
       activeSuits[suitID] = false;
       states[suitID] = 80;
+      
+      // tells the console that these suits are off
+      stateReport = (suitID * 10);
+      sendToInterface(stateReport);
     }
+    // wait a little bit between suits
+    delay(100);
   }
+  
+  // a little longer than the max delay after a suit receives a ping
+  // so suit 9 doesn't miss its initialization command
+  delay(600);
 }
 
 
@@ -81,11 +99,7 @@ void assignStartingColours() {
   // randomNum = a number from 1 - 4
   uint8_t randomNum = random(1, 5);
   
-  debugSerial.println();
-  debugSerial.print("Random number: ");
-  debugSerial.println(randomNum);
-  
-  // multiply this number by 2, to get one of: (2, 4, 6, 8)
+  // multiply this number by 2, to get 2, 4, 6 or 8
   randomNum *= 2;
   
   // add 80 to make it a colour code
@@ -181,12 +195,12 @@ void sendStartingColours() {
   
   for (int i = 0; i < 10; i++) {
     
-    delay(100);
-    debugSerial.print("Sending to suit ");
-    debugSerial.println(i);
     suitID = i;
     
     if (activeSuits[suitID] == true) {
+      
+      debugSerial.print("Sending to suit ");
+      debugSerial.println(i);
       
       address = addresses[suitID];
       
@@ -225,6 +239,7 @@ void sendStartingColours() {
       sendToInterface(stateReport);
     }
   }
+  delay(10);
 }
 
 
@@ -232,9 +247,9 @@ void sendStartingColours() {
 // -----------   Tell each suit the game is over   ---------//
 // ---------------------------------------------------------//
 void sendGameOver() {
+  debugSerial.println("Sending game over...");
+  
   for (int i = 0; i < 10; i++) {
-
-    delay(100);
     
     suitID = i;
     
@@ -279,15 +294,18 @@ void sendGameOver() {
       // if it has gotten the message, set it as inactive
       if (suitReceivedInstruction == true) {
         activeSuits[suitID] = false;
+        
+        // tells the interface this suit is blinking white again
+        stateReport = (suitID * 10) + 1;
+        sendToInterface(stateReport);
+        delay(10);
       }
       else {
         // if it doesn't get the message, it's still active
         activeSuits[suitID] = true;
       }
     }
-    // sends a colour change report from 0 - 99 to the interface
-    stateReport = (suitID * 10) + (states[suitID] - 80);
-    sendToInterface(stateReport);
+    
   }
 }
 
@@ -303,7 +321,7 @@ void gameStateCheck() {
    *    1 = viral tag split
    *    2 = traditional tag
    */
-   
+  
   if ((millis() - stateMillis) > stateCheckInterval) {
     
     stateMillis = millis();
@@ -329,7 +347,7 @@ void gameStateCheck() {
       // if there's only one suit left that's cool (uninfected), check the state quicker
       if (numberOfWarmSuits == (numberOfActiveSuits - 1)) {
         stateCheckInterval = 10;
-        outputInterval = 10;
+        outputInterval = 1000;
       }
       else {
         stateCheckInterval = 1000;
@@ -361,8 +379,18 @@ void gameStateCheck() {
         outputInterval = 1500;
       }
       
+      // all the suits are inactive
+      if (numberOfActiveSuits == 0) {
+        debugSerial.println();
+        debugSerial.println("Game over: no suits are active.");
+
+        stateReport = 111;
+        sendToInterface(stateReport);
+        waitForReset();
+      }
+      
       // all the suits are cool colours
-      if (numberOfCoolSuits == numberOfActiveSuits) {
+      else if (numberOfCoolSuits == numberOfActiveSuits) {
         debugSerial.println();
         debugSerial.println("Game over: everyone is a cool colour.");
 
