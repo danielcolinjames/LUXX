@@ -60,31 +60,25 @@ void waitForStartCommand() {
       }
     }
     
-    if (millis() - waitingForStartMillis > 3000) {
+    if (millis() - waitingForStartMillis > 1000) {
       waitingForStartMillis = millis();
       
-      if (sentConfused == false) {
-        payload[0] = confusedByte;
-        payload[1] = suitID;
-        
-        Tx16Request tx = Tx16Request(address, payload, 2);
-        
+      payload[0] = confusedByte;
+      payload[1] = suitID;
+      
+      Tx16Request tx = Tx16Request(address, payload, 2);
+      
+      xbee.send(tx);
+      confirmDelivery(confusedByte, 1);
+      
+      if (messageReceived == false) {
         xbee.send(tx);
-        confirmDelivery(confusedByte, 1);
-        
-        if (messageReceived == false) {
-          xbee.send(tx);
-          confirmDelivery(confusedByte, 2);
-        }
-        
-        if (messageReceived == false) {
-          xbee.send(tx);
-          confirmDelivery(confusedByte, 3);
-        }
-        
-        if (messageReceived == true) {
-          sentConfused = true;
-        }
+        confirmDelivery(confusedByte, 2);
+      }
+      
+      if (messageReceived == false) {
+        xbee.send(tx);
+        confirmDelivery(confusedByte, 3);
       }
     }
   }

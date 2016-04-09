@@ -13,7 +13,7 @@
 #define NUMPIXELSONE 9
 #define NUMPIXELSTWO 9
 
-uint8_t suitID = 3;
+uint8_t suitID = 7;
 
 byte keyTag[NUMBER_OF_CARDS][5] = {
   {114, 0, 95, 44, 9},        // Tag 0
@@ -154,7 +154,7 @@ void setup() {
   Serial.begin(9600);
   xbee.setSerial(Serial);
   
-  debugSerial.begin(9600);
+  // debugSerial.begin(9600);
   // debugSerial.println("Starting debugger from suit...");  
   
   pixelsOne.begin();
