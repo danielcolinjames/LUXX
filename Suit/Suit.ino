@@ -159,14 +159,10 @@ void setup() {
   
   pixelsOne.begin();
   pixelsTwo.begin();
-
+  
   pixelsOne.setBrightness(75);
   pixelsTwo.setBrightness(75);
-
-  rVal = 255;
-  gVal = 255;
-  bVal = 255;
-
+  
   waitForStartCommand();
 }
 

@@ -3,7 +3,7 @@
 // ---------------------------------------------------------//
 void waitForStartCommand() {
   boolean waiting = true;
-  boolean sentConfused = false;
+  setColour(80);
   
   while (waiting == true) {
     
@@ -69,48 +69,7 @@ void waitForStartCommand() {
       Tx16Request tx = Tx16Request(address, payload, 2);
       
       xbee.send(tx);
-      confirmDelivery(confusedByte, 1);
-      
-      if (messageReceived == false) {
-        xbee.send(tx);
-        confirmDelivery(confusedByte, 2);
-      }
-      
-      if (messageReceived == false) {
-        xbee.send(tx);
-        confirmDelivery(confusedByte, 3);
-      }
     }
-  }
-}
-
-
-// ---------------------------------------------------------//
-// ---------  Tells the console this suit is active  -------//
-// ---------------------------------------------------------//
-void sendPingResponse() {
-  
-  payload[0] = pingByte;
-  payload[1] = suitID;
-  
-  packetSize = 2;
-  
-  Tx16Request tx = Tx16Request(address, payload, packetSize);
-  
-  xbee.send(tx);
-  confirmPingDelivery();
-  
-  if (pingReceived == false) {
-    xbee.send(tx);
-    confirmPingDelivery();
-  }
-  
-  if (pingReceived == false) {
-    xbee.send(tx);
-    confirmPingDelivery();
-  }
-  if (pingReceived == false) {
-    xbee.send(tx);
   }
 }
 
@@ -199,6 +158,20 @@ void lookForInstruction() {
           gameOver();
         }
         
+        // game start command, next byte in payload is
+        // going to be the starting colour
+        else if (packetType == gameStartByte) {
+        
+          uint8_t colour = rx16.getData(1);
+          // debugSerial.print("Starting colour received: ");
+          // debugSerial.print(colour);
+          // debugSerial.println(".");
+          
+          setColour(colour);
+          activateSuit(rVal, gVal, bVal);
+          delay(2000);
+        }
+        
         // manual colour change message detected
         else if (packetType == manualChangeByte) {
           instruction = rx16.getData(1);
@@ -257,6 +230,20 @@ void lookForMessages() {
         digitalWrite(rfiduino.led2, LOW); // green off
         
         gameOver();
+      }
+      
+      // game start command, next byte in payload is
+      // going to be the starting colour
+      else if (packetType == gameStartByte) {
+        
+        uint8_t colour = rx16.getData(1);
+        // debugSerial.print("Starting colour received: ");
+        // debugSerial.print(colour);
+        // debugSerial.println(".");
+        
+        setColour(colour);
+        activateSuit(rVal, gVal, bVal);
+        delay(2000);
       }
       
       else if (packetType == manualChangeByte) {
