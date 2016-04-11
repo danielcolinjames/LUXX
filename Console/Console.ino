@@ -4,6 +4,19 @@
 #include <SoftwareSerial.h>
 
 
+int gameModeOneButtonPin = 7;
+int gameModeOneButtonState = 0;
+
+int gameModeTwoButtonPin = 7;
+int gameModeTwoButtonState = 0;
+
+int gameModeThreeButtonPin = 7;
+int gameModeThreeButtonState = 0;
+
+int gameOverButtonPin = 7;
+int gameOverButtonState = 0;
+
+
 // ---------------------------------------------------------//
 // --------------------  Global arrays ---------------------//
 // ---------------------------------------------------------//
@@ -36,7 +49,9 @@ uint8_t gameStartByte = 98;
 uint8_t positiveResponseByte = 97;
 uint8_t negativeResponseByte = 96;
 uint8_t gameOverByte = 95;
+
 uint8_t manualChangeByte = 94;
+
 
 // ---------------------------------------------------------//
 // -------------------  Global variables  ------------------//
@@ -70,7 +85,7 @@ int outputInterval = 1000;
 
 long structureMillis = 0;
 
-boolean listeningBoolean = true;
+boolean reset = false;
 uint8_t stateReport;
 
 long statePrintMillis = 0;
@@ -79,9 +94,8 @@ long statePrintMillis = 0;
 // ---------------------------------------------------------//
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
-
 //SoftwareSerial debugSerial (9, 8); //rx, tx
-SoftwareSerial interfaceSerial(7, 6); // rx, tx
+SoftwareSerial interfaceSerial(4, 3); // rx, tx
 
 XBee xbee = XBee();
 
@@ -106,6 +120,8 @@ void setup() {
   
   interfaceSerial.begin(9600);
   
+  digitalWrite(gameModeOneButtonPin, HIGH);
+  
   // necessary for randomization in colour selection
   randomSeed(analogRead(5));
   
@@ -117,10 +133,9 @@ void setup() {
 // -------------------------  Loop  ------------------------//
 // ---------------------------------------------------------//
 void loop() {
+  checkButtons();
   lookForMessages();
   gameStateCheck();
-  listenToInterface();
-//  sendToStructure();
 }
 
 

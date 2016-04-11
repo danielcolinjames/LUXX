@@ -18,6 +18,8 @@ void pingSuits() {
   
   // debugSerial.println("Pinging suits...");
   
+  delay(1000);
+  
   for (int i = 0; i < 10; i++) {
     
     suitID = i;
