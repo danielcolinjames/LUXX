@@ -165,6 +165,8 @@ void sendInstruction() {
         
         // if the message was received, do this
         if (suitReceivedInstruction == true) {
+
+          sendEventToStructure(suitID, states[taggerID]);
           
           // debugSerial.print("Suit ");
           // debugSerial.print(suitID);
@@ -212,6 +214,8 @@ void sendInstruction() {
       // if the message was received, do this
       if (suitReceivedInstruction == true) {
         
+        sendEventToStructure(suitID, states[taggerID]);
+        
         // debugSerial.print("Suit ");
         // debugSerial.print(suitID);
         // debugSerial.print(" changed from ");
@@ -255,6 +259,8 @@ void sendInstruction() {
       }
       
       if (suitReceivedInstruction == true) {
+        
+        sendEventToStructure(suitID, states[taggerID]);
         
         // debugSerial.print("Suit ");
         // debugSerial.print(suitID);
@@ -429,51 +435,33 @@ void confirmPingDelivery() {
 
 
 // ---------------------------------------------------------//
-// ---------- Send information to Rick's structure ---------//
+// ------ Send information to Rick and Anas' structure -----//
 // ---------------------------------------------------------//
-void sendToStructure() {
-  if (millis() - structureMillis > 3000) {
-    structureMillis = millis();
-    
-    address = structureAddress;
-    
-    payload[0] = states[0];
-    payload[1] = states[1];
-    payload[2] = states[2];
-    payload[3] = states[3];
-    payload[4] = states[4];
-    payload[5] = states[5];
-    payload[6] = states[6];
-    payload[7] = states[7];
-    payload[8] = states[8];
-    payload[9] = states[9];
-    
-    tx = Tx16Request(address, payload, packetSize);
-    
-    // first attempt
-    xbee.send(tx);
-    confirmDelivery(77, 1, structureAddress);
-    
-    // second attempt
-    if (suitReceivedInstruction == false) {
-      xbee.send(tx);
-      confirmDelivery(77, 2, structureAddress);
-    }
-    
-    // third attempt
-    if (suitReceivedInstruction == false) {
-      xbee.send(tx);
-      confirmDelivery(77, 3, structureAddress);
-    }
-  }
-}
-
-
-// ---------------------------------------------------------//
-// ---------- Send information to Rick's structure ---------//
-// ---------------------------------------------------------//
-void sendEventToStructure() {
+void sendEventToStructure(uint8_t taggedPlayer, uint8_t newColour) {
+  address = structureAddress;
+  payload[0] = structureTagPacket;
+  payload[1] = taggedPlayer;
+  payload[2] = newColour;
   
+  packetSize = 3;
+  
+  tx = Tx16Request(address, payload, packetSize);
+  
+  // first attempt
+  xbee.send(tx);
+  confirmDelivery(structureTagPacket, 1, 15);
+  
+  // second attempt
+  if (suitReceivedInstruction == false) {
+    xbee.send(tx);
+    confirmDelivery(structureTagPacket, 2, 15);
+  }
+  
+  // third attempt
+  if (suitReceivedInstruction == false) {
+    xbee.send(tx);
+    confirmDelivery(structureTagPacket, 3, 15);
+  }
 }
 
 // ---------------------------------------------------------//

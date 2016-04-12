@@ -4,6 +4,7 @@
 void startGame() {
   pingSuits();
   assignStartingColours();
+  sendStatesToStructure();
   sendStartingColours();
   printOutStates();
 }
@@ -186,6 +187,46 @@ void assignStartingColours() {
 }
 
 
+// ---------------------------------------------------------//
+// ----------- Send a start packet to the structure --------//
+// ---------------------------------------------------------//
+void sendStatesToStructure() {
+  
+  address = structureAddress;
+  payload[0] = structureGameStartPacket;
+  
+  payload[1] = states[0];
+  payload[2] = states[1];
+  payload[3] = states[2];
+  payload[4] = states[3];
+  payload[5] = states[4];
+  payload[6] = states[5];
+  payload[7] = states[6];
+  payload[8] = states[7];
+  payload[9] = states[8];
+  payload[10] = states[9];
+  
+  packetSize = 11;
+  
+  tx = Tx16Request(address, payload, packetSize);
+  
+  // first attempt
+  xbee.send(tx);
+  confirmDelivery(structureGameStartPacket, 1, 15);
+  
+  // second attempt
+  if (suitReceivedInstruction == false) {
+    xbee.send(tx);
+    confirmDelivery(structureGameStartPacket, 2, 15);
+  }
+  
+  // third attempt
+  if (suitReceivedInstruction == false) {
+    xbee.send(tx);
+    confirmDelivery(structureGameStartPacket, 3, 15);
+  }
+}
+  
 // ---------------------------------------------------------//
 // -------- Tell each suit which colour it starts as  ------//
 // ---------------------------------------------------------//

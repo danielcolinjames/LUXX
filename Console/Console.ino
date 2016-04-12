@@ -52,6 +52,10 @@ uint8_t gameOverByte = 95;
 
 uint8_t manualChangeByte = 94;
 
+uint8_t structureTagPacket = 79;
+uint8_t structureGameStartPacket = 78;
+uint8_t structureGameOverPacket = 77;
+
 
 // ---------------------------------------------------------//
 // -------------------  Global variables  ------------------//
