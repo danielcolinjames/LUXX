@@ -129,7 +129,9 @@ void setup() {
   // necessary for randomization in colour selection
   randomSeed(analogRead(5));
   
-  waitForReset();
+//  waitForReset();
+  gameMode = 2;
+  startGame();
 }
 
 
@@ -137,9 +139,9 @@ void setup() {
 // -------------------------  Loop  ------------------------//
 // ---------------------------------------------------------//
 void loop() {
-  checkButtons();
+//  checkButtons();
   lookForMessages();
-  gameStateCheck();
+//  gameStateCheck();
 }
 
 
