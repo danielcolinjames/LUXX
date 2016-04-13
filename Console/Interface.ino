@@ -69,7 +69,7 @@ void waitForReset() {
 // ---------------- Send a message into Max ----------------//
 // ---------------------------------------------------------//
 void sendToInterface(uint8_t value) {  
-  interfaceSerial.write(value);
+  //interfaceSerial.write(value);
 }
 
 

@@ -4,7 +4,7 @@
 void startGame() {
   pingSuits();
   assignStartingColours();
-  sendStatesToStructure();
+  // sendStatesToStructure();
   sendStartingColours();
   printOutStates();
 }

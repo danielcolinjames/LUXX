@@ -438,30 +438,30 @@ void confirmPingDelivery() {
 // ------ Send information to Rick and Anas' structure -----//
 // ---------------------------------------------------------//
 void sendEventToStructure(uint8_t taggedPlayer, uint8_t newColour) {
-  address = structureAddress;
-  payload[0] = structureTagPacket;
-  payload[1] = taggedPlayer;
-  payload[2] = newColour;
-  
-  packetSize = 3;
-  
-  tx = Tx16Request(address, payload, packetSize);
-  
-  // first attempt
-  xbee.send(tx);
-  confirmDelivery(structureTagPacket, 1, 15);
-  
-  // second attempt
-  if (suitReceivedInstruction == false) {
-    xbee.send(tx);
-    confirmDelivery(structureTagPacket, 2, 15);
-  }
-  
-  // third attempt
-  if (suitReceivedInstruction == false) {
-    xbee.send(tx);
-    confirmDelivery(structureTagPacket, 3, 15);
-  }
+//  address = structureAddress;
+//  payload[0] = structureTagPacket;
+//  payload[1] = taggedPlayer;
+//  payload[2] = newColour;
+//  
+//  packetSize = 3;
+//  
+//  tx = Tx16Request(address, payload, packetSize);
+//  
+//  // first attempt
+//  xbee.send(tx);
+//  confirmDelivery(structureTagPacket, 1, 15);
+//  
+//  // second attempt
+//  if (suitReceivedInstruction == false) {
+//    xbee.send(tx);
+//    confirmDelivery(structureTagPacket, 2, 15);
+//  }
+//  
+//  // third attempt
+//  if (suitReceivedInstruction == false) {
+//    xbee.send(tx);
+//    confirmDelivery(structureTagPacket, 3, 15);
+//  }
 }
 
 // ---------------------------------------------------------//
