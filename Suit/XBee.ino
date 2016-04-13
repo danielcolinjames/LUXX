@@ -3,9 +3,21 @@
 // ---------------------------------------------------------//
 void waitForStartCommand() {
   boolean waiting = true;
-  setColour(80);
+  setColour(81);
+  activateSuit(rVal, gVal, bVal);
   
   while (waiting == true) {
+    
+    if (millis() - waitingForStartMillis > 3000) {
+      waitingForStartMillis = millis();
+      
+      payload[0] = confusedByte;
+      payload[1] = suitID;
+      
+      Tx16Request tx = Tx16Request(address, payload, 2);
+      
+      xbee.send(tx);
+    }
     
     stepThroughLights();
     
@@ -58,17 +70,6 @@ void waitForStartCommand() {
           // debugSerial.println(instruction);
         }
       }
-    }
-    
-    if (millis() - waitingForStartMillis > 1000) {
-      waitingForStartMillis = millis();
-      
-      payload[0] = confusedByte;
-      payload[1] = suitID;
-      
-      Tx16Request tx = Tx16Request(address, payload, 2);
-      
-      xbee.send(tx);
     }
   }
 }
@@ -148,28 +149,12 @@ void lookForInstruction() {
           rfiduino.successSound();
           delay(5000);
           
-          rVal = 255;
-          gVal = 255;
-          bVal = 255;
+          setColour(81);
           
           digitalWrite(rfiduino.led1, LOW); // red off
           digitalWrite(rfiduino.led2, LOW); // green off
           
           gameOver();
-        }
-        
-        // game start command, next byte in payload is
-        // going to be the starting colour
-        else if (packetType == gameStartByte) {
-        
-          uint8_t colour = rx16.getData(1);
-          // debugSerial.print("Starting colour received: ");
-          // debugSerial.print(colour);
-          // debugSerial.println(".");
-          
-          setColour(colour);
-          activateSuit(rVal, gVal, bVal);
-          delay(2000);
         }
         
         // manual colour change message detected
@@ -183,6 +168,7 @@ void lookForInstruction() {
           // debugSerial.println(instruction);
         }
       }
+      
       else {
         // if the message WAS 96
         changeColour(rVal, gVal, bVal);
@@ -222,14 +208,12 @@ void lookForMessages() {
         rfiduino.successSound();
         delay(5000);
         
-        rVal = 255;
-        gVal = 255;
-        bVal = 255;
+        setColour(81);
         
         digitalWrite(rfiduino.led1, LOW); // red off
         digitalWrite(rfiduino.led2, LOW); // green off
         
-        gameOver();
+        waitForStartCommand();
       }
       
       // game start command, next byte in payload is

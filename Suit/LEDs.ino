@@ -240,7 +240,7 @@ void setColour(int colour) {
     bVal = 0;
     digitalWrite(rfiduino.led1, LOW); // red off
     digitalWrite(rfiduino.led2, HIGH); // green on
-    // debugSerial.println("Changing suit colour to green.");
+    // debugSerial.println("Changing suit colour to light green.");
   }
   
   // White
@@ -248,9 +248,9 @@ void setColour(int colour) {
     rVal = 255;
     gVal = 255;
     bVal = 255;
-    digitalWrite(rfiduino.led1, LOW); // red off
+    digitalWrite(rfiduino.led1, HIGH); // red on
     digitalWrite(rfiduino.led2, HIGH); // green on
-    // debugSerial.println("Changing suit colour to green.");
+    // debugSerial.println("Changing suit colour to white.");
   }
   
   // Black
@@ -260,7 +260,7 @@ void setColour(int colour) {
     bVal = 0;
     digitalWrite(rfiduino.led2, LOW); // green off
     digitalWrite(rfiduino.led1, HIGH); // red on
-    // debugSerial.println("Changing suit colour to pink.");
+    // debugSerial.println("Changing suit colour to black.");
   }
 }
 
@@ -269,14 +269,14 @@ void setColour(int colour) {
 // -----  Activate the suit for the start of the game  -----//
 // ---------------------------------------------------------//
 void activateSuit(int r, int g, int b) {
-
+  
   for (int i = 0; i < NUMPIXELSONE; i++) {
     pixelsOne.setPixelColor(i, pixelsOne.Color(r, g, b));
     pixelsOne.show();
     
     pixelsTwo.setPixelColor(i, pixelsTwo.Color(r, g, b));
     pixelsTwo.show();
-
+    
     // if one strand has 1 pixel more than the other, it has to be
     // plugged into the second NeoPixel pin
     if (i == NUMPIXELSONE && NUMPIXELSTWO != NUMPIXELSONE) {
@@ -324,21 +324,31 @@ void changeColour(int r, int g, int b) {
 
 
 // ---------------------------------------------------------//
-// ------------------ Game over lights ---------------------//
+// ----------------------- Game over -----------------------//
 // ---------------------------------------------------------//
-void gameOverBeep() {
-  if ((millis() - gameOverMillis) > 1000) {
-    gameOverMillis = millis();
-
-    if (soundOff == true && soundOn == false) {
-      soundOn = true;
-      soundOff = false;
-      tone(rfiduino.buzzer, notes[8], 250);
-    }
-    else if (soundOn == true && soundOff == false) {
-      soundOff = true;
-      soundOn = false;
-      noTone(rfiduino.buzzer);
+void gameOver() {
+  boolean gameRestartDetected = false;
+  
+  while (gameRestartDetected == false) {
+    stepThroughLights();
+    
+    xbee.readPacket();
+    
+    if (xbee.getResponse().isAvailable()) {
+      // debugSerial.print("Packet found.");
+      if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
+        xbee.getResponse().getRx16Response(rx16);
+        
+        uint8_t packetType = rx16.getData(0);
+        
+        if (packetType == 98) {
+          gameRestartDetected = true;
+          uint8_t colour = rx16.getData(1);
+          
+          setColour(colour);
+          activateSuit(rVal, gVal, bVal);
+        }
+      }
     }
   }
 }

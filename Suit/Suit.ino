@@ -177,35 +177,3 @@ void loop() {
 }
 
 
-// ---------------------------------------------------------//
-// ----------------------- Game over -----------------------//
-// ---------------------------------------------------------//
-void gameOver() {
-  boolean gameRestartDetected = false;
-  // debugSerial.println("----- Game over until 98 received -----");
-  
-  while (gameRestartDetected == false) {
-    gameOverBeep();
-    stepThroughLights();
-    
-    xbee.readPacket();
-    
-    if (xbee.getResponse().isAvailable()) {
-      // debugSerial.print("Packet found.");
-      if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
-        xbee.getResponse().getRx16Response(rx16);
-        
-        uint8_t packetType = rx16.getData(0);
-        
-        if (packetType == 98) {
-          gameRestartDetected = true;
-          uint8_t colour = rx16.getData(1);
-          
-          setColour(colour);
-          activateSuit(rVal, gVal, bVal);
-        }
-      }
-    }
-  }
-}
-
