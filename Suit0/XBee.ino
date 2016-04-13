@@ -216,20 +216,6 @@ void lookForMessages() {
         waitForStartCommand();
       }
       
-      // game start command, next byte in payload is
-      // going to be the starting colour
-      else if (packetType == gameStartByte) {
-        
-        uint8_t colour = rx16.getData(1);
-        // debugSerial.print("Starting colour received: ");
-        // debugSerial.print(colour);
-        // debugSerial.println(".");
-        
-        setColour(colour);
-        activateSuit(rVal, gVal, bVal);
-        delay(2000);
-      }
-      
       else if (packetType == manualChangeByte) {
         instruction = rx16.getData(1);
         
