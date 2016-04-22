@@ -4,24 +4,31 @@
 #include <SoftwareSerial.h>
 
 
-int gameModeOneButtonPin = 7;
+int gameModeZeroButtonPin = 7;
+int gameModeZeroButtonState = 0;
+
+int gameModeOneButtonPin = 8;
 int gameModeOneButtonState = 0;
 
-int gameModeTwoButtonPin = 7;
+int gameModeTwoButtonPin = 11;
 int gameModeTwoButtonState = 0;
 
-int gameModeThreeButtonPin = 7;
+int gameModeThreeButtonPin = 10;
 int gameModeThreeButtonState = 0;
 
-int gameOverButtonPin = 7;
+int gameOverButtonPin = 9;
 int gameOverButtonState = 0;
+
+// temporarily swapped pins 9 and 11 because I don't 
+// have another button right now
 
 
 // ---------------------------------------------------------//
 // --------------------  Global arrays ---------------------//
 // ---------------------------------------------------------//
-uint8_t states[] = { 80, 80, 80, 80, 80,
-  80, 80, 80, 80, 80 };
+uint8_t states[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+uint8_t colours[] = { 80, 81, 82, 83, 84, 85, 86, 87, 88, 89 };
 
 // this is to keep track of which suits are active in each game
 // since there's a good chance we won't have 10 people in each game
@@ -32,9 +39,6 @@ uint16_t addresses[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5,
   0x6, 0x7, 0x8, 0x9 };
 
 uint16_t structureAddress = 0x15;
-
-boolean responseReceived[] = { false, false, false, false, false,
-  false, false, false, false, false };
 
 
 // ---------------------------------------------------------//
@@ -98,8 +102,8 @@ long statePrintMillis = 0;
 // ---------------------------------------------------------//
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
-//SoftwareSerial debugSerial (9, 8); //rx, tx
-SoftwareSerial interfaceSerial(4, 3); // rx, tx
+SoftwareSerial debugSerial (4, 3); //rx, tx
+SoftwareSerial interfaceSerial(13, 12); // rx, tx
 
 XBee xbee = XBee();
 
@@ -119,13 +123,17 @@ void setup() {
   
   xbee.setSerial(Serial);
   
-  // debugSerial.begin(9600);
-  // debugSerial.println("Starting...");
+  debugSerial.begin(9600);
+  debugSerial.println("Starting...");
   
   interfaceSerial.begin(9600);
   
+  digitalWrite(gameModeZeroButtonPin, HIGH);
   digitalWrite(gameModeOneButtonPin, HIGH);
-  
+  digitalWrite(gameModeTwoButtonPin, HIGH);
+  digitalWrite(gameModeThreeButtonPin, HIGH);
+  digitalWrite(gameOverButtonPin, HIGH);
+
   // necessary for randomization in colour selection
   randomSeed(analogRead(5));
   

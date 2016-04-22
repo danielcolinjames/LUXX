@@ -4,7 +4,7 @@
 void startGame() {
   pingSuits();
   assignStartingColours();
-  sendStatesToStructure();
+//  sendStatesToStructure();
   sendStartingColours();
   printOutStates();
 }
@@ -17,7 +17,7 @@ void pingSuits() {
   
   numberOfActiveSuits = 0;
   
-  // debugSerial.println("Pinging suits...");
+  debugSerial.println("Pinging suits...");
   
   delay(1000);
   
@@ -57,7 +57,7 @@ void pingSuits() {
     
     if (suitReceivedPing == true) {
       
-      // debugSerial.println("Suit received instruction.");
+      debugSerial.println("Suit received instruction.");
       
       numberOfActiveSuits++;
       activeSuits[suitID] = true;
@@ -68,9 +68,9 @@ void pingSuits() {
       
       states[suitID] = 81;
       
-      // debugSerial.print("Suit ");
-      // debugSerial.print(suitID);
-      // debugSerial.println(" is active.");
+      debugSerial.print("Suit ");
+      debugSerial.print(suitID);
+      debugSerial.println(" is active.");
     }
     
     else {
@@ -98,22 +98,22 @@ void assignStartingColours() {
   
   // min is inclusive, max is exclusive
   // randomNum = a number from 1 - 4
-  uint8_t randomNum = random(1, 5);
+  uint8_t randomNum = random(0, 5);
   
   // multiply this number by 2, to get 2, 4, 6 or 8
   randomNum *= 2;
   
   // add 80 to make it a colour code
-  coolColour = 80 + randomNum;
+  coolColour = colours[randomNum];
   
   // add 1 to get that colour's pair
-  warmColour = 80 + randomNum + 1;
+  warmColour = colours[randomNum + 1];
   
-  // debugSerial.print("Cool: ");
-  // debugSerial.println(coolColour);
-  // debugSerial.print("Warm: ");
-  // debugSerial.println(warmColour);
-  // debugSerial.println();
+  debugSerial.print("Cool: ");
+  debugSerial.println(coolColour);
+  debugSerial.print("Warm: ");
+  debugSerial.println(warmColour);
+  debugSerial.println();
   
   if (gameMode == 0) {
     
@@ -184,6 +184,20 @@ void assignStartingColours() {
       }
     }
   }
+  
+  else if (gameMode == 3) {
+    // Chaos Tag: everyone is a different colour
+    uint8_t counter = 0;
+    
+    for (int i = 0; i < 10; i++) {
+      
+      if (activeSuits[i] == true) {
+        counter++;
+        
+        states[i] = colours[counter - 1];
+      }
+    }
+  }
 }
 
 
@@ -232,7 +246,7 @@ void sendStatesToStructure() {
 // ---------------------------------------------------------//
 void sendStartingColours() {
   
-  // debugSerial.println("Initializing suits...");
+  debugSerial.println("Initializing suits...");
   
   for (int i = 0; i < 10; i++) {
     
@@ -240,8 +254,8 @@ void sendStartingColours() {
     
     if (activeSuits[suitID] == true) {
       
-      // debugSerial.print("Sending to suit ");
-      // debugSerial.println(i);
+      debugSerial.print("Sending to suit ");
+      debugSerial.println(i);
       
       address = addresses[suitID];
       
@@ -264,15 +278,30 @@ void sendStartingColours() {
       
       // third attempt
       if (suitReceivedInstruction == false) {
+        delay(100);
+        xbee.send(tx);
+        confirmDelivery(gameStartByte, 3, suitID);
+      }
+
+      // fourth attempt
+      if (suitReceivedInstruction == false) {
+        delay(200);
+        xbee.send(tx);
+        confirmDelivery(gameStartByte, 3, suitID);
+      }
+
+      // fifth attempt
+      if (suitReceivedInstruction == false) {
+        delay(300);
         xbee.send(tx);
         confirmDelivery(gameStartByte, 3, suitID);
       }
       
       // the suit got the message, do the following
       if (suitReceivedInstruction == true) {
-        // debugSerial.print("Suit ");
-        // debugSerial.print(suitID);
-        // debugSerial.println(" started.");
+        debugSerial.print("Suit ");
+        debugSerial.print(suitID);
+        debugSerial.println(" started.");
       }
       
       // sends a colour change report from 0 - 99 to the interface
@@ -288,7 +317,7 @@ void sendStartingColours() {
 // -----------   Tell each suit the game is over   ---------//
 // ---------------------------------------------------------//
 void sendGameOver() {
-  // debugSerial.println("Sending game over...");
+  debugSerial.println("Sending game over...");
   
   for (int i = 0; i < 10; i++) {
     
@@ -360,6 +389,7 @@ void gameStateCheck() {
    *    0 = viral tag original
    *    1 = viral tag split
    *    2 = traditional tag
+   *    3 = chaos tag
    */
   
   if ((millis() - stateMillis) > stateCheckInterval) {
@@ -369,15 +399,17 @@ void gameStateCheck() {
     numberOfActiveSuits = 0;
     numberOfCoolSuits = 0;
     numberOfWarmSuits = 0;
-    
-    for (int i = 0; i < 10; i++) {
-      if (activeSuits[i] == true) {
-        numberOfActiveSuits++;
-        if (states[i] % 2 == 0) {
-          numberOfCoolSuits++;
-        }
-        else if (states[i] % 2 != 0) {
-          numberOfWarmSuits++;
+
+    if (gameMode == 0 || gameMode == 1) {
+      for (int i = 0; i < 10; i++) {
+        if (activeSuits[i] == true) {
+          numberOfActiveSuits++;
+          if (states[i] % 2 == 0) {
+            numberOfCoolSuits++;
+          }
+          else if (states[i] % 2 != 0) {
+            numberOfWarmSuits++;
+          }
         }
       }
     }
@@ -396,8 +428,8 @@ void gameStateCheck() {
       
       // all the suits are warm (infected)
       if (numberOfWarmSuits == numberOfActiveSuits) {
-        // debugSerial.println();
-        // debugSerial.println("Game over: everyone is a warm colour.");
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is a warm colour.");
                 
         gameOver();
       }
@@ -421,8 +453,8 @@ void gameStateCheck() {
       
       // all the suits are inactive
       if (numberOfActiveSuits == 0) {
-        // debugSerial.println();
-        // debugSerial.println("Game over: no suits are active.");
+        debugSerial.println();
+        debugSerial.println("Game over: no suits are active.");
 
         stateReport = 111;
         sendToInterface(stateReport);
@@ -431,8 +463,8 @@ void gameStateCheck() {
       
       // all the suits are cool colours
       else if (numberOfCoolSuits == numberOfActiveSuits) {
-        // debugSerial.println();
-        // debugSerial.println("Game over: everyone is a cool colour.");
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is a cool colour.");
         
         stateReport = 110 + (coolColour - 80);
         sendToInterface(stateReport);
@@ -442,10 +474,201 @@ void gameStateCheck() {
       
       // all the suits are warm
       else if (numberOfWarmSuits == numberOfActiveSuits) {
-        // debugSerial.println();
-        // debugSerial.println("Game over: everyone is a warm colour.");
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is a warm colour.");
         
         stateReport = 110 + (warmColour - 80);
+        sendToInterface(stateReport);
+        delay(100);
+        gameOver();
+      }
+    }
+
+    // else if (gameMode == 2) {
+    // not sure what to do for traditional tag, but it's kind of boring anyway
+    
+    // Chaos Tag:
+    else if (gameMode == 3) {
+      
+      uint8_t numberOfSuits0 = 0;
+      uint8_t numberOfSuits1 = 0;
+      uint8_t numberOfSuits2 = 0;
+      uint8_t numberOfSuits3 = 0;
+      uint8_t numberOfSuits4 = 0;
+      uint8_t numberOfSuits5 = 0;
+      uint8_t numberOfSuits6 = 0;
+      uint8_t numberOfSuits7 = 0;
+      uint8_t numberOfSuits8 = 0;
+      uint8_t numberOfSuits9 = 0;
+
+      for (int i = 0; i < 10; i++) {
+        if (activeSuits[i] == true) {
+          numberOfActiveSuits++;
+          
+          if (states[i] == 80) {
+            numberOfSuits0++;
+          }
+          else if (states[i] == 81) {
+            numberOfSuits1++;
+          }
+          else if (states[i] == 82) {
+            numberOfSuits2++;
+          }
+          else if (states[i] == 83) {
+            numberOfSuits3++;
+          }
+          else if (states[i] == 84) {
+            numberOfSuits4++;
+          }
+          else if (states[i] == 85) {
+            numberOfSuits5++;
+          }
+          else if (states[i] == 86) {
+            numberOfSuits6++;
+          }
+          else if (states[i] == 87) {
+            numberOfSuits7++;
+          }
+          else if (states[i] == 88) {
+            numberOfSuits8++;
+          }
+          else if (states[i] == 89) {
+            numberOfSuits9++;
+          }
+        }
+      }
+      
+      // if there's only one suit left that's a different colour, check the state quicker
+      if (
+        numberOfSuits9 == (numberOfActiveSuits - 1) ||
+        numberOfSuits8 == (numberOfActiveSuits - 1) ||
+        numberOfSuits7 == (numberOfActiveSuits - 1) ||
+        numberOfSuits6 == (numberOfActiveSuits - 1) ||
+        numberOfSuits5 == (numberOfActiveSuits - 1) ||
+        numberOfSuits4 == (numberOfActiveSuits - 1) ||
+        numberOfSuits3 == (numberOfActiveSuits - 1) ||
+        numberOfSuits2 == (numberOfActiveSuits - 1) ||
+        numberOfSuits1 == (numberOfActiveSuits - 1) ||
+        numberOfSuits0 == (numberOfActiveSuits - 1)
+      ) {
+        
+        stateReport = 105;
+        sendToInterface(105);
+        
+        stateCheckInterval = 10;
+        outputInterval = 1000;
+      }
+      else {
+        stateCheckInterval = 1000;
+        outputInterval = 1500;
+      }
+      
+      // all the suits are inactive
+      if (numberOfActiveSuits == 0) {
+        debugSerial.println();
+        debugSerial.println("Game over: no suits are active.");
+        
+        stateReport = 120;
+        sendToInterface(stateReport);
+        waitForReset();
+      }
+      
+      // all the suits are orange
+      else if (numberOfSuits9 == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is orange.");
+        
+        stateReport = 119;
+        sendToInterface(stateReport);
+        delay(100);
+        gameOver();
+      }
+      // all the suits are blue
+      else if (numberOfSuits8 == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is blue.");
+        
+        stateReport = 118;
+        sendToInterface(stateReport);
+        delay(100);
+        gameOver();
+      }
+      // all the suits are light orange
+      else if (numberOfSuits7 == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is light orange.");
+        
+        stateReport = 117;
+        sendToInterface(stateReport);
+        delay(100);
+        gameOver();
+      }
+      // all the suits are turquoise
+      else if (numberOfSuits6 == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is turquoise.");
+        
+        stateReport = 116;
+        sendToInterface(stateReport);
+        delay(100);
+        gameOver();
+      }
+      // all the suits are red
+      else if (numberOfSuits5 == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is red.");
+        
+        stateReport = 115;
+        sendToInterface(stateReport);
+        delay(100);
+        gameOver();
+      }
+      // all the suits are green
+      else if (numberOfSuits4 == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is green.");
+        
+        stateReport = 114;
+        sendToInterface(stateReport);
+        delay(100);
+        gameOver();
+      }
+      // all the suits are pink
+      else if (numberOfSuits3 == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is pink.");
+        
+        stateReport = 113;
+        sendToInterface(stateReport);
+        delay(100);
+        gameOver();
+      }
+      // all the suits are light green
+      else if (numberOfSuits2 == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is light green.");
+        
+        stateReport = 112;
+        sendToInterface(stateReport);
+        delay(100);
+        gameOver();
+      }
+      // all the suits are yellow
+      else if (numberOfSuits1 == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is yellow.");
+        
+        stateReport = 111;
+        sendToInterface(stateReport);
+        delay(100);
+        gameOver();
+      }
+      // all the suits are purple
+      else if (numberOfSuits0 == numberOfActiveSuits) {
+        debugSerial.println();
+        debugSerial.println("Game over: everyone is purple.");
+        
+        stateReport = 110;
         sendToInterface(stateReport);
         delay(100);
         gameOver();
@@ -456,8 +679,8 @@ void gameStateCheck() {
     if (millis() - gameOverMillis > 600000) {
       gameOverMillis = millis();
       
-      // debugSerial.println();
-      // debugSerial.println("Game over: time limit reached.");
+      debugSerial.println();
+      debugSerial.println("Game over: time limit reached.");
       
       stateReport = 111;
       sendToInterface(stateReport);
@@ -469,9 +692,14 @@ void gameStateCheck() {
 
 
 // ---------------------------------------------------------//
-// ----------- Check to see if the game should end ---------//
+// ------- Call game over methods and reset buttons --------//
 // ---------------------------------------------------------//
 void gameOver() {
+  digitalWrite(gameModeZeroButtonPin, HIGH);
+  digitalWrite(gameModeOneButtonPin, HIGH);
+  digitalWrite(gameModeTwoButtonPin, HIGH);
+  digitalWrite(gameModeThreeButtonPin, HIGH);
+  digitalWrite(gameOverButtonPin, HIGH);
   sendGameOver();
   waitForReset();
 }
@@ -481,19 +709,18 @@ void gameOver() {
 // ----------   Prints out the state of each suit  ---------//
 // ---------------------------------------------------------//
 void printOutStates() {
-  if (millis() - statePrintMillis > 5000) {
-    statePrintMillis = millis();
-    
-    // debugSerial.println();
-    // debugSerial.println("GAME STATE: ");
-    
-    for (int i = 0; i < 10; i++) {
-      if (activeSuits[i] == true) {
-        // debugSerial.print("Suit ");
-        // debugSerial.print(i);
-        // debugSerial.print(" = ");
-        // debugSerial.println(states[i]);
-      }
+  
+  debugSerial.println();
+  debugSerial.print("GAME STATE: (Game Mode ");
+  debugSerial.print(gameMode);
+  debugSerial.println(")");
+  
+  for (int i = 0; i < 10; i++) {
+    if (activeSuits[i] == true) {
+      debugSerial.print("Suit ");
+      debugSerial.print(i);
+      debugSerial.print(" = ");
+      debugSerial.println(states[i]);
     }
   }
 }
