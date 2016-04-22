@@ -160,10 +160,10 @@ void setup() {
   pixelsOne.begin();
   pixelsTwo.begin();
   
-  pixelsOne.setBrightness(75);
-  pixelsTwo.setBrightness(75);
+  pixelsOne.setBrightness(115);
+  pixelsTwo.setBrightness(115);
   
-  waitForStartCommand();
+  gameOver();
 }
 
 
