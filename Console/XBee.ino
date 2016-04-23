@@ -97,22 +97,22 @@ void sendInstruction() {
       payload[0] = negativeResponseByte;
       packetSize = 1;
       
-      tx = Tx16Request(address, payload, packetSize);
-
+      tx = Tx16Request();
+      
       // first attempt
       xbee.send(tx);
-      confirmDelivery(negativeResponseByte, 1, suitID);
+      confirmDelivery();
      
       // second attempt
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
-        confirmDelivery(negativeResponseByte, 2, suitID);
+        confirmDelivery();
       }
 
       // third attempt
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
-        confirmDelivery(negativeResponseByte, 3, suitID);
+        confirmDelivery();
       }
 
       // if the suit got the message, we don't need to do anything,
@@ -146,22 +146,22 @@ void sendInstruction() {
         payload[1] = states[taggerID];
         packetSize = 2;
         
-        tx = Tx16Request(address, payload, packetSize);
+        tx = Tx16Request();
         
         // first attempt
         xbee.send(tx);
-        confirmDelivery(positiveResponseByte, 1, suitID);
+        confirmDelivery();
 
         // second attempt
         if (suitReceivedInstruction == false) {
           xbee.send(tx);
-          confirmDelivery(positiveResponseByte, 2, suitID);
+          confirmDelivery();
         }
         
         // third attempt
         if (suitReceivedInstruction == false) {
           xbee.send(tx);
-          confirmDelivery(positiveResponseByte, 3, suitID);
+          confirmDelivery();
         }
         
         // if the message was received, do this
@@ -197,19 +197,19 @@ void sendInstruction() {
       payload[1] = states[taggerID];
       packetSize = 2;
       
-      tx = Tx16Request(address, payload, packetSize);
+      tx = Tx16Request();
       
       xbee.send(tx);
-      confirmDelivery(positiveResponseByte, 1, suitID);
+      confirmDelivery();
       
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
-        confirmDelivery(positiveResponseByte, 2, suitID);
+        confirmDelivery();
       }
       
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
-        confirmDelivery(positiveResponseByte, 3, suitID);
+        confirmDelivery();
       }
       
       // if the message was received, do this
@@ -249,16 +249,16 @@ void sendInstruction() {
         tx = Tx16Request(address, payload, packetSize);
         
         xbee.send(tx);
-        confirmDelivery(positiveResponseByte, 1, suitID);
+        confirmDelivery();
         
         if (suitReceivedInstruction == false) {
           xbee.send(tx);
-          confirmDelivery(positiveResponseByte, 2, suitID);
+          confirmDelivery();
         }
         
         if (suitReceivedInstruction == false) {
           xbee.send(tx);
-          confirmDelivery(positiveResponseByte, 3, suitID);
+          confirmDelivery();
         }
         
         if (suitReceivedInstruction == true) {
@@ -292,16 +292,16 @@ void sendInstruction() {
           tx = Tx16Request(address, payload, packetSize);
           
           xbee.send(tx);
-          confirmDelivery(positiveResponseByte, 1, taggerID);
+          confirmDelivery();
           
           if (suitReceivedInstruction == false) {
             xbee.send(tx);
-            confirmDelivery(positiveResponseByte, 2, taggerID);
+            confirmDelivery();
           }
           
           if (suitReceivedInstruction == false) {
             xbee.send(tx);
-            confirmDelivery(positiveResponseByte, 3, taggerID);
+            confirmDelivery();
           }
           
           if (suitReceivedInstruction == true) {
@@ -338,18 +338,18 @@ void sendInstruction() {
       
       // first attempt
       xbee.send(tx);
-      confirmDelivery(positiveResponseByte, 1, suitID);
+      confirmDelivery();
 
       // second attempt
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
-        confirmDelivery(positiveResponseByte, 2, suitID);
+        confirmDelivery();
       }
       
       // third attempt
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
-        confirmDelivery(positiveResponseByte, 3, suitID);
+        confirmDelivery();
       }
       
       // if the message was received, do this
@@ -390,18 +390,18 @@ void manualColourAssignment(uint8_t recepient, uint8_t colour) {
   
   // first attempt
   xbee.send(tx);
-  confirmDelivery(manualChangeByte, 1, recepient);
+  confirmDelivery();
   
   // second attempt
   if (suitReceivedInstruction == false) {
     xbee.send(tx);
-    confirmDelivery(manualChangeByte, 2, recepient);
+    confirmDelivery();
   }
   
   // third attempt
   if (suitReceivedInstruction == false) {
     xbee.send(tx);
-    confirmDelivery(manualChangeByte, 3, recepient);
+    confirmDelivery();
   }
   
   if (suitReceivedInstruction == true) {
@@ -423,7 +423,7 @@ void manualColourAssignment(uint8_t recepient, uint8_t colour) {
 // ---------------------------------------------------------//
 // -------  Confirms reception of transmitted packet  ------//
 // ---------------------------------------------------------//
-void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
+void confirmDelivery() {
   suitReceivedInstruction = false;
   
   if (xbee.readPacket(300)) {
@@ -433,33 +433,9 @@ void confirmDelivery(uint8_t packetType, uint8_t attempt, uint8_t recepient) {
       xbee.getResponse().getTxStatusResponse(txStatus);
       
       if (txStatus.getStatus() == SUCCESS) {
-//        debugSerial.print(packetType);
-//        debugSerial.print(" sent successfully to suit ");
-//        debugSerial.print(recepient);
-//        debugSerial.print(" on attempt ");
-//        debugSerial.print(attempt);
-//        debugSerial.println(".");
-        
         suitReceivedInstruction = true;
       }
-    } else {
-//        debugSerial.print(packetType);
-//        debugSerial.print(" sent unsuccessfully to suit ");
-//        debugSerial.print(recepient);
-//        debugSerial.print(" on attempt ");
-//        debugSerial.print(attempt);
-//        debugSerial.println(".");
     }
-  } else if (xbee.getResponse().isError()) {
-    debugSerial.println("Error reading packet: ");
-    debugSerial.println(xbee.getResponse().getErrorCode());
-  } else {
-//      debugSerial.print(packetType);
-//      debugSerial.print(" message to suit ");
-//      debugSerial.print(recepient);
-//      debugSerial.print(" timed out on attempt ");
-//      debugSerial.print(attempt);
-//      debugSerial.println(".");
   }
 }
 

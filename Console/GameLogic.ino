@@ -114,87 +114,182 @@ void assignStartingColours() {
   debugSerial.print("Warm: ");
   debugSerial.println(warmColour);
   debugSerial.println();
-  
+
+  // Viral Tag Original: one assigned warm, rest assigned cool
   if (gameMode == 0) {
-    
-    // Viral Tag Original: one assigned warm, rest assigned cool
     uint8_t counter = 0;
-    
+    // keep track of which suit numbers need to be assigned colours
+    uint8_t suitsToAssign[10];
+    uint8_t suitsAssigned[10];
+
     for (int i = 0; i < 10; i++) {
-      
+      // only assign colours to active suits
       if (activeSuits[i] == true) {
-        
+        // make an array of suit numbers that need colours
+        suitsToAssign[counter] = i;
+        // make an array to keep track of which ones have colours
+        suitsAssigned[counter] = false;
+        // counter is the number of active suits, to use in
+        // the next for loops
         counter++;
-        
-        // the last suit is warm
-        if (counter == numberOfActiveSuits) {
-          states[i] = warmColour;
+      }
+    }
+
+    // assign all suits except one (counter - 1) a cool colour
+    for (int i = 0; i < (counter - 1); i++) {
+      boolean suitHasColour = false;
+      // test a random suit to start
+      uint8_t randomSuitPosition = random(0, counter);
+
+      // keep trying random suits until we find one that hasn't
+      // yet been assigned a colour
+      while (suitHasColour == false) {
+        // this suit has already been assigned a colour
+        if (suitsAssigned[randomSuitPosition] == true) {
+          // try another suit instead
+          randomSuitPosition = random(0, counter);
         }
-        
-        // all other suits are cool
+        // this suit has no colour yet
         else {
-          states[i] = coolColour;
+          // mark this suit as assigned
+          suitsAssigned[randomSuitPosition] = true;
+          // assign this suit a colour
+          states[suitsToAssign[randomSuitPosition]] = coolColour;
+          // end the while loop
+          suitHasColour = true;
         }
       }
     }
+
+    // assign the last suit (this person is "it") a warm colour
+    for (int i = 0; i < counter; i++) {
+      // all of them except one should have a colour: find that one
+      if (suitsAssigned[i] == false) {
+        // assign that one a warm colour
+        states[suitsToAssign[i]] = warmColour;
+      }
+    }
   }
-  
+
+  // Viral Tag Split: half assigned warm, half assigned cool
   else if (gameMode == 1) {
-    
-    // Viral Tag Split: half assigned warm, half assigned cool
     uint8_t counter = 0;
+    uint8_t suitsToAssign[10];
+    boolean suitsAssigned[10];
     
     for (int i = 0; i < 10; i++) {
-      
+      // only assign colours to active suits
       if (activeSuits[i] == true) {
-        
+        suitsToAssign[counter] = i;
+        suitsAssigned[counter] = false;
         counter++;
-        
-        // assign half of the suits a cool colour
-        if (counter <= (numberOfActiveSuits / 2)) {
-          states[i] = coolColour;
+      }
+    }
+
+    // assign the first half of suits a cool colour
+    for (int i = 0; i < (counter/2); i++) {
+      boolean suitHasColour = false;
+      uint8_t randomSuitPosition = random(0, counter);
+
+      while(suitHasColour == false) {
+        if (suitsAssigned[randomSuitPosition] == true) {
+          randomSuitPosition = random(0, counter);
         }
-        // assign the other half a warm colour
         else {
-          states[i] = warmColour;
+          suitsAssigned[randomSuitPosition] = true;
+          states[suitsToAssign[randomSuitPosition]] = coolColour;
+          suitHasColour = true;
+        }
+      }
+    }
+
+    // assign the second half of suits a warm colour
+    for (int i = 0; i < ceil(counter/2); i++) {
+      boolean suitHasColour = false;
+      uint8_t randomSuitPosition = random(0, counter);
+
+      while(suitHasColour == false) {
+        if (suitsAssigned[randomSuitPosition] == true) {
+          randomSuitPosition = random(0, counter);
+        }
+        else {
+          suitsAssigned[randomSuitPosition] = true;
+          states[suitsToAssign[randomSuitPosition]] = warmColour;
+          suitHasColour = true;
         }
       }
     }
   }
   
+  // Traditional Tag: one person is it (warm)
   else if (gameMode == 2) {
     
-    // Traditional Tag: one person is it (warm)
     uint8_t counter = 0;
-    
+    // keep track of which suit numbers need to be assigned colours
+    uint8_t suitsToAssign[10];
+    uint8_t suitsAssigned[10];
+
     for (int i = 0; i < 10; i++) {
-      
+      // only assign colours to active suits
       if (activeSuits[i] == true) {
+        // make an array of suit numbers that need colours
+        suitsToAssign[counter] = i;
+        // make an array to keep track of which ones have colours
+        suitsAssigned[counter] = false;
+        // counter is the number of active suits, to use in
+        // the next for loops
         counter++;
-        
-        // the last suit is warm
-        if (counter == numberOfActiveSuits) {
-          states[i] = warmColour;
+      }
+    }
+
+    // assign all suits except one (counter - 1) a cool colour
+    for (int i = 0; i < (counter - 1); i++) {
+      boolean suitHasColour = false;
+      // test a random suit to start
+      uint8_t randomSuitPosition = random(0, counter);
+
+      // keep trying random suits until we find one that hasn't
+      // yet been assigned a colour
+      while (suitHasColour == false) {
+        // this suit has already been assigned a colour
+        if (suitsAssigned[randomSuitPosition] == true) {
+          // try another suit instead
+          randomSuitPosition = random(0, counter);
         }
-        
-        // all other suits are cool
+        // this suit has no colour yet
         else {
-          states[i] = coolColour;
+          // mark this suit as assigned
+          suitsAssigned[randomSuitPosition] = true;
+          // assign this suit a colour
+          states[suitsToAssign[randomSuitPosition]] = coolColour;
+          // end the while loop
+          suitHasColour = true;
         }
       }
     }
   }
   
+  // Chaos Tag: everyone is a different colour
   else if (gameMode == 3) {
-    // Chaos Tag: everyone is a different colour
-    uint8_t counter = 0;
+    
+    boolean colourChosen[] = {false, false, false, false, false, 
+      false, false, false, false, false };
     
     for (int i = 0; i < 10; i++) {
-      
       if (activeSuits[i] == true) {
-        counter++;
+        boolean randomColourSelected = false;
+        uint8_t randomColour = random(0, 10);
         
-        states[i] = colours[counter - 1];
+        while (randomColourSelected == false) {
+          if (colourChosen[randomColour] == true) {
+            randomColour = random(0, 10);
+          }
+          else {
+            colourChosen[randomColour] = true;
+            states[i] = colours[randomColour];
+            randomColourSelected = true;
+          }
+        }
       }
     }
   }
@@ -226,18 +321,18 @@ void sendStatesToStructure() {
   
   // first attempt
   xbee.send(tx);
-  confirmDelivery(structureGameStartPacket, 1, 15);
+  confirmDelivery();
   
   // second attempt
   if (suitReceivedInstruction == false) {
     xbee.send(tx);
-    confirmDelivery(structureGameStartPacket, 2, 15);
+    confirmDelivery();
   }
   
   // third attempt
   if (suitReceivedInstruction == false) {
     xbee.send(tx);
-    confirmDelivery(structureGameStartPacket, 3, 15);
+    confirmDelivery();
   }
 }
   
@@ -268,33 +363,33 @@ void sendStartingColours() {
       
       // first attempt
       xbee.send(tx);
-      confirmDelivery(gameStartByte, 1, suitID);
+      confirmDelivery();
       
       // second attempt
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
-        confirmDelivery(gameStartByte, 2, suitID);
+        confirmDelivery();
       }
       
       // third attempt
       if (suitReceivedInstruction == false) {
         delay(100);
         xbee.send(tx);
-        confirmDelivery(gameStartByte, 3, suitID);
+        confirmDelivery();
       }
 
       // fourth attempt
       if (suitReceivedInstruction == false) {
         delay(200);
         xbee.send(tx);
-        confirmDelivery(gameStartByte, 3, suitID);
+        confirmDelivery();
       }
 
       // fifth attempt
       if (suitReceivedInstruction == false) {
         delay(300);
         xbee.send(tx);
-        confirmDelivery(gameStartByte, 3, suitID);
+        confirmDelivery();
       }
       
       // the suit got the message, do the following
@@ -335,30 +430,30 @@ void sendGameOver() {
       // check 5 times instead of 3, because game over
       // is more important than a regular message
       xbee.send(tx);
-      confirmDelivery(gameOverByte, 1, suitID);
+      confirmDelivery();
       
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
-        confirmDelivery(gameOverByte, 2, suitID);
+        confirmDelivery();
       }
       
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
-        confirmDelivery(gameOverByte, 3, suitID);
+        confirmDelivery();
       }
       
       if (suitReceivedInstruction == false) {
         // wait a little bit if it still hasn't got the message after 3 times
         delay(500);
         xbee.send(tx);
-        confirmDelivery(gameOverByte, 4, suitID);
+        confirmDelivery();
       }
       
       if (suitReceivedInstruction == false) {
         // wait a little bit if it still hasn't got the message after 4 times
         delay(500);
         xbee.send(tx);
-        confirmDelivery(gameOverByte, 5, suitID);
+        confirmDelivery();
       }
       
       // if it has gotten the message, set it as inactive

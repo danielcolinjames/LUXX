@@ -30,8 +30,6 @@ uint8_t states[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 uint8_t colours[] = { 80, 81, 82, 83, 84, 85, 86, 87, 88, 89 };
 
-// this is to keep track of which suits are active in each game
-// since there's a good chance we won't have 10 people in each game
 boolean activeSuits[] = { false, false, false, false, false,
   false, false, false, false, false };
 
