@@ -86,50 +86,48 @@ void lookForMessages() {
 // ---------------------------------------------------------//
 void sendInstruction() {
   if (states[suitID] == states[taggerID] || activeSuits[taggerID] == false) {
-    if (gameMode == 0 || gameMode == 1 || gameMode == 2) {
-      
-      // both suits are the same colour > 96
-      // tell suitID not to change colour
-      // taggerID doesn't know anything happened
-      // so there's no need to address it at all
-      
-      address = addresses[suitID];
-      payload[0] = negativeResponseByte;
-      packetSize = 1;
-      
-      tx = Tx16Request();
-      
-      // first attempt
+    
+    // both suits are the same colour > 96
+    // tell suitID not to change colour
+    // taggerID doesn't know anything happened
+    // so there's no need to address it at all
+    
+    address = addresses[suitID];
+    payload[0] = negativeResponseByte;
+    packetSize = 1;
+    
+    tx = Tx16Request(address, payload, packetSize);
+    
+    // first attempt
+    xbee.send(tx);
+    confirmDelivery();
+   
+    // second attempt
+    if (suitReceivedInstruction == false) {
       xbee.send(tx);
       confirmDelivery();
-     
-      // second attempt
-      if (suitReceivedInstruction == false) {
-        xbee.send(tx);
-        confirmDelivery();
-      }
+    }
 
-      // third attempt
-      if (suitReceivedInstruction == false) {
-        xbee.send(tx);
-        confirmDelivery();
-      }
+    // third attempt
+    if (suitReceivedInstruction == false) {
+      xbee.send(tx);
+      confirmDelivery();
+    }
 
-      // if the suit got the message, we don't need to do anything,
-      // but it's good to know what the console is doing
-      if (suitReceivedInstruction == true) {
-        
-        debugSerial.print("Suit ");
-        debugSerial.print(suitID);
-        debugSerial.print(" didn't change colours ");
-        debugSerial.print("because it is the same colour (");
-        debugSerial.print(states[suitID]);
-        debugSerial.print(") as suit ");
-        debugSerial.print(taggerID);
-        debugSerial.print(" (");
-        debugSerial.print(states[taggerID]);
-        debugSerial.println(").");
-      }
+    // if the suit got the message, we don't need to do anything,
+    // but it's good to know what the console is doing
+    if (suitReceivedInstruction == true) {
+      
+      debugSerial.print("Suit ");
+      debugSerial.print(suitID);
+      debugSerial.print(" didn't change colours ");
+      debugSerial.print("because it is the same colour (");
+      debugSerial.print(states[suitID]);
+      debugSerial.print(") as suit ");
+      debugSerial.print(taggerID);
+      debugSerial.print(" (");
+      debugSerial.print(states[taggerID]);
+      debugSerial.println(").");
     }
   }
   
@@ -146,12 +144,12 @@ void sendInstruction() {
         payload[1] = states[taggerID];
         packetSize = 2;
         
-        tx = Tx16Request();
+        tx = Tx16Request(address, payload, packetSize);
         
         // first attempt
         xbee.send(tx);
         confirmDelivery();
-
+        
         // second attempt
         if (suitReceivedInstruction == false) {
           xbee.send(tx);
@@ -166,8 +164,6 @@ void sendInstruction() {
         
         // if the message was received, do this
         if (suitReceivedInstruction == true) {
-
-          sendEventToStructure(suitID, states[taggerID]);
           
           debugSerial.print("Suit ");
           debugSerial.print(suitID);
@@ -178,7 +174,7 @@ void sendInstruction() {
           debugSerial.println(".");
           
           states[suitID] = states[taggerID];
-
+          
           // sends a colour change report from 0 - 99 to the interface
           stateReport = (suitID * 10) + (states[suitID] - 80);
           sendToInterface(stateReport);
@@ -197,7 +193,7 @@ void sendInstruction() {
       payload[1] = states[taggerID];
       packetSize = 2;
       
-      tx = Tx16Request();
+      tx = Tx16Request(address, payload, packetSize);
       
       xbee.send(tx);
       confirmDelivery();
@@ -214,8 +210,6 @@ void sendInstruction() {
       
       // if the message was received, do this
       if (suitReceivedInstruction == true) {
-        
-        sendEventToStructure(suitID, states[taggerID]);
         
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
@@ -262,8 +256,6 @@ void sendInstruction() {
         }
         
         if (suitReceivedInstruction == true) {
-          
-          sendEventToStructure(suitID, states[taggerID]);
           
           debugSerial.print("Suit ");
           debugSerial.print(suitID);
@@ -339,7 +331,7 @@ void sendInstruction() {
       // first attempt
       xbee.send(tx);
       confirmDelivery();
-
+      
       // second attempt
       if (suitReceivedInstruction == false) {
         xbee.send(tx);
@@ -354,8 +346,6 @@ void sendInstruction() {
       
       // if the message was received, do this
       if (suitReceivedInstruction == true) {
-        
-        sendEventToStructure(suitID, states[taggerID]);
         
         debugSerial.print("Suit ");
         debugSerial.print(suitID);
@@ -459,36 +449,6 @@ void confirmPingDelivery() {
   }
 }
 
-
-// ---------------------------------------------------------//
-// ------ Send information to Rick and Anas' structure -----//
-// ---------------------------------------------------------//
-void sendEventToStructure(uint8_t taggedPlayer, uint8_t newColour) {
-//  address = structureAddress;
-//  payload[0] = structureTagPacket;
-//  payload[1] = taggedPlayer;
-//  payload[2] = newColour;
-//  
-//  packetSize = 3;
-//  
-//  tx = Tx16Request(address, payload, packetSize);
-//  
-//  // first attempt
-//  xbee.send(tx);
-//  confirmDelivery(structureTagPacket, 1, 15);
-//  
-//  // second attempt
-//  if (suitReceivedInstruction == false) {
-//    xbee.send(tx);
-//    confirmDelivery(structureTagPacket, 2, 15);
-//  }
-//  
-//  // third attempt
-//  if (suitReceivedInstruction == false) {
-//    xbee.send(tx);
-//    confirmDelivery(structureTagPacket, 3, 15);
-//  }
-}
 
 // ---------------------------------------------------------//
 // ----  Print out the values in the outgoing payload  -----//

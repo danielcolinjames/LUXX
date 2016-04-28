@@ -3,24 +3,20 @@
 #include <XBee.h>
 #include <SoftwareSerial.h>
 
+uint8_t gameModeZeroButtonPin = 7;
+uint8_t gameModeZeroButtonState = 0;
 
-int gameModeZeroButtonPin = 7;
-int gameModeZeroButtonState = 0;
+uint8_t gameModeOneButtonPin = 8;
+uint8_t gameModeOneButtonState = 0;
 
-int gameModeOneButtonPin = 8;
-int gameModeOneButtonState = 0;
+uint8_t gameModeTwoButtonPin = 13;
+uint8_t gameModeTwoButtonState = 0;
 
-int gameModeTwoButtonPin = 11;
-int gameModeTwoButtonState = 0;
+uint8_t gameModeThreeButtonPin = 9;
+uint8_t gameModeThreeButtonState = 0;
 
-int gameModeThreeButtonPin = 10;
-int gameModeThreeButtonState = 0;
-
-int gameOverButtonPin = 9;
-int gameOverButtonState = 0;
-
-// temporarily swapped pins 9 and 11 because I don't 
-// have another button right now
+uint8_t gameOverButtonPin = 11;
+uint8_t gameOverButtonState = 0;
 
 
 // ---------------------------------------------------------//

@@ -4,7 +4,7 @@
 void startGame() {
   pingSuits();
   assignStartingColours();
-//  sendStatesToStructure();
+  delayForAudio();
   sendStartingColours();
   printOutStates();
 }
@@ -63,10 +63,10 @@ void pingSuits() {
       activeSuits[suitID] = true;
       
       // tells the console that this suit is on and white
-      stateReport = (suitID * 10) + 1;
+      stateReport = (130 + suitID);
       sendToInterface(stateReport);
       
-      states[suitID] = 81;
+      states[suitID] = 1;
       
       debugSerial.print("Suit ");
       debugSerial.print(suitID);
@@ -75,10 +75,10 @@ void pingSuits() {
     
     else {
       activeSuits[suitID] = false;
-      states[suitID] = 80;
+      states[suitID] = 0;
       
       // tells the console that these suits are off
-      stateReport = (suitID * 10);
+      stateReport = (120 + suitID);
       sendToInterface(stateReport);
     }
     // wait a little bit between suits
@@ -97,7 +97,7 @@ void pingSuits() {
 void assignStartingColours() {
   
   // min is inclusive, max is exclusive
-  // randomNum = a number from 1 - 4
+  // randomNum = a number from 0 - 4
   uint8_t randomNum = random(0, 5);
   
   // multiply this number by 2, to get 2, 4, 6 or 8
@@ -162,7 +162,7 @@ void assignStartingColours() {
     }
 
     // assign the last suit (this person is "it") a warm colour
-    for (int i = 0; i < counter; i++) {
+    for (int i = 0; i < 10; i++) {
       // all of them except one should have a colour: find that one
       if (suitsAssigned[i] == false) {
         // assign that one a warm colour
@@ -185,12 +185,15 @@ void assignStartingColours() {
         counter++;
       }
     }
-
+    
+    debugSerial.print("Floor: ");
+    debugSerial.println(floor((double)counter/2));
+    
     // assign the first half of suits a cool colour
-    for (int i = 0; i < (counter/2); i++) {
+    for (int i = 0; i < floor((double)counter/2); i++) {
       boolean suitHasColour = false;
       uint8_t randomSuitPosition = random(0, counter);
-
+      
       while(suitHasColour == false) {
         if (suitsAssigned[randomSuitPosition] == true) {
           randomSuitPosition = random(0, counter);
@@ -203,8 +206,11 @@ void assignStartingColours() {
       }
     }
 
+    debugSerial.print("Ceiling: ");
+    debugSerial.println(ceil((double)counter/2));
+    
     // assign the second half of suits a warm colour
-    for (int i = 0; i < ceil(counter/2); i++) {
+    for (int i = 0; i < ceil((double)counter/2); i++) {
       boolean suitHasColour = false;
       uint8_t randomSuitPosition = random(0, counter);
 
@@ -267,6 +273,7 @@ void assignStartingColours() {
         }
       }
     }
+    // assign the last one a warm colour (TODO)
   }
   
   // Chaos Tag: everyone is a different colour
@@ -297,45 +304,21 @@ void assignStartingColours() {
 
 
 // ---------------------------------------------------------//
-// ----------- Send a start packet to the structure --------//
+// -- Wait for the audio to play before starting the game --//
 // ---------------------------------------------------------//
-void sendStatesToStructure() {
-  
-  address = structureAddress;
-  payload[0] = structureGameStartPacket;
-  
-  payload[1] = states[0];
-  payload[2] = states[1];
-  payload[3] = states[2];
-  payload[4] = states[3];
-  payload[5] = states[4];
-  payload[6] = states[5];
-  payload[7] = states[6];
-  payload[8] = states[7];
-  payload[9] = states[8];
-  payload[10] = states[9];
-  
-  packetSize = 11;
-  
-  tx = Tx16Request(address, payload, packetSize);
-  
-  // first attempt
-  xbee.send(tx);
-  confirmDelivery();
-  
-  // second attempt
-  if (suitReceivedInstruction == false) {
-    xbee.send(tx);
-    confirmDelivery();
+void delayForAudio() {
+  if (gameMode == 0) {
+    delay(30000);
   }
-  
-  // third attempt
-  if (suitReceivedInstruction == false) {
-    xbee.send(tx);
-    confirmDelivery();
+  else if (gameMode == 1) {
+    delay(31000);
+  }
+  else if (gameMode == 3) {
+    delay(32000);
   }
 }
-  
+
+
 // ---------------------------------------------------------//
 // -------- Tell each suit which colour it starts as  ------//
 // ---------------------------------------------------------//
@@ -461,9 +444,8 @@ void sendGameOver() {
         activeSuits[suitID] = false;
         
         // tells the interface this suit is blinking white again
-        stateReport = (suitID * 10) + 1;
+        stateReport = 120 + 1;
         sendToInterface(stateReport);
-        delay(10);
       }
       else {
         // if it doesn't get the message, it's still active
@@ -495,6 +477,8 @@ void gameStateCheck() {
     numberOfCoolSuits = 0;
     numberOfWarmSuits = 0;
 
+    // game modes 0 and 1 both only have one set of colours,
+    // chaos tag calculates its own stuff
     if (gameMode == 0 || gameMode == 1) {
       for (int i = 0; i < 10; i++) {
         if (activeSuits[i] == true) {
@@ -513,6 +497,10 @@ void gameStateCheck() {
     if (gameMode == 0) {
       // if there's only one suit left that's cool (uninfected), check the state quicker
       if (numberOfWarmSuits == (numberOfActiveSuits - 1)) {
+
+        stateReport = 105;
+        sendToInterface(stateReport);
+        
         stateCheckInterval = 10;
         outputInterval = 1000;
       }
@@ -525,7 +513,7 @@ void gameStateCheck() {
       if (numberOfWarmSuits == numberOfActiveSuits) {
         debugSerial.println();
         debugSerial.println("Game over: everyone is a warm colour.");
-                
+        
         gameOver();
       }
     }
@@ -536,7 +524,7 @@ void gameStateCheck() {
       if (numberOfCoolSuits == (numberOfActiveSuits - 1) || numberOfWarmSuits == (numberOfActiveSuits - 1)) {
         
         stateReport = 105;
-        sendToInterface(105);
+        sendToInterface(stateReport);
         
         stateCheckInterval = 10;
         outputInterval = 1000;
@@ -551,7 +539,7 @@ void gameStateCheck() {
         debugSerial.println();
         debugSerial.println("Game over: no suits are active.");
 
-        stateReport = 111;
+        stateReport = 107;
         sendToInterface(stateReport);
         waitForReset();
       }
@@ -787,7 +775,7 @@ void gameStateCheck() {
 
 
 // ---------------------------------------------------------//
-// ------- Call game over methods and reset buttons --------//
+// ----- Call game over methods and reset the buttons ------//
 // ---------------------------------------------------------//
 void gameOver() {
   digitalWrite(gameModeZeroButtonPin, HIGH);
@@ -795,6 +783,11 @@ void gameOver() {
   digitalWrite(gameModeTwoButtonPin, HIGH);
   digitalWrite(gameModeThreeButtonPin, HIGH);
   digitalWrite(gameOverButtonPin, HIGH);
+
+  // otherwise the next game could get shut down 5 min
+  // after the first one started
+  gameOverMillis = millis();
+  
   sendGameOver();
   waitForReset();
 }

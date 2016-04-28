@@ -14,8 +14,6 @@ void checkButtons() {
     stateReport = 100;
     sendToInterface(stateReport);
     
-    // delay(amount of time for audio);
-    
     startGame();
   }
   
@@ -30,8 +28,6 @@ void checkButtons() {
     
     stateReport = 101;
     sendToInterface(stateReport);
-    
-    // delay(amount of time for audio);
     
     startGame();
   }
@@ -48,8 +44,6 @@ void checkButtons() {
     stateReport = 102;
     sendToInterface(stateReport);
     
-    // delay(amount of time for audio);
-    
     startGame();
   }
   
@@ -65,8 +59,6 @@ void checkButtons() {
     stateReport = 103;
     sendToInterface(stateReport);
     
-    // delay(amount of time for audio);
-    
     startGame();
   }
   
@@ -74,6 +66,11 @@ void checkButtons() {
   if (gameOverButtonState == LOW) {
     debugSerial.println("Button 4 pressed.");
     debugSerial.println("[GAME OVER] triggered manually.");
+    
+    delay(100);
+    
+    stateReport = 107;
+    sendToInterface(stateReport);
     
     gameOver();
   }
