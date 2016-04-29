@@ -2,7 +2,7 @@
 	"name" : "InterfaceGUI",
 	"version" : 1,
 	"creationdate" : 3542963189,
-	"modificationdate" : 3544634416,
+	"modificationdate" : 3544725151,
 	"viewrect" : [ 33.0, 76.0, 300.0, 500.0 ],
 	"autoorganize" : 1,
 	"hideprojectwindow" : 0,
@@ -20,6 +20,11 @@
 ,
 		"media" : 		{
 			"blue.aiff" : 			{
+				"kind" : "audiofile",
+				"local" : 1
+			}
+,
+			"tagEvent.aiff" : 			{
 				"kind" : "audiofile",
 				"local" : 1
 			}
