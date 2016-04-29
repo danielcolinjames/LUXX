@@ -2,7 +2,7 @@
 	"name" : "InterfaceGUI",
 	"version" : 1,
 	"creationdate" : 3542963189,
-	"modificationdate" : 3542980515,
+	"modificationdate" : 3544725151,
 	"viewrect" : [ 33.0, 76.0, 300.0, 500.0 ],
 	"autoorganize" : 1,
 	"hideprojectwindow" : 0,
@@ -20,6 +20,11 @@
 ,
 		"media" : 		{
 			"blue.aiff" : 			{
+				"kind" : "audiofile",
+				"local" : 1
+			}
+,
+			"tagEvent.aiff" : 			{
 				"kind" : "audiofile",
 				"local" : 1
 			}
@@ -82,6 +87,51 @@
 					"projectrelativepath" : "../../../../Music/LUXX-sounds/audio"
 				}
 
+			}
+,
+			"turquoise.aiff" : 			{
+				"kind" : "audiofile",
+				"local" : 1
+			}
+,
+			"gameover.aiff" : 			{
+				"kind" : "audiofile",
+				"local" : 1
+			}
+,
+			"lightorange.aiff" : 			{
+				"kind" : "audiofile",
+				"local" : 1
+			}
+,
+			"pink.aiff" : 			{
+				"kind" : "audiofile",
+				"local" : 1
+			}
+,
+			"rules0(2).aiff" : 			{
+				"kind" : "audiofile",
+				"local" : 1
+			}
+,
+			"rules0.aiff" : 			{
+				"kind" : "audiofile",
+				"local" : 1
+			}
+,
+			"rules1.aiff" : 			{
+				"kind" : "audiofile",
+				"local" : 1
+			}
+,
+			"rules3.aiff" : 			{
+				"kind" : "audiofile",
+				"local" : 1
+			}
+,
+			"timelimit.aiff" : 			{
+				"kind" : "audiofile",
+				"local" : 1
 			}
 
 		}

@@ -4,7 +4,6 @@ SoftwareSerial consoleInterface(3, 2); // rx, tx
 //SoftwareSerial debugSerial(8, 7);
 
 int fromConsole;
-uint8_t toConsole;
 
 void setup() {
   // Open serial communications and wait for port to open:
@@ -19,7 +18,6 @@ void setup() {
 
 void loop() {
   listenToConsole();
-  listenToMax();
 }
 
 
@@ -32,14 +30,3 @@ void listenToConsole() {
     Serial.println(fromConsole);
   }
 }
-
-
-void listenToMax() {
-  if (Serial.available()) {
-    toConsole = Serial.read();
-//    debugSerial.print("Message from Max: ");
-//    debugSerial.println(toConsole);
-    consoleInterface.write(toConsole);
-  }
-}
-

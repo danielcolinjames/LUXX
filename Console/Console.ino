@@ -3,24 +3,20 @@
 #include <XBee.h>
 #include <SoftwareSerial.h>
 
+uint8_t gameModeZeroButtonPin = 7;
+uint8_t gameModeZeroButtonState = 0;
 
-int gameModeZeroButtonPin = 7;
-int gameModeZeroButtonState = 0;
+uint8_t gameModeOneButtonPin = 8;
+uint8_t gameModeOneButtonState = 0;
 
-int gameModeOneButtonPin = 8;
-int gameModeOneButtonState = 0;
+uint8_t gameModeTwoButtonPin = 13;
+uint8_t gameModeTwoButtonState = 0;
 
-int gameModeTwoButtonPin = 11;
-int gameModeTwoButtonState = 0;
+uint8_t gameModeThreeButtonPin = 9;
+uint8_t gameModeThreeButtonState = 0;
 
-int gameModeThreeButtonPin = 10;
-int gameModeThreeButtonState = 0;
-
-int gameOverButtonPin = 9;
-int gameOverButtonState = 0;
-
-// temporarily swapped pins 9 and 11 because I don't 
-// have another button right now
+uint8_t gameOverButtonPin = 11;
+uint8_t gameOverButtonState = 0;
 
 
 // ---------------------------------------------------------//
@@ -30,8 +26,6 @@ uint8_t states[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 uint8_t colours[] = { 80, 81, 82, 83, 84, 85, 86, 87, 88, 89 };
 
-// this is to keep track of which suits are active in each game
-// since there's a good chance we won't have 10 people in each game
 boolean activeSuits[] = { false, false, false, false, false,
   false, false, false, false, false };
 
@@ -102,8 +96,8 @@ long statePrintMillis = 0;
 // ---------------------------------------------------------//
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
-SoftwareSerial debugSerial (4, 3); //rx, tx
-SoftwareSerial interfaceSerial(13, 12); // rx, tx
+//SoftwareSerial // debugSerial (13, 12); //rx, tx
+SoftwareSerial interfaceSerial(4, 3); // rx, tx
 
 XBee xbee = XBee();
 
@@ -123,8 +117,8 @@ void setup() {
   
   xbee.setSerial(Serial);
   
-  debugSerial.begin(9600);
-  debugSerial.println("Starting...");
+  // // debugSerial.begin(9600);
+  // // debugSerial.println("Starting...");
   
   interfaceSerial.begin(9600);
   

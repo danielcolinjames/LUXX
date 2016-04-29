@@ -4,8 +4,8 @@
 void checkButtons() {
   gameModeZeroButtonState = digitalRead(gameModeZeroButtonPin);
   if (reset == false && gameModeZeroButtonState == LOW) {
-    debugSerial.println("Button 0 pressed.");
-    debugSerial.println("Starting game of [VIRAL TAG ONE].");
+    // debugSerial.println("Button 0 pressed.");
+    // debugSerial.println("Starting game of [VIRAL TAG ONE].");
 
     reset = true;
     
@@ -14,15 +14,13 @@ void checkButtons() {
     stateReport = 100;
     sendToInterface(stateReport);
     
-    // delay(amount of time for audio);
-    
     startGame();
   }
   
   gameModeOneButtonState = digitalRead(gameModeOneButtonPin);
   if (reset == false && gameModeOneButtonState == LOW) {
-    debugSerial.println("Button 1 pressed.");
-    debugSerial.println("Starting game of [VIRAL TAG SPLIT].");
+    // debugSerial.println("Button 1 pressed.");
+    // debugSerial.println("Starting game of [VIRAL TAG SPLIT].");
     
     reset = true;
     
@@ -31,15 +29,13 @@ void checkButtons() {
     stateReport = 101;
     sendToInterface(stateReport);
     
-    // delay(amount of time for audio);
-    
     startGame();
   }
   
   gameModeTwoButtonState = digitalRead(gameModeTwoButtonPin);
   if (reset == false && gameModeTwoButtonState == LOW) {
-    debugSerial.println("Button 2 pressed.");
-    debugSerial.println("Starting game of [TRADITIONAL TAG].");
+    // debugSerial.println("Button 2 pressed.");
+    // debugSerial.println("Starting game of [TRADITIONAL TAG].");
     
     reset = true;
     
@@ -48,15 +44,13 @@ void checkButtons() {
     stateReport = 102;
     sendToInterface(stateReport);
     
-    // delay(amount of time for audio);
-    
     startGame();
   }
   
   gameModeThreeButtonState = digitalRead(gameModeThreeButtonPin);
   if (reset == false && gameModeThreeButtonState == LOW) {
-    debugSerial.println("Button 3 pressed.");
-    debugSerial.println("Starting game of [CHAOS TAG].");
+    // debugSerial.println("Button 3 pressed.");
+    // debugSerial.println("Starting game of [CHAOS TAG].");
     
     reset = true;
     
@@ -65,15 +59,18 @@ void checkButtons() {
     stateReport = 103;
     sendToInterface(stateReport);
     
-    // delay(amount of time for audio);
-    
     startGame();
   }
   
   gameOverButtonState = digitalRead(gameOverButtonPin);
   if (gameOverButtonState == LOW) {
-    debugSerial.println("Button 4 pressed.");
-    debugSerial.println("[GAME OVER] triggered manually.");
+    // debugSerial.println("Button 4 pressed.");
+    // debugSerial.println("[GAME OVER] triggered manually.");
+    
+    delay(100);
+    
+    stateReport = 107;
+    sendToInterface(stateReport);
     
     gameOver();
   }
