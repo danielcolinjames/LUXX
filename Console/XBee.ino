@@ -6,38 +6,38 @@ void lookForMessages() {
   xbee.readPacket();
   
   if (xbee.getResponse().isAvailable()) {
-    debugSerial.print("Packet found: ");
+    // // debugSerial.print("Packet found: ");
     if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
       Rx16Response rx16 = Rx16Response();
       xbee.getResponse().getRx16Response(rx16);
       
-      debugSerial.print("{");
+      // // debugSerial.print("{");
       for (int i = 0; i < rx16.getDataLength(); i++) {
-        debugSerial.print(rx16.getData(i));
+        // // debugSerial.print(rx16.getData(i));
         if (i != (rx16.getDataLength() - 1)) {
-          debugSerial.print(", ");
+          // // debugSerial.print(", ");
         }
       }
       
-      debugSerial.println("}");
+      // // debugSerial.println("}");
       
       uint8_t packetType = rx16.getData(0);
       
-      debugSerial.print("Packet type: ");
-      debugSerial.println(packetType);
+      // // debugSerial.print("Packet type: ");
+      // // debugSerial.println(packetType);
       
       if (packetType == taggedByte) {
         
         suitID = rx16.getData(1);
         taggerID = rx16.getData(2);
 
-        debugSerial.println();
-        debugSerial.print("Suit  ");
-        debugSerial.print(suitID);
+        // // debugSerial.println();
+        // // debugSerial.print("Suit  ");
+        // // debugSerial.print(suitID);
         
-        debugSerial.print(" was tagged by suit ");
-        debugSerial.print(taggerID);
-        debugSerial.println(".");
+        // // debugSerial.print(" was tagged by suit ");
+        // // debugSerial.print(taggerID);
+        // // debugSerial.println(".");
         
         sendInstruction();
         printOutStates();
@@ -118,16 +118,16 @@ void sendInstruction() {
     // but it's good to know what the console is doing
     if (suitReceivedInstruction == true) {
       
-      debugSerial.print("Suit ");
-      debugSerial.print(suitID);
-      debugSerial.print(" didn't change colours ");
-      debugSerial.print("because it is the same colour (");
-      debugSerial.print(states[suitID]);
-      debugSerial.print(") as suit ");
-      debugSerial.print(taggerID);
-      debugSerial.print(" (");
-      debugSerial.print(states[taggerID]);
-      debugSerial.println(").");
+      // // debugSerial.print("Suit ");
+      // // debugSerial.print(suitID);
+      // // debugSerial.print(" didn't change colours ");
+      // // debugSerial.print("because it is the same colour (");
+      // // debugSerial.print(states[suitID]);
+      // // debugSerial.print(") as suit ");
+      // // debugSerial.print(taggerID);
+      // // debugSerial.print(" (");
+      // // debugSerial.print(states[taggerID]);
+      // // debugSerial.println(").");
     }
   }
   
@@ -165,13 +165,13 @@ void sendInstruction() {
         // if the message was received, do this
         if (suitReceivedInstruction == true) {
           
-          debugSerial.print("Suit ");
-          debugSerial.print(suitID);
-          debugSerial.print(" changed from ");
-          debugSerial.print(states[suitID]);
-          debugSerial.print(" to ");
-          debugSerial.print(states[taggerID]);
-          debugSerial.println(".");
+          // // debugSerial.print("Suit ");
+          // // debugSerial.print(suitID);
+          // // debugSerial.print(" changed from ");
+          // // debugSerial.print(states[suitID]);
+          // // debugSerial.print(" to ");
+          // // debugSerial.print(states[taggerID]);
+          // // debugSerial.println(".");
           
           states[suitID] = states[taggerID];
           
@@ -211,13 +211,13 @@ void sendInstruction() {
       // if the message was received, do this
       if (suitReceivedInstruction == true) {
         
-        debugSerial.print("Suit ");
-        debugSerial.print(suitID);
-        debugSerial.print(" changed from ");
-        debugSerial.print(states[suitID]);
-        debugSerial.print(" to ");
-        debugSerial.print(states[taggerID]);
-        debugSerial.println(".");
+        // // debugSerial.print("Suit ");
+        // // debugSerial.print(suitID);
+        // // debugSerial.print(" changed from ");
+        // // debugSerial.print(states[suitID]);
+        // // debugSerial.print(" to ");
+        // // debugSerial.print(states[taggerID]);
+        // // debugSerial.println(".");
         
         states[suitID] = states[taggerID];
         
@@ -257,13 +257,13 @@ void sendInstruction() {
         
         if (suitReceivedInstruction == true) {
           
-          debugSerial.print("Suit ");
-          debugSerial.print(suitID);
-          debugSerial.print(" changed from ");
-          debugSerial.print(states[suitID]);
-          debugSerial.print(" to ");
-          debugSerial.print(states[taggerID]);
-          debugSerial.println(".");
+          // // debugSerial.print("Suit ");
+          // // debugSerial.print(suitID);
+          // // debugSerial.print(" changed from ");
+          // // debugSerial.print(states[suitID]);
+          // // debugSerial.print(" to ");
+          // // debugSerial.print(states[taggerID]);
+          // // debugSerial.println(".");
           
           // store suitID before it's changed
           uint8_t tempSuitState = states[suitID];
@@ -298,13 +298,13 @@ void sendInstruction() {
           
           if (suitReceivedInstruction == true) {
             
-            debugSerial.print("Suit ");
-            debugSerial.print(taggerID);
-            debugSerial.print(" changed from ");
-            debugSerial.print(states[taggerID]);
-            debugSerial.print(" to ");
-            debugSerial.print(tempSuitState);
-            debugSerial.println(".");
+            // // debugSerial.print("Suit ");
+            // // debugSerial.print(taggerID);
+            // // debugSerial.print(" changed from ");
+            // // debugSerial.print(states[taggerID]);
+            // // debugSerial.print(" to ");
+            // // debugSerial.print(tempSuitState);
+            // // debugSerial.println(".");
             
             states[taggerID] = tempSuitState;
   
@@ -347,13 +347,13 @@ void sendInstruction() {
       // if the message was received, do this
       if (suitReceivedInstruction == true) {
         
-        debugSerial.print("Suit ");
-        debugSerial.print(suitID);
-        debugSerial.print(" changed from ");
-        debugSerial.print(states[suitID]);
-        debugSerial.print(" to ");
-        debugSerial.print(states[taggerID]);
-        debugSerial.println(".");
+        // // debugSerial.print("Suit ");
+        // // debugSerial.print(suitID);
+        // // debugSerial.print(" changed from ");
+        // // debugSerial.print(states[suitID]);
+        // // debugSerial.print(" to ");
+        // // debugSerial.print(states[taggerID]);
+        // // debugSerial.println(".");
         
         states[suitID] = states[taggerID];
         
@@ -396,11 +396,11 @@ void manualColourAssignment(uint8_t recepient, uint8_t colour) {
   
   if (suitReceivedInstruction == true) {
     
-    debugSerial.print("Suit ");
-    debugSerial.print(recepient);
-    debugSerial.print(" manually changed to ");
-    debugSerial.print(colour);
-    debugSerial.println(".");
+    // // debugSerial.print("Suit ");
+    // // debugSerial.print(recepient);
+    // // debugSerial.print(" manually changed to ");
+    // // debugSerial.print(colour);
+    // // debugSerial.println(".");
     
     states[recepient] = colour;
     
@@ -454,12 +454,12 @@ void confirmPingDelivery() {
 // ----  Print out the values in the outgoing payload  -----//
 // ---------------------------------------------------------//
 void printOutArray(uint8_t message[]) {
-  debugSerial.print("{");
+  // // debugSerial.print("{");
   for(int i = 0; i < sizeof(message); i++) {
-    debugSerial.print(message[i]);
+    // // debugSerial.print(message[i]);
     if(i != sizeof(message) - 1) {
-      debugSerial.print(", ");
+      // // debugSerial.print(", ");
     }
   }
-  debugSerial.println("} was transmitted via XBee.");
+  // // debugSerial.println("} was transmitted via XBee.");
 }

@@ -96,8 +96,8 @@ long statePrintMillis = 0;
 // ---------------------------------------------------------//
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
-SoftwareSerial debugSerial (4, 3); //rx, tx
-SoftwareSerial interfaceSerial(13, 12); // rx, tx
+//SoftwareSerial // debugSerial (13, 12); //rx, tx
+SoftwareSerial interfaceSerial(4, 3); // rx, tx
 
 XBee xbee = XBee();
 
@@ -117,8 +117,8 @@ void setup() {
   
   xbee.setSerial(Serial);
   
-  debugSerial.begin(9600);
-  debugSerial.println("Starting...");
+  // // debugSerial.begin(9600);
+  // // debugSerial.println("Starting...");
   
   interfaceSerial.begin(9600);
   
