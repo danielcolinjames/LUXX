@@ -141,8 +141,6 @@ void assignStartingColours() {
       // test a random suit to start
       uint8_t randomSuitPosition = random(0, counter);
       
-      sendToInterface(counter);
-      
       // keep trying random suits until we find one that hasn't
       // yet been assigned a colour
       while (suitHasColour == false) {
@@ -172,7 +170,7 @@ void assignStartingColours() {
       }
     }
   }
-
+  
   // Viral Tag Split: half assigned warm, half assigned cool
   else if (gameMode == 1) {
     uint8_t counter = 0;
@@ -187,9 +185,6 @@ void assignStartingColours() {
         counter++;
       }
     }
-    
-    // debugSerial.print("Floor: ");
-    // debugSerial.println(floor((double)counter/2));
     
     // assign the first half of suits a cool colour
     for (int i = 0; i < floor((double)counter/2); i++) {
@@ -207,9 +202,6 @@ void assignStartingColours() {
         }
       }
     }
-
-    // debugSerial.print("Ceiling: ");
-    // debugSerial.println(ceil((double)counter/2));
     
     // assign the second half of suits a warm colour
     for (int i = 0; i < ceil((double)counter/2); i++) {
@@ -310,13 +302,21 @@ void assignStartingColours() {
 // ---------------------------------------------------------//
 void delayForAudio() {
   if (gameMode == 0) {
-    delay(23500);
+    // tell the console to start playing the appropriate audio
+    stateReport = 100;
+    sendToInterface(stateReport);
+    // pause for the amount of time it takes for that audio to play
+    delay(30000);
   }
   else if (gameMode == 1) {
-    delay(24500);
+    stateReport = 101;
+    sendToInterface(stateReport);
+    delay(31000);
   }
   else if (gameMode == 3) {
-    delay(25500);
+    stateReport = 103;
+    sendToInterface(stateReport);
+    delay(32000);
   }
 }
 
@@ -362,14 +362,14 @@ void sendStartingColours() {
         xbee.send(tx);
         confirmDelivery();
       }
-
+      
       // fourth attempt
       if (suitReceivedInstruction == false) {
         delay(200);
         xbee.send(tx);
         confirmDelivery();
       }
-
+      
       // fifth attempt
       if (suitReceivedInstruction == false) {
         delay(300);
@@ -500,6 +500,8 @@ void gameStateCheck() {
       // if there's only one suit left that's cool (uninfected), check the state quicker
       if (numberOfWarmSuits == (numberOfActiveSuits - 1)) {
 
+        lastPlayer = true;
+        
         stateReport = 105;
         sendToInterface(stateReport);
         
@@ -507,9 +509,18 @@ void gameStateCheck() {
         outputInterval = 1000;
       }
       else {
+        if (lastPlayer == true) {
+          // if we enter this else statement AND this if statement, that means
+          // it was down to one player, and that player recovered, so send a 106
+          // to the interface to slow the music back down again
+          lastPlayer = false;
+          stateReport = 106;
+          sendToInterface(stateReport);
+        }
         stateCheckInterval = 1000;
         outputInterval = 1500;
       }
+
       
       // all the suits are warm (infected)
       if (numberOfWarmSuits == numberOfActiveSuits) {
@@ -527,6 +538,8 @@ void gameStateCheck() {
     else if (gameMode == 1) {
       // if there's only one suit left that's a different colour, check the state quicker
       if (numberOfCoolSuits == (numberOfActiveSuits - 1) || numberOfWarmSuits == (numberOfActiveSuits - 1)) {
+
+        lastPlayer = true;
         
         stateReport = 105;
         sendToInterface(stateReport);
@@ -535,6 +548,14 @@ void gameStateCheck() {
         outputInterval = 1000;
       }
       else {
+        if (lastPlayer == true) {
+          // if we enter this else statement AND this if statement, that means
+          // it was down to one player, and that player recovered, so send a 106
+          // to the interface to slow the music back down again
+          lastPlayer = false;
+          stateReport = 106;
+          sendToInterface(stateReport);
+        }
         stateCheckInterval = 1000;
         outputInterval = 1500;
       }
@@ -641,6 +662,8 @@ void gameStateCheck() {
         numberOfSuits1 == (numberOfActiveSuits - 1) ||
         numberOfSuits0 == (numberOfActiveSuits - 1)
       ) {
+
+        lastPlayer = true;
         
         stateReport = 105;
         sendToInterface(105);
@@ -649,6 +672,14 @@ void gameStateCheck() {
         outputInterval = 1000;
       }
       else {
+        if (lastPlayer == true) {
+          // if we enter this else statement AND this if statement, that means
+          // it was down to one player, and that player recovered, so send a 106
+          // to the interface to slow the music back down again
+          lastPlayer = false;
+          stateReport = 106;
+          sendToInterface(stateReport);
+        }
         stateCheckInterval = 1000;
         outputInterval = 1500;
       }
@@ -790,7 +821,12 @@ void gameOver() {
   digitalWrite(gameModeTwoButtonPin, HIGH);
   digitalWrite(gameModeThreeButtonPin, HIGH);
   digitalWrite(gameOverButtonPin, HIGH);
-
+  
+  lastPlayer = false;
+  
+  suitReceivedInstruction = false;
+  suitReceivedPing = false;
+  
   // otherwise the next game could get shut down 5 min
   // after the first one started
   gameOverMillis = millis();

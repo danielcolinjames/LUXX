@@ -6,12 +6,18 @@ void checkButtons() {
   if (reset == false && gameModeZeroButtonState == LOW) {
     // debugSerial.println("Button 0 pressed.");
     // debugSerial.println("Starting game of [VIRAL TAG ONE].");
-
+    
     reset = true;
     
     gameMode = 0;
     
-    stateReport = 100;
+    stateReport = 150;
+    // this number (and 151, 152, 153) are to tell me through the interface
+    // that the button press was read
+    
+    // the interface actually responds to the numbers 100 through 103, but 
+    // we want to do that after the ping has completed because the number 
+    // of suits will make the ping test variable in length.
     sendToInterface(stateReport);
     
     startGame();
@@ -26,7 +32,7 @@ void checkButtons() {
     
     gameMode = 1;
     
-    stateReport = 101;
+    stateReport = 151;
     sendToInterface(stateReport);
     
     startGame();
@@ -41,7 +47,7 @@ void checkButtons() {
     
     gameMode = 2;
     
-    stateReport = 102;
+    stateReport = 152;
     sendToInterface(stateReport);
     
     startGame();
@@ -56,7 +62,7 @@ void checkButtons() {
     
     gameMode = 3;
     
-    stateReport = 103;
+    stateReport = 153;
     sendToInterface(stateReport);
     
     startGame();

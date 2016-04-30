@@ -3,6 +3,10 @@
 #include <XBee.h>
 #include <SoftwareSerial.h>
 
+
+// ---------------------------------------------------------//
+// ------------------  Interface buttons -------------------//
+// ---------------------------------------------------------//
 uint8_t gameModeZeroButtonPin = 7;
 uint8_t gameModeZeroButtonState = 0;
 
@@ -63,7 +67,7 @@ uint8_t taggerID;
 
 uint8_t gameMode;
 
-boolean gameOverBool = false;
+boolean lastPlayer = false;
 
 uint8_t numberOfActiveSuits;
 
