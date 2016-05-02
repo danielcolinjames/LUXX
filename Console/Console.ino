@@ -101,7 +101,7 @@ long statePrintMillis = 0;
 // ---------------------  XBee variables  ------------------//
 // ---------------------------------------------------------//
 //SoftwareSerial // debugSerial (13, 12); //rx, tx
-SoftwareSerial interfaceSerial(4, 3); // rx, tx
+SoftwareSerial interfaceSerial(13, 12); // rx, tx
 
 XBee xbee = XBee();
 
@@ -121,8 +121,8 @@ void setup() {
   
   xbee.setSerial(Serial);
   
-  // // debugSerial.begin(9600);
-  // // debugSerial.println("Starting...");
+  // debugSerial.begin(9600);
+  // debugSerial.println("Starting...");
   
   interfaceSerial.begin(9600);
   
@@ -131,9 +131,6 @@ void setup() {
   digitalWrite(gameModeTwoButtonPin, HIGH);
   digitalWrite(gameModeThreeButtonPin, HIGH);
   digitalWrite(gameOverButtonPin, HIGH);
-
-  // necessary for randomization in colour selection
-  randomSeed(analogRead(5));
   
   waitForReset();
 }
@@ -142,7 +139,7 @@ void setup() {
 // ---------------------------------------------------------//
 // -------------------------  Loop  ------------------------//
 // ---------------------------------------------------------//
-void loop() {
+void loop() {  
   checkButtons();
   lookForMessages();
   gameStateCheck();

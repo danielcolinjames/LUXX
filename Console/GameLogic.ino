@@ -95,6 +95,8 @@ void pingSuits() {
 // ---------- Initial setup to assign suits colours  -------//
 // ---------------------------------------------------------//
 void assignStartingColours() {
+  // necessary for randomization in colour selection
+  randomSeed(analogRead(1));
   
   // min is inclusive, max is exclusive
   // randomNum = a number from 0 - 4
@@ -121,7 +123,7 @@ void assignStartingColours() {
     // keep track of which suit numbers need to be assigned colours
     uint8_t suitsToAssign[10];
     uint8_t suitsAssigned[10];
-
+    
     for (int i = 0; i < 10; i++) {
       // only assign colours to active suits
       if (activeSuits[i] == true) {
@@ -160,9 +162,9 @@ void assignStartingColours() {
         }
       }
     }
-
+    
     // assign the last suit (this person is "it") a warm colour
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < counter; i++) {
       // all of them except one should have a colour: find that one
       if (suitsAssigned[i] == false) {
         // assign that one a warm colour
@@ -207,7 +209,7 @@ void assignStartingColours() {
     for (int i = 0; i < ceil((double)counter/2); i++) {
       boolean suitHasColour = false;
       uint8_t randomSuitPosition = random(0, counter);
-
+      
       while(suitHasColour == false) {
         if (suitsAssigned[randomSuitPosition] == true) {
           randomSuitPosition = random(0, counter);
@@ -305,17 +307,20 @@ void delayForAudio() {
     // tell the console to start playing the appropriate audio
     stateReport = 100;
     sendToInterface(stateReport);
+    // debugSerial.println("Button 0 pressed.");
     // pause for the amount of time it takes for that audio to play
     delay(30000);
   }
   else if (gameMode == 1) {
     stateReport = 101;
     sendToInterface(stateReport);
+    // debugSerial.println("Button 1 pressed.");
     delay(31000);
   }
   else if (gameMode == 3) {
     stateReport = 103;
     sendToInterface(stateReport);
+    // debugSerial.println("Button 2 pressed.");
     delay(32000);
   }
 }
@@ -390,6 +395,8 @@ void sendStartingColours() {
     }
   }
   delay(10);
+  stateReport = 199;
+  sendToInterface(stateReport);
 }
 
 
@@ -499,7 +506,7 @@ void gameStateCheck() {
     if (gameMode == 0) {
       // if there's only one suit left that's cool (uninfected), check the state quicker
       if (numberOfWarmSuits == (numberOfActiveSuits - 1)) {
-
+        
         lastPlayer = true;
         
         stateReport = 105;
@@ -520,7 +527,6 @@ void gameStateCheck() {
         stateCheckInterval = 1000;
         outputInterval = 1500;
       }
-
       
       // all the suits are warm (infected)
       if (numberOfWarmSuits == numberOfActiveSuits) {
@@ -538,7 +544,7 @@ void gameStateCheck() {
     else if (gameMode == 1) {
       // if there's only one suit left that's a different colour, check the state quicker
       if (numberOfCoolSuits == (numberOfActiveSuits - 1) || numberOfWarmSuits == (numberOfActiveSuits - 1)) {
-
+        
         lastPlayer = true;
         
         stateReport = 105;
@@ -594,7 +600,7 @@ void gameStateCheck() {
         gameOver();
       }
     }
-
+    
     // else if (gameMode == 2) {
     // not sure what to do for traditional tag, but it's kind of boring anyway
     
@@ -611,7 +617,7 @@ void gameStateCheck() {
       uint8_t numberOfSuits7 = 0;
       uint8_t numberOfSuits8 = 0;
       uint8_t numberOfSuits9 = 0;
-
+      
       for (int i = 0; i < 10; i++) {
         if (activeSuits[i] == true) {
           numberOfActiveSuits++;
@@ -662,7 +668,7 @@ void gameStateCheck() {
         numberOfSuits1 == (numberOfActiveSuits - 1) ||
         numberOfSuits0 == (numberOfActiveSuits - 1)
       ) {
-
+        
         lastPlayer = true;
         
         stateReport = 105;

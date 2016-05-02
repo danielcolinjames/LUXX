@@ -28,6 +28,8 @@ void whoTaggedMe() {
   verifyKey = false;
   
   i = 0;
+
+//  printCurrentTag();
   
   while (i < NUMBER_OF_CARDS && verifyKey == false) {
     
@@ -56,12 +58,13 @@ void whoTaggedMe() {
 // ---------------------------------------------------------//
 void printCurrentTag() {
   
-  // debugSerial.print("RFID Tag ID: ");
+  debugSerial.print("RFID Tag ID: ");
   
   for (int n = 0; n < 5; n++) {
-    // debugSerial.print(tagData[n], DEC);
+     debugSerial.print(tagData[n], DEC);
     if (n < 4) {
-      // debugSerial.print(", ");
+       debugSerial.print(", ");
     }
   }
+  debugSerial.println();
 }

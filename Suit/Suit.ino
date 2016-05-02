@@ -13,7 +13,7 @@
 #define NUMPIXELSONE 9
 #define NUMPIXELSTWO 9
 
-uint8_t suitID = 7;
+uint8_t suitID = 8;
 
 byte keyTag[NUMBER_OF_CARDS][5] = {
   {114, 0, 95, 44, 9},        // Tag 0
@@ -25,24 +25,10 @@ byte keyTag[NUMBER_OF_CARDS][5] = {
   {114, 0, 95, 109, 22},      // Tag 6
   {114, 0, 95, 98, 170},      // Tag 7
   {114, 0, 95, 44, 7},        // Tag 8
-  {114, 0, 95, 67, 234}       // Tag 9
+  {114, 0, 95, 81, 79}       // Tag 9
 };
 
 byte blocked = 255;
-
-/*
- * Suit 1: 114, 0, 95, 44, 9
- * Suit 2: 114, 0, 95, 73, 207
- * Suit 3: 114, 0, 95, 43, 231
- * Suit 4: 114, 0, 95, 38, 99
- * Suit 5: 114, 0, 95, 44, 0
- * Suit 6: 114, 0, 95, 126, 166
- * Suit 7: 114, 0, 95, 109, 22
- * Suit 8: 114, 0, 95, 98, 170
- * Suit 9: 114, 0, 95, 44, 7
- * Suit 10: 114, 0, 95, 67, 234
- */
-
 
 // ---------------------------------------------------------//
 // ---------------   Instantiate libraries  ----------------//
@@ -52,7 +38,7 @@ Adafruit_NeoPixel pixelsOne = Adafruit_NeoPixel(NUMPIXELSONE,
 
 Adafruit_NeoPixel pixelsTwo = Adafruit_NeoPixel(NUMPIXELSTWO, 
   PINTWO, NEO_GRB + NEO_KHZ800);
-  
+
 RFIDuino rfiduino(1.1);
 
 SoftwareSerial debugSerial(12, 11); // (Rx, Tx)
@@ -154,14 +140,14 @@ void setup() {
   Serial.begin(9600);
   xbee.setSerial(Serial);
   
-  // debugSerial.begin(9600);
-  // debugSerial.println("Starting debugger from suit...");  
+  debugSerial.begin(9600);
+  debugSerial.println("Starting debugger from suit...");  
   
   pixelsOne.begin();
   pixelsTwo.begin();
   
-  pixelsOne.setBrightness(115);
-  pixelsTwo.setBrightness(115);
+  pixelsOne.setBrightness(75);
+  pixelsTwo.setBrightness(75);
   
   gameOver();
 }
