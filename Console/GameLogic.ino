@@ -2,6 +2,11 @@
 // -------------------- Start the game ---------------------//
 // ---------------------------------------------------------//
 void startGame() {
+  // this is to avoid instant game overs.
+  // this number will be subtracted from millis() later to determine
+  // how many milliseconds have elapsed since the game started.
+  long waitingTime = millis();
+  
   pingSuits();
   assignStartingColours();
   delayForAudio();
@@ -802,14 +807,17 @@ void gameStateCheck() {
       }
     }
     
-    // timeout check for all game modes
-    if (millis() - gameOverMillis > 600000) {
-      gameOverMillis = millis();
+    gameLengthMillis = millis() - waitingTime;
+    
+    timeout check for all game modes
+    if (gameLengthMillis > 600000) {
+      
+      gameLengthMillis = 0;
       
       // debugSerial.println();
       // debugSerial.println("Game over: time limit reached.");
       
-      stateReport = 111;
+      stateReport = 108;
       sendToInterface(stateReport);
       delay(100);
       gameOver();
