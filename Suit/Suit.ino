@@ -13,18 +13,18 @@
 #define NUMPIXELSONE 9
 #define NUMPIXELSTWO 9
 
-uint8_t suitID = 8;
+uint8_t suitID = 1;
 
 byte keyTag[NUMBER_OF_CARDS][5] = {
   {114, 0, 95, 44, 9},        // Tag 0
   {114, 0, 95, 73, 207},      // Tag 1
   {114, 0, 95, 43, 231},      // Tag 2
-  {114, 0, 95, 38, 99},       // Tag 3
+  {114, 0, 95, 44, 8},        // Tag 3
   {114, 0, 95, 44, 0},        // Tag 4
   {114, 0, 95, 126, 166},     // Tag 5
   {114, 0, 95, 109, 22},      // Tag 6
   {114, 0, 95, 98, 170},      // Tag 7
-  {114, 0, 95, 44, 7},        // Tag 8
+  {114, 0, 95, 43, 255},        // Tag 8
   {114, 0, 95, 81, 79}       // Tag 9
 };
 
@@ -146,8 +146,8 @@ void setup() {
   pixelsOne.begin();
   pixelsTwo.begin();
   
-  pixelsOne.setBrightness(75);
-  pixelsTwo.setBrightness(75);
+  pixelsOne.setBrightness(255);
+  pixelsTwo.setBrightness(255);
   
   gameOver();
 }
