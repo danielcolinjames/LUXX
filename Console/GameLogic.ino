@@ -807,12 +807,13 @@ void gameStateCheck() {
       }
     }
     
+    // this number represents how long a game has been running
+    // by subtracting the amount of time that elapsed before a
+    // game was started
     gameLengthMillis = millis() - waitingTime;
     
-    timeout check for all game modes
+    // timeout check for all game modes
     if (gameLengthMillis > 600000) {
-      
-      gameLengthMillis = 0;
       
       // debugSerial.println();
       // debugSerial.println("Game over: time limit reached.");
@@ -843,7 +844,7 @@ void gameOver() {
   
   // otherwise the next game could get shut down 5 min
   // after the first one started
-  gameOverMillis = millis();
+  gameLengthMillis = 0;
   
   sendGameOver();
   waitForReset();
