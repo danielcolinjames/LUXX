@@ -107,7 +107,7 @@ void assignStartingColours() {
   // randomNum = a number from 0 - 4
   uint8_t randomNum = random(0, 5);
   
-  // multiply this number by 2, to get 2, 4, 6 or 8
+  // multiply this number by 2, to get 0, 2, 4, 6 or 8
   randomNum *= 2;
   
   // add 80 to make it a colour code
