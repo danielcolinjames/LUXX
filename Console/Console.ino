@@ -86,6 +86,9 @@ int stateCheckInterval = 1000;
 long gameOverMillis = 0;
 int fiveMinutes = 300000;
 
+long waitingTime = 0;
+long gameLengthMillis = 0;
+
 long outputMillis = 0;
 int outputInterval = 1000;
 

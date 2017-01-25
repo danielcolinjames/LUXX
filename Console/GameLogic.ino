@@ -5,7 +5,7 @@ void startGame() {
   // this is to avoid instant game overs.
   // this number will be subtracted from millis() later to determine
   // how many milliseconds have elapsed since the game started.
-  long waitingTime = millis();
+  waitingTime = millis();
   
   pingSuits();
   assignStartingColours();
